@@ -39,8 +39,6 @@ namespace Tools.UITweens.Runtime.Scripts.Services
             if (pendingCancellations.Count == 0)
                 return;
 
-            Debug.Log($"[ProcessPendingCancellations] Processing {pendingCancellations.Count} pending cancellations");
-
             cachedPendingKeysToProcess.Clear();
             cachedKeysToRemoveList.Clear();
 
@@ -61,12 +59,10 @@ namespace Tools.UITweens.Runtime.Scripts.Services
 
                 if (control.State == TweenControlComponent.ControlState.Delayed)
                 {
-                    Debug.Log($"[ProcessPendingCancellations] Skipping delayed tween {handle.Entity.GetInternalId()} - will handle later");
                     cachedKeysToRemoveList.Add(key);
                     continue;
                 }
 
-                Debug.Log($"[ProcessPendingCancellations] Cancelling pending tween {handle.Entity.GetInternalId()}, property: {key.Item2}");
                 TweenControlOperations.Cancel(handle);
                 cachedKeysToRemoveList.Add(key);
             }
@@ -186,8 +182,6 @@ namespace Tools.UITweens.Runtime.Scripts.Services
             int componentId = target.RectTransform.GetInstanceID();
             (int, TweenPropertyType) key = (componentId, propertyType);
 
-            Debug.Log($"[KillCompetitorTweens] Killing competitors for {target.RectTransform.name}, property: {propertyType}");
-
             int killedCount = 0;
             List<(int, TweenPropertyType)> keysToRemove = new();
 
@@ -195,7 +189,6 @@ namespace Tools.UITweens.Runtime.Scripts.Services
             {
                 if (kvp.Key == key && kvp.Value.Entity != entity && kvp.Value.IsValid)
                 {
-                    Debug.Log($"[KillCompetitorTweens] Killing competitor tween for property {propertyType}");
                     TweenControlOperations.Cancel(kvp.Value);
                     keysToRemove.Add(kvp.Key);
                     killedCount++;
@@ -205,8 +198,6 @@ namespace Tools.UITweens.Runtime.Scripts.Services
             for (int i = 0; i < keysToRemove.Count; i++)
                 componentPropertyTweenHandles.Remove(keysToRemove[i]);
 
-            if (killedCount == 0)
-                Debug.Log($"[KillCompetitorTweens] No competitors found to kill");
         }
 
         public Dictionary<(int, TweenPropertyType), TweenHandle> GetAllTrackedTweens()
@@ -250,4 +241,3 @@ namespace Tools.UITweens.Runtime.Scripts.Services
         }
     }
 }
-
