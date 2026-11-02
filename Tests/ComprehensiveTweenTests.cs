@@ -1,11 +1,11 @@
 #if UNITY_EDITOR
 
 using System.Collections;
-using Tools.UITweens.Runtime.Scripts.Extensions;
+using UITweens.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Tools.UITweens.Tests
+namespace UITweens.Tests
 {
     /// <summary>
     /// Simplified test suite for UITween Engine bug fixes.

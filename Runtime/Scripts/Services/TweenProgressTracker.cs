@@ -1,7 +1,7 @@
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Components;
+using UITweens.Components;
 
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     /// <summary>
     /// Tracks progress of tweens (elapsed time, completion, eased progress).

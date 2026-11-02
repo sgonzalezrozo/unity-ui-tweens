@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts
+namespace UITweens
 {
     public class UITweensInitializer
     {

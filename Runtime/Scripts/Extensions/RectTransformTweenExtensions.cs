@@ -1,8 +1,8 @@
-using Tools.UITweens.Runtime.Scripts.Math;
-using Tools.UITweens.Runtime.Scripts.Services;
+using UITweens.Math;
+using UITweens.Services;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Extensions
+namespace UITweens.Extensions
 {
     public static class RectTransformTweenExtensions
     {

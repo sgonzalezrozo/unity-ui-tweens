@@ -1,9 +1,9 @@
 using System;
-using Tools.UITweens.Runtime.Scripts.Math;
-using Tools.UITweens.Runtime.Scripts.Services;
+using UITweens.Math;
+using UITweens.Services;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Components
+namespace UITweens.Components
 {
     /// <summary>
     /// Core clock component that tracks time for any tween.

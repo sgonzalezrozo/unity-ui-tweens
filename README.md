@@ -101,8 +101,8 @@ If the prefab is missing, the Console shows a `TweenManager prefab not found` wa
 ## Quick start
 
 ```csharp
-using Tools.UITweens.Runtime.Scripts.Extensions;
-using Tools.UITweens.Runtime.Scripts.Math;
+using UITweens.Extensions;
+using UITweens.Math;
 using UnityEngine;
 
 public class PanelAnimator : MonoBehaviour

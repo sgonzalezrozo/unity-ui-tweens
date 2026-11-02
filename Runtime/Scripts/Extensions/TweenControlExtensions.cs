@@ -1,10 +1,10 @@
 using System;
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Services;
+using UITweens.Services;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Tools.UITweens.Runtime.Scripts.Extensions
+namespace UITweens.Extensions
 {
     public class CancelTweenBuilder
     {
@@ -29,7 +29,7 @@ namespace Tools.UITweens.Runtime.Scripts.Extensions
                 return;
             }
 
-            ref var cancelCallback = ref handle.Entity.Get<global::Tools.UITweens.Runtime.Scripts.Components.TweenCancelCallbackComponent>();
+            ref var cancelCallback = ref handle.Entity.Get<global::UITweens.Components.TweenCancelCallbackComponent>();
             cancelCallback.OnCancelled = callback;
         }
     }

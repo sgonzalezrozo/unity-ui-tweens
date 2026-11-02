@@ -1,9 +1,9 @@
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Components;
-using Tools.UITweens.Runtime.Scripts.Math;
+using UITweens.Components;
+using UITweens.Math;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Systems
+namespace UITweens.Systems
 {
     /// <summary>
     /// LeoECS system that advances tween clocks and computes interpolated values.

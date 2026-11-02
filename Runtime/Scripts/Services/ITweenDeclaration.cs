@@ -2,10 +2,10 @@
 // Phase 6: Declaration interface for deferred tween execution
 
 using System;
-using Tools.UITweens.Runtime.Scripts.Math;
+using UITweens.Math;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     /// <summary>
     /// Represents a tween declaration that hasn't been spawned yet.

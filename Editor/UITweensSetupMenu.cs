@@ -1,10 +1,10 @@
 #if UNITY_EDITOR
 
-using Tools.UITweens.Runtime.Scripts;
+using UITweens;
 using UnityEditor;
 using UnityEngine;
 
-namespace Tools.UITweens.Editor
+namespace UITweens.Editor
 {
     /// <summary>
     /// Setup menu for UITweens system.

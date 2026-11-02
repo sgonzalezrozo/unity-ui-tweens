@@ -1,9 +1,9 @@
 using System.Collections;
-using Tools.UITweens.Runtime.Scripts.Extensions;
+using UITweens.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Tools.UITweens.Tests
+namespace UITweens.Tests
 {
     /// <summary>
     /// Comprehensive test for cancellation logic fix.
