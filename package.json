@@ -1,0 +1,25 @@
+{
+  "name": "com.sgonzalezrozo.ui-tweens",
+  "version": "0.1.0",
+  "displayName": "UI Tweens",
+  "description": "An ECS-based tween engine for Unity UI, built on LeoECS.",
+  "unity": "2022.3",
+  "license": "MIT",
+  "author": {
+    "name": "Santiago González Rozo",
+    "url": "https://github.com/sgonzalezrozo"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sgonzalezrozo/unity-ui-tweens.git"
+  },
+  "keywords": [
+    "ui",
+    "tweens",
+    "animation",
+    "ecs"
+  ],
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  }
+}
