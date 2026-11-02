@@ -1,8 +1,8 @@
-using Tools.UITweens.Runtime.Scripts.Extensions;
+using UITweens.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Tools.UITweens.Tests
+namespace UITweens.Tests
 {
     /// <summary>
     /// Quick test to verify Phase 9 delayed tween queue implementation.

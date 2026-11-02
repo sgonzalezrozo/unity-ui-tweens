@@ -1,8 +1,8 @@
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Components;
+using UITweens.Components;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     /// <summary>
     /// Executes tween playback: applies values to UI elements based on progress.

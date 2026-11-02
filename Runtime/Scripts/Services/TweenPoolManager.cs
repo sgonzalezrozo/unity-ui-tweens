@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Components;
-using Tools.UITweens.Runtime.Scripts.Math;
+using UITweens.Components;
+using UITweens.Math;
 
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     public class TweenPoolManager
     {

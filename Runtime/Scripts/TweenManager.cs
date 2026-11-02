@@ -1,10 +1,10 @@
 using System.Collections;
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Services;
+using UITweens.Services;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Tools.UITweens.Runtime.Scripts
+namespace UITweens
 {
     public class TweenManager : MonoBehaviour
     {

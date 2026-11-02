@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Math.Easing
+namespace UITweens.Math.Easing
 {
     internal static class EasingSine
     {

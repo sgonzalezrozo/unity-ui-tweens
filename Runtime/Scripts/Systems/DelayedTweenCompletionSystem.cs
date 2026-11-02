@@ -1,9 +1,9 @@
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Components;
-using Tools.UITweens.Runtime.Scripts.Services;
+using UITweens.Components;
+using UITweens.Services;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Systems
+namespace UITweens.Systems
 {
     /// <summary>
     /// System that detects when delayed tweens finish their delay phase and are transitioning to playing.

@@ -1,10 +1,10 @@
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Components;
-using Tools.UITweens.Runtime.Scripts.Math;
+using UITweens.Components;
+using UITweens.Math;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     /// <summary>
     /// Initializes tween entities with components and values.

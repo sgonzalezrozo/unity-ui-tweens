@@ -1,9 +1,9 @@
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Services;
-using Tools.UITweens.Runtime.Scripts.Systems;
+using UITweens.Services;
+using UITweens.Systems;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts
+namespace UITweens
 {
     public class TweenWorldBootstrapper
     {

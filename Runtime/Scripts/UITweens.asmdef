@@ -1,17 +1,16 @@
 {
-    "name": "tools-uitweens.Editor",
+    "name": "UITweens",
     "rootNamespace": "",
     "references": [
-        "tools-uitweens"
+        "Leopotam.Ecs",
+        "UnityEngine.UI"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": false,
+    "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

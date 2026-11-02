@@ -1,7 +1,7 @@
 using Leopotam.Ecs;
-using Tools.UITweens.Runtime.Scripts.Components;
+using UITweens.Components;
 
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     public struct TweenHandle
     {

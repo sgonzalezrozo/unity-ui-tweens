@@ -1,7 +1,7 @@
-using Tools.UITweens.Runtime.Scripts.Math;
+using UITweens.Math;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     /// <summary>
     /// Evaluates easing curves to transform linear progress (0-1) into eased progress.

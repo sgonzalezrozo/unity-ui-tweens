@@ -1,7 +1,7 @@
-using Tools.UITweens.Runtime.Scripts.Math.Easing;
+using UITweens.Math.Easing;
 using UnityEngine;
 
-namespace Tools.UITweens.Runtime.Scripts.Math
+namespace UITweens.Math
 {
     public enum EaseType : byte
     {

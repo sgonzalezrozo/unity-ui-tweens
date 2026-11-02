@@ -1,4 +1,4 @@
-namespace Tools.UITweens.Runtime.Scripts.Services
+namespace UITweens.Services
 {
     /// <summary>
     /// Wraps a TweenBuilder to implement ITweenDeclaration.
