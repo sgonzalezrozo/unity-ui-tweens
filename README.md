@@ -118,6 +118,42 @@ public class PanelAnimator : MonoBehaviour
 }
 ```
 
+## Usage example
+
+This component slides a panel in when its screen opens, using [Screen System](https://github.com/sgonzalezrozo/unity-screen-system). It cancels the tween when the screen closes, so a late animation can't move the hidden panel.
+
+```csharp
+using ScreenSystem;
+using UITweens.Extensions;
+using UITweens.Math;
+using UnityEngine;
+
+public class SlideInPanel : MonoBehaviour, IScreenLifecycle
+{
+    private const float Duration = 0.65f;
+    private const float EntranceDelay = 0.25f;
+
+    [SerializeField] private RectTransform panel;
+    [SerializeField] private EaseType ease = EaseType.QuadOut;
+
+    public void OnScreenShown()
+    {
+        panel.anchoredPosition = OffscreenPosition;
+        panel.DOAnchorPos(Vector2.zero, Duration, ease).Delay(EntranceDelay);
+    }
+
+    public void OnScreenHidden()
+    {
+        panel.DoCancel();
+        panel.anchoredPosition = OffscreenPosition;
+    }
+
+    private Vector2 OffscreenPosition => new(0f, panel.rect.height);
+}
+```
+
+To use it without Screen System, remove `IScreenLifecycle` and call these methods yourself.
+
 ## Tween methods
 
 | Target | Methods |
