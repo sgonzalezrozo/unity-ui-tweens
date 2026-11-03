@@ -1,6 +1,6 @@
 {
   "name": "com.sgonzalezrozo.ui-tweens",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "displayName": "UI Tweens",
   "description": "An ECS-based tween engine for Unity UI, built on LeoECS.",
   "unity": "2022.3",
