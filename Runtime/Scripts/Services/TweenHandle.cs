@@ -62,6 +62,30 @@ namespace UITweens.Services
             }
         }
 
+        /// <summary>The current value of a CustomFloat tween, or 0 once it has ended.</summary>
+        public float FloatValue
+        {
+            get
+            {
+                if (!IsValid || !Entity.IsAlive() || !Entity.Has<TweenCustomFloatComponent>())
+                    return 0f;
+
+                return Entity.Get<TweenCustomFloatComponent>().CurrentValue;
+            }
+        }
+
+        /// <summary>The current value of a CustomVector tween, or zero once it has ended.</summary>
+        public UnityEngine.Vector3 VectorValue
+        {
+            get
+            {
+                if (!IsValid || !Entity.IsAlive() || !Entity.Has<TweenCustomVectorComponent>())
+                    return UnityEngine.Vector3.zero;
+
+                return Entity.Get<TweenCustomVectorComponent>().CurrentValue;
+            }
+        }
+
         internal TweenHandle(EcsEntity entity)
         {
             Entity = entity;

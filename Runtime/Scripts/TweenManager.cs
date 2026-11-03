@@ -150,6 +150,19 @@ namespace UITweens
         internal static void TrackTweenForComponent(UnityEngine.Object component, TweenHandle handle)
             => instance?.tracker?.TrackTween(component, handle);
 
+        internal static bool TryUntrackTween(EcsEntity entity, TweenHandle predecessor, out int componentId, out TweenPropertyType propertyType)
+        {
+            if (instance?.tracker != null)
+                return instance.tracker.TryUntrack(entity, predecessor, out componentId, out propertyType);
+
+            componentId = 0;
+            propertyType = TweenPropertyType.Unknown;
+            return false;
+        }
+
+        internal static void TrackTween(int componentId, TweenPropertyType propertyType, TweenHandle handle)
+            => instance?.tracker?.TrackTween(componentId, propertyType, handle);
+
         internal static void OnDelayFinished(UnityEngine.Object component, TweenPropertyType propertyType)
         {
         }

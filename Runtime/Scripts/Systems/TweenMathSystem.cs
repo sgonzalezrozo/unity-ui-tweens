@@ -39,8 +39,9 @@ namespace UITweens.Systems
         private EcsFilter<TweenClockComponent, TweenSizeDeltaComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> sizeFilter;
         private EcsFilter<TweenClockComponent, TweenPivotComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> pivotFilter;
 
-        // Filter for tweens with sequence links (to spawn next tweens)
-        private EcsFilter<TweenClockComponent, TweenSequenceLinkComponent, TweenControlComponent, TweenActiveMarkerComponent> sequenceFilter;
+        // Custom value filters
+        private EcsFilter<TweenClockComponent, TweenCustomFloatComponent, TweenControlComponent, TweenActiveMarkerComponent> customFloatFilter;
+        private EcsFilter<TweenClockComponent, TweenCustomVectorComponent, TweenControlComponent, TweenActiveMarkerComponent> customVectorFilter;
 
         public TweenMathSystem(EcsWorld world)
         {
@@ -678,8 +679,78 @@ namespace UITweens.Systems
                 }
             }
 
-            // Handle sequence links: spawn next tween when current finishes
-            ProcessSequenceLinks();
+            // Process custom float tweens
+            foreach (int idx in customFloatFilter)
+            {
+                ref TweenClockComponent clock = ref customFloatFilter.Get1(idx);
+                ref TweenCustomFloatComponent custom = ref customFloatFilter.Get2(idx);
+                ref TweenControlComponent control = ref customFloatFilter.Get3(idx);
+
+                if (!TryAdvanceClock(ref clock, ref control, deltaTime))
+                    continue;
+
+                float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
+                custom.CurrentValue = TweenMath.Lerp(custom.StartValue, custom.EndValue, easedT);
+
+                if (!clock.IsFinished)
+                    continue;
+
+                EcsEntity entity = customFloatFilter.GetEntity(idx);
+                if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
+                    SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
+            }
+
+            // Process custom vector tweens
+            foreach (int idx in customVectorFilter)
+            {
+                ref TweenClockComponent clock = ref customVectorFilter.Get1(idx);
+                ref TweenCustomVectorComponent custom = ref customVectorFilter.Get2(idx);
+                ref TweenControlComponent control = ref customVectorFilter.Get3(idx);
+
+                if (!TryAdvanceClock(ref clock, ref control, deltaTime))
+                    continue;
+
+                float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
+                custom.CurrentValue = Vector3.LerpUnclamped(custom.StartValue, custom.EndValue, easedT);
+
+                if (!clock.IsFinished)
+                    continue;
+
+                EcsEntity entity = customVectorFilter.GetEntity(idx);
+                if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
+                    SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
+            }
+        }
+
+        /// <summary>
+        /// Moves a tween through its delay and advances its clock.
+        /// Returns true while the tween is playing.
+        /// </summary>
+        private static bool TryAdvanceClock(ref TweenClockComponent clock, ref TweenControlComponent control, float deltaTime)
+        {
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (!clock.IsDelayFinished)
+                    return false;
+
+                float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                control.State = TweenControlComponent.ControlState.Playing;
+                clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return false;
+
+            clock.ElapsedTime += deltaTime;
+            return true;
         }
 
         /// <summary>
@@ -732,29 +803,6 @@ namespace UITweens.Systems
         private void SwapValuesForReverse<T>(ref T start, ref T end) where T : struct
         {
             (start, end) = (end, start);
-        }
-
-        /// <summary>
-        /// Process sequence links - spawn next tween when previous tween finishes.
-        /// </summary>
-        private void ProcessSequenceLinks()
-        {
-            foreach (int idx in sequenceFilter)
-            {
-                ref TweenClockComponent clock = ref sequenceFilter.Get1(idx);
-                ref TweenSequenceLinkComponent link = ref sequenceFilter.Get2(idx);
-
-                // Only process if tween is finished and has a next tween
-                if (!clock.IsFinished || link.NextTweenEntityId <= 0)
-                    continue;
-
-                // The next entity should exist in the world already (created by TweenSpawner)
-                // We can't easily retrieve it by ID in LeoECS, so we rely on external coordination
-                // The tween apply system will handle activating it when ready
-
-                // Mark this link as processed
-                link.NextTweenEntityId = -1;
-            }
         }
     }
 }

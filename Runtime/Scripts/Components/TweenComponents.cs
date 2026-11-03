@@ -1,4 +1,5 @@
 using System;
+using Leopotam.Ecs;
 using UITweens.Math;
 using UITweens.Services;
 using UnityEngine;
@@ -23,6 +24,16 @@ namespace UITweens.Components
         public float DelayDuration;    // Total delay in seconds (0 if no delay)
         public bool HasCapturedStartValues; // Flag: start values captured on Delayed → Playing transition
 
+        // Axis masks for tweens that only animate part of a value.
+        public const byte ALL_AXES = 0;
+        public const byte AXIS_X = 1;
+        public const byte AXIS_Y = 2;
+        public const byte AXIS_Z = 4;
+        public const byte ALPHA_ONLY = 8;
+
+        public bool StartFromCurrent;  // True when the start value comes from the UI, not from the caller
+        public byte AxisMask;          // Animated axes when StartFromCurrent is true
+
         public TweenClockComponent(float duration, EaseType ease = EaseType.Linear, float easeParameter = -1f)
         {
             ElapsedTime = 0f;
@@ -32,6 +43,8 @@ namespace UITweens.Components
             ElapsedDelay = 0f;
             DelayDuration = 0f;
             HasCapturedStartValues = false;
+            StartFromCurrent = false;
+            AxisMask = ALL_AXES;
         }
 
         /// <summary>
@@ -192,7 +205,8 @@ namespace UITweens.Components
     /// </summary>
     public struct TweenSequenceLinkComponent
     {
-        public int NextTweenEntityId; // Reference to next entity in sequence
+        public EcsEntity NextEntity; // The tween that starts when this one finishes
+        public bool HasNext;
     }
 
     /// <summary>
@@ -208,6 +222,7 @@ namespace UITweens.Components
             Playing = 2,     // Active animation, advancing progress
             Paused = 3,      // Paused (can resume from Playing or Delayed)
             Cancelled = 4,   // Killed, will be destroyed
+            Waiting = 5,     // Held by a sequence or declaration until it is activated
         }
 
         public ControlState State;
@@ -220,6 +235,11 @@ namespace UITweens.Components
         // Store the tween this one is replacing (for delayed tweens)
         // When a delayed tween's delay finishes, it cancels this predecessor
         public TweenHandle PredecessorHandle;
+
+        // Where a held tween is tracked again once it is activated
+        public bool HasTrackingKey;
+        public int TrackedComponentId;
+        public TweenPropertyType TrackedPropertyType;
     }
 
     /// <summary>
@@ -314,6 +334,8 @@ namespace UITweens.Components
     {
         public Action OnStart;      // Called when delay finishes and tween starts
         public Action OnUpdate;     // Called every frame while tweening
+        public Action<float> OnFloatUpdate;     // Called with the current custom float value
+        public Action<Vector3> OnVectorUpdate;  // Called with the current custom vector value
         public bool StartCalled;    // Flag: prevent multiple OnStart calls
     }
 

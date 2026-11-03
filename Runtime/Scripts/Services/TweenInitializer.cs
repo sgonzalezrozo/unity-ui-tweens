@@ -61,6 +61,8 @@ namespace UITweens.Services
             control.State = TweenControlComponent.ControlState.NotStarted;
             control.PausedElapsedTime = 0f;
             control.HasKilledCompetitors = false;
+            control.PredecessorHandle = default;
+            control.HasTrackingKey = false;
 
             ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
             flags.ApplyAlpha = false;
@@ -259,6 +261,8 @@ namespace UITweens.Services
             ref var advCallbacks = ref entity.Get<TweenAdvancedCallbackComponent>();
             advCallbacks.OnStart = null;
             advCallbacks.OnUpdate = null;
+            advCallbacks.OnFloatUpdate = null;
+            advCallbacks.OnVectorUpdate = null;
             advCallbacks.StartCalled = false;
         }
 

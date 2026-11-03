@@ -1,3 +1,4 @@
+using UITweens.Components;
 using UITweens.Math;
 using UnityEngine;
 
@@ -27,7 +28,8 @@ namespace UITweens.Services
             }
 
             float startAlpha = canvasGroup.alpha;
-            return spawner.AlphaFromTo(canvasGroup, startAlpha, targetAlpha, duration, ease, easeParameter);
+            return spawner.AlphaFromTo(canvasGroup, startAlpha, targetAlpha, duration, ease, easeParameter)
+                .StartFromCurrent();
         }
 
         /// <summary>
@@ -84,7 +86,8 @@ namespace UITweens.Services
                 currentColor.b,
                 targetAlpha);
 
-            return spawner.ColorFromTo(target, currentColor, targetColor, duration, ease, easeParameter);
+            return spawner.ColorFromTo(target, currentColor, targetColor, duration, ease, easeParameter)
+                .StartFromCurrent(TweenClockComponent.ALPHA_ONLY);
         }
     }
 }

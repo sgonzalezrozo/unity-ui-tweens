@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace UITweens.Extensions
 {
-    public class CancelTweenBuilder
+    public readonly struct CancelTweenBuilder
     {
         private readonly TweenHandle handle;
 

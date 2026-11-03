@@ -33,7 +33,7 @@ namespace UITweens.Services
 
         public TweenBuilder Spawn(TweenSpawner spawner)
         {
-            return spawnFunc?.Invoke(spawner) ?? new TweenBuilder(spawner);
+            return spawnFunc != null ? spawnFunc.Invoke(spawner) : new TweenBuilder(spawner);
         }
     }
 
@@ -58,13 +58,7 @@ namespace UITweens.Services
                 return new TweenBuilder(spawner);
             }
 
-            // Create a dummy tween with zero movement to just delay
-            RectTransform dummyRect = new GameObject("[UITweens-Wait]").AddComponent<RectTransform>();
-            GameObject dummyObj = dummyRect.gameObject;
-            dummyObj.SetActive(false);
-
-            return spawner.Position(dummyRect, Vector2.zero, Duration, EaseType.Linear)
-                .OnComplete(() => UnityEngine.Object.Destroy(dummyObj));
+            return spawner.CustomFloat(0f, 1f, Duration, EaseType.Linear);
         }
     }
 }

@@ -4,8 +4,11 @@ using UITweens.Components;
 
 namespace UITweens.Services
 {
-    /// <summary>Fluent API for configuring a tween that has already been created.</summary>
-    public class TweenBuilder
+    /// <summary>
+    /// Fluent API for configuring a tween that has already been created.
+    /// It's a struct so that creating a tween doesn't allocate.
+    /// </summary>
+    public struct TweenBuilder
     {
         private readonly TweenSpawner spawner;
         private TweenHandle lastHandle;
@@ -16,6 +19,7 @@ namespace UITweens.Services
         {
             this.spawner = spawner;
             lastHandle = new TweenHandle();
+            trackedComponent = null;
         }
 
         internal TweenBuilder SetHandle(TweenHandle handle)
@@ -35,6 +39,21 @@ namespace UITweens.Services
         }
 
         /// <summary>Waits before starting.</summary>
+        /// <summary>
+        /// Marks this tween as starting from the UI's current value, so a tween that
+        /// waits in a sequence reads that value when it starts, not when it's created.
+        /// </summary>
+        internal TweenBuilder StartFromCurrent(byte axisMask = TweenClockComponent.ALL_AXES)
+        {
+            if (!lastHandle.IsValid || !lastHandle.Entity.IsAlive())
+                return this;
+
+            ref TweenClockComponent clock = ref lastHandle.Entity.Get<TweenClockComponent>();
+            clock.StartFromCurrent = true;
+            clock.AxisMask = axisMask;
+            return this;
+        }
+
         public TweenBuilder Delay(float delaySeconds)
         {
             if (delaySeconds <= 0f || !lastHandle.IsValid || !lastHandle.Entity.IsAlive())
@@ -119,12 +138,17 @@ namespace UITweens.Services
             return this;
         }
 
-        /// <summary>Links another tween. The linked tween does not wait yet, so use OnComplete to run tweens in order.</summary>
+        /// <summary>
+        /// Runs another tween when this one finishes. The next tween waits, and reads its
+        /// start value when it starts. Cancelling this tween also cancels the next one.
+        /// Returns a builder for the next tween, so calls can be chained.
+        /// </summary>
         public TweenBuilder Then(TweenHandle nextHandle)
         {
             if (lastHandle.IsValid && nextHandle.IsValid)
                 spawner.LinkTweens(lastHandle, nextHandle);
 
+            trackedComponent = null;
             return SetHandle(nextHandle);
         }
 
@@ -165,13 +189,43 @@ namespace UITweens.Services
             return this;
         }
 
+        /// <summary>Runs code with the current value of a CustomFloat tween on each update.</summary>
+        public TweenBuilder OnFloatUpdate(Action<float> callback)
+        {
+            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            {
+                ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
+                advancedCb.OnFloatUpdate = callback;
+            }
+
+            return this;
+        }
+
+        /// <summary>Runs code with the current value of a CustomVector tween on each update.</summary>
+        public TweenBuilder OnVectorUpdate(Action<UnityEngine.Vector3> callback)
+        {
+            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            {
+                ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
+                advancedCb.OnVectorUpdate = callback;
+            }
+
+            return this;
+        }
+
         /// <summary>Gets a handle for controlling this tween later.</summary>
         public TweenHandle GetHandle()
             => lastHandle;
 
-        /// <summary>Wraps this tween for Sequential(). The tween is already running, so it does not defer it.</summary>
+        /// <summary>
+        /// Holds this tween so it doesn't start, and wraps it for TweenSpawner.Sequential().
+        /// A declared tween stays held until it's passed to Sequential().
+        /// </summary>
         public ITweenDeclaration DeclareOnly()
         {
+            if (lastHandle.IsValid)
+                TweenSequencer.Hold(lastHandle.Entity);
+
             return new DeclarationWrapper(this);
         }
     }

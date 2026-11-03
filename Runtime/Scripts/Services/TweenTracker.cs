@@ -12,6 +12,7 @@ namespace UITweens.Services
         private Dictionary<(int, TweenPropertyType), TweenHandle> pendingCancellations = new(64);
         private List<(int, TweenPropertyType)> cachedKeysToRemoveList = new(64);
         private List<(int, TweenPropertyType)> cachedPendingKeysToProcess = new(64);
+        private List<(int, TweenPropertyType)> cachedKeysToRemove = new(16);
 
         public int TrackedTweenCount
             => componentPropertyTweenHandles.Count;
@@ -21,8 +22,53 @@ namespace UITweens.Services
             if (component == null || !handle.IsValid)
                 return;
 
-            int componentId = component.GetInstanceID();
-            TweenPropertyType propertyType = DetectPropertyType(handle);
+            TrackTween(component.GetInstanceID(), DetectPropertyType(handle), handle);
+        }
+
+        /// <summary>
+        /// Stops tracking a tween that is being held, so it doesn't replace a running tween on
+        /// the same property. Returns the tracking key to restore when the tween is activated.
+        /// </summary>
+        public bool TryUntrack(EcsEntity entity, TweenHandle predecessor, out int componentId, out TweenPropertyType propertyType)
+        {
+            componentId = 0;
+            propertyType = TweenPropertyType.Unknown;
+
+            (int, TweenPropertyType) trackedKey = default;
+            bool found = false;
+
+            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
+            {
+                if (kvp.Value.Entity != entity)
+                    continue;
+
+                trackedKey = kvp.Key;
+                found = true;
+                break;
+            }
+
+            if (!found)
+                return false;
+
+            componentId = trackedKey.Item1;
+            propertyType = trackedKey.Item2;
+
+            if (pendingCancellations.TryGetValue(trackedKey, out TweenHandle pending))
+            {
+                pendingCancellations.Remove(trackedKey);
+                predecessor = pending;
+            }
+
+            if (predecessor.IsValid && predecessor.Entity.IsAlive())
+                componentPropertyTweenHandles[trackedKey] = predecessor;
+            else
+                componentPropertyTweenHandles.Remove(trackedKey);
+
+            return true;
+        }
+
+        public void TrackTween(int componentId, TweenPropertyType propertyType, TweenHandle handle)
+        {
             (int, TweenPropertyType) key = (componentId, propertyType);
 
             bool hasPrevious = componentPropertyTweenHandles.TryGetValue(key, out TweenHandle previousHandle);
@@ -113,7 +159,8 @@ namespace UITweens.Services
                 return;
 
             int componentId = component.GetInstanceID();
-            List<(int, TweenPropertyType)> keysToRemove = new();
+            List<(int, TweenPropertyType)> keysToRemove = cachedKeysToRemove;
+            keysToRemove.Clear();
 
             foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
             {
@@ -127,7 +174,8 @@ namespace UITweens.Services
 
         public void CancelAllTweensForComponent(int componentId)
         {
-            List<(int, TweenPropertyType)> keysToRemove = new();
+            List<(int, TweenPropertyType)> keysToRemove = cachedKeysToRemove;
+            keysToRemove.Clear();
 
             foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
             {
@@ -183,7 +231,8 @@ namespace UITweens.Services
             (int, TweenPropertyType) key = (componentId, propertyType);
 
             int killedCount = 0;
-            List<(int, TweenPropertyType)> keysToRemove = new();
+            List<(int, TweenPropertyType)> keysToRemove = cachedKeysToRemove;
+            keysToRemove.Clear();
 
             foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
             {
