@@ -24,6 +24,7 @@ All notable changes to this package are documented in this file.
 
 ### Changed
 
+- The install steps now use LeoECS `2022.2.22`, the last release under the standard MIT license. Later releases use a different license.
 - **Breaking:** `TweenBuilder` and `CancelTweenBuilder` are now structs, so creating or cancelling a tween doesn't allocate.
 
 ### Documentation
