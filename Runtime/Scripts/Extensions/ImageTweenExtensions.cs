@@ -7,6 +7,7 @@ namespace UITweens.Extensions
 {
     public static class ImageTweenExtensions
     {
+        /// <summary>Animates the color from its current value.</summary>
         public static TweenBuilder DOColor(
             this Image image,
             Color targetColor,
@@ -31,6 +32,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates the color between two values.</summary>
         public static TweenBuilder DOColorFromTo(
             this Image image,
             Color startColor,
@@ -56,6 +58,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates the alpha.</summary>
         public static TweenBuilder DOFade(
             this Image image,
             float targetAlpha,

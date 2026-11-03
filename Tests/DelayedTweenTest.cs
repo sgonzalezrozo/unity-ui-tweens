@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace UITweens.Tests
 {
     /// <summary>
-    /// Quick test to verify Phase 9 delayed tween queue implementation.
+    /// Quick test for the delayed tween queue.
     /// Place this on a GameObject with an Image component.
     /// </summary>
     public class DelayedTweenTest : MonoBehaviour

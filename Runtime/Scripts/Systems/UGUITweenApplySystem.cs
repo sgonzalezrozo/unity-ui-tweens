@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Leopotam.Ecs;
 using UITweens.Components;
@@ -6,11 +7,16 @@ using UnityEngine;
 
 namespace UITweens.Systems
 {
+    /// <summary>
+    /// Applies computed values to UI components, runs callbacks and ends finished tweens.
+    /// Callbacks can start new tweens, so this system works from a copy of the active entities.
+    /// </summary>
     public class UGUITweenApplySystem : IEcsRunSystem
     {
         private readonly TweenPoolManager poolManager;
-        private List<EcsEntity> entitiesToDestroy = new();
-        private HashSet<EcsEntity> cachedActiveEntities;
+        private readonly List<EcsEntity> activeSnapshot = new();
+        private readonly List<EcsEntity> finishedEntities = new();
+        private readonly List<EcsEntity> cancelledEntities = new();
 
         public UGUITweenApplySystem(TweenPoolManager poolManager)
         {
@@ -22,168 +28,163 @@ namespace UITweens.Systems
             if (poolManager == null)
                 return;
 
-            cachedActiveEntities = poolManager.GetAllActiveEntities() as HashSet<EcsEntity>;
-            if (cachedActiveEntities == null)
+            poolManager.CopyActiveEntities(activeSnapshot);
+            finishedEntities.Clear();
+            cancelledEntities.Clear();
+
+            for (int i = 0; i < activeSnapshot.Count; i++)
+                ProcessEntity(activeSnapshot[i]);
+
+            for (int i = 0; i < finishedEntities.Count; i++)
+                CompleteEntity(finishedEntities[i]);
+
+            for (int i = 0; i < cancelledEntities.Count; i++)
+                CancelEntity(cancelledEntities[i]);
+        }
+
+        private void ProcessEntity(EcsEntity entity)
+        {
+            if (!entity.IsAlive())
                 return;
 
-            ProcessStartCallbacks();
-            ProcessCompletionCallbacks();
-            ProcessApply();
-            ProcessCancellationCleanup();
-        }
+            TweenControlComponent.ControlState state = entity.Get<TweenControlComponent>().State;
 
-        private void ProcessStartCallbacks()
-        {
-            foreach (EcsEntity entity in cachedActiveEntities)
+            if (state == TweenControlComponent.ControlState.Cancelled)
             {
-                if (!entity.IsAlive())
-                    continue;
+                cancelledEntities.Add(entity);
+                return;
+            }
 
-                try
-                {
-                    ref TweenAdvancedCallbackComponent callback = ref entity.Get<TweenAdvancedCallbackComponent>();
-                    ref TweenClockComponent clock = ref entity.Get<TweenClockComponent>();
-                    ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
+            if (state != TweenControlComponent.ControlState.Playing)
+                return;
 
-                    if (!clock.IsDelayFinished)
-                        continue;
+            if (entity.Get<TweenTargetComponent>().RectTransform == null)
+            {
+                TweenControlOperations.Cancel(entity);
+                cancelledEntities.Add(entity);
+                return;
+            }
 
-                    if (control.State != TweenControlComponent.ControlState.Playing || callback.StartCalled || callback.OnStart == null)
-                        continue;
+            ApplyValues(entity);
+            InvokeUpdateCallbacks(entity);
 
-                    callback.StartCalled = true;
-                    callback.OnStart.Invoke();
-                }
-                catch
-                {
-                    // Entity doesn't have required components
-                }
+            if (entity.Get<TweenClockComponent>().IsFinished
+                && entity.Get<TweenControlComponent>().State == TweenControlComponent.ControlState.Playing)
+            {
+                finishedEntities.Add(entity);
             }
         }
 
-        private void ProcessCompletionCallbacks()
+        private static void ApplyValues(EcsEntity entity)
         {
-            foreach (EcsEntity entity in cachedActiveEntities)
+            ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+            ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+            ref TweenApplyFlagsComponent flags = ref entity.Get<TweenApplyFlagsComponent>();
+
+            if (flags.ApplyPosition)
+                target.RectTransform.anchoredPosition = result.PositionResult;
+
+            if (flags.ApplyScale)
+                target.RectTransform.localScale = result.ScaleResult;
+
+            if (flags.ApplyRotation)
+                ApplyRotation(target.RectTransform, result.RotationResult);
+
+            if (flags.ApplyAlpha && target.CanvasGroup != null)
+                target.CanvasGroup.alpha = result.AlphaResult;
+
+            if (flags.ApplyColor && target.Image != null)
+                target.Image.color = result.ColorResult;
+
+            if (flags.ApplySizeDelta)
+                target.RectTransform.sizeDelta = result.SizeDeltaResult;
+
+            if (flags.ApplyPivot)
+                target.RectTransform.pivot = result.PivotResult;
+        }
+
+        // Callbacks can resize component storage, so values are copied before each one runs.
+        private static void InvokeUpdateCallbacks(EcsEntity entity)
+        {
+            ref TweenAdvancedCallbackComponent callbacks = ref entity.Get<TweenAdvancedCallbackComponent>();
+            Action onStart = callbacks.StartCalled ? null : callbacks.OnStart;
+            Action onUpdate = callbacks.OnUpdate;
+            Action<float> onFloatUpdate = callbacks.OnFloatUpdate;
+            Action<Vector3> onVectorUpdate = callbacks.OnVectorUpdate;
+            callbacks.StartCalled = true;
+
+            Invoke(onStart);
+            Invoke(onUpdate);
+
+            if (onFloatUpdate != null && entity.Has<TweenCustomFloatComponent>())
             {
-                if (!entity.IsAlive())
-                    continue;
+                float value = entity.Get<TweenCustomFloatComponent>().CurrentValue;
+                Invoke(onFloatUpdate, value);
+            }
 
-                try
-                {
-                    ref TweenCallbackComponent callback = ref entity.Get<TweenCallbackComponent>();
-                    ref TweenClockComponent clock = ref entity.Get<TweenClockComponent>();
-                    ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
-
-                    if (!clock.IsFinished)
-                        continue;
-
-                    if (control.State != TweenControlComponent.ControlState.Playing || !callback.HasCallback)
-                        continue;
-
-                    callback.OnComplete.Invoke();
-                    callback.OnComplete = null;
-                }
-                catch
-                {
-                    // Entity doesn't have required components
-                }
+            if (onVectorUpdate != null && entity.Has<TweenCustomVectorComponent>())
+            {
+                Vector3 value = entity.Get<TweenCustomVectorComponent>().CurrentValue;
+                Invoke(onVectorUpdate, value);
             }
         }
 
-        private void ProcessApply()
+        private void CompleteEntity(EcsEntity entity)
         {
-            entitiesToDestroy.Clear();
-
-            foreach (EcsEntity entity in cachedActiveEntities)
+            if (entity.Has<TweenCallbackComponent>())
             {
-                if (!entity.IsAlive())
-                    continue;
-
-                try
-                {
-                    ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
-                    ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
-                    ref TweenApplyFlagsComponent flags = ref entity.Get<TweenApplyFlagsComponent>();
-                    ref TweenClockComponent clock = ref entity.Get<TweenClockComponent>();
-                    ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
-
-                    if (target.RectTransform == null || control.State != TweenControlComponent.ControlState.Playing)
-                        continue;
-
-                    if (flags.ApplyPosition)
-                        target.RectTransform.anchoredPosition = result.PositionResult;
-
-                    if (flags.ApplyScale)
-                        target.RectTransform.localScale = result.ScaleResult;
-
-                    if (flags.ApplyRotation)
-                        ApplyRotation(target.RectTransform, result.RotationResult);
-
-                    if (flags.ApplyAlpha && target.CanvasGroup != null)
-                        target.CanvasGroup.alpha = result.AlphaResult;
-
-                    if (flags.ApplyColor && target.Image != null)
-                        target.Image.color = result.ColorResult;
-
-                    if (flags.ApplySizeDelta)
-                        target.RectTransform.sizeDelta = result.SizeDeltaResult;
-
-                    if (flags.ApplyPivot)
-                        target.RectTransform.pivot = result.PivotResult;
-
-                    if (clock.IsFinished)
-                    {
-                        entity.Del<TweenActiveMarkerComponent>();
-                        entitiesToDestroy.Add(entity);
-                    }
-                }
-                catch
-                {
-                    // Entity doesn't have required components
-                }
+                ref TweenCallbackComponent callback = ref entity.Get<TweenCallbackComponent>();
+                Action onComplete = callback.OnComplete;
+                callback.OnComplete = null;
+                Invoke(onComplete);
             }
 
-            for (int i = 0; i < entitiesToDestroy.Count; i++)
-                entitiesToDestroy[i].Destroy();
+            TweenSequencer.ActivateNext(entity);
+            poolManager.ReleaseEntity(entity);
         }
 
-        private void ProcessCancellationCleanup()
+        private void CancelEntity(EcsEntity entity)
         {
-            entitiesToDestroy.Clear();
-
-            foreach (EcsEntity entity in cachedActiveEntities)
+            if (entity.Has<TweenCancelCallbackComponent>())
             {
-                if (!entity.IsAlive())
-                    continue;
-
-                try
-                {
-                    ref TweenCancelCallbackComponent callback = ref entity.Get<TweenCancelCallbackComponent>();
-                    ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
-
-                    if (control.State != TweenControlComponent.ControlState.Cancelled)
-                        continue;
-
-                    if (callback.HasCallback)
-                    {
-                        callback.OnCancelled.Invoke();
-                        callback.OnCancelled = null;
-                    }
-
-                    entity.Del<TweenActiveMarkerComponent>();
-                    entitiesToDestroy.Add(entity);
-                }
-                catch
-                {
-                    // Entity doesn't have required components
-                }
+                ref TweenCancelCallbackComponent callback = ref entity.Get<TweenCancelCallbackComponent>();
+                Action onCancelled = callback.OnCancelled;
+                callback.OnCancelled = null;
+                Invoke(onCancelled);
             }
 
-            for (int i = 0; i < entitiesToDestroy.Count; i++)
-                entitiesToDestroy[i].Destroy();
+            TweenSequencer.CancelNext(entity);
+            poolManager.ReleaseEntity(entity);
         }
 
-        private void ApplyRotation(RectTransform rectTransform, float rotationZ)
+        private static void Invoke(Action callback)
+        {
+            if (callback == null)
+                return;
+
+            try
+            {
+                callback.Invoke();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private static void Invoke<T>(Action<T> callback, T value)
+        {
+            try
+            {
+                callback.Invoke(value);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private static void ApplyRotation(RectTransform rectTransform, float rotationZ)
         {
             Vector3 currentRotation = rectTransform.eulerAngles;
             currentRotation.z = rotationZ;

@@ -120,16 +120,14 @@ namespace UITweens.Services
         }
 
         /// <summary>
-        /// Link tweens for sequencing (Then() support).
-        /// Stores the next tween's entity ID so it can be spawned when the first tween completes.
+        /// Link tweens for sequencing. The second tween waits until the first one finishes.
         /// </summary>
         internal void LinkTweens(TweenHandle firstHandle, TweenHandle secondHandle)
         {
             if (!firstHandle.IsValid || !secondHandle.IsValid)
                 return;
 
-            ref var link = ref firstHandle.Entity.Get<TweenSequenceLinkComponent>();
-            link.NextTweenEntityId = secondHandle.Entity.GetInternalId();
+            TweenSequencer.Link(firstHandle.Entity, secondHandle.Entity);
         }
 
         /// <summary>
@@ -143,7 +141,8 @@ namespace UITweens.Services
                 return new TweenBuilder(this);
             }
 
-            TweenBuilder currentBuilder = null;
+            TweenBuilder currentBuilder = new TweenBuilder(this);
+            TweenHandle firstHandle = new TweenHandle();
             TweenHandle previousHandle = new TweenHandle();
 
             for (int i = 0; i < declarations.Length; i++)
@@ -157,15 +156,23 @@ namespace UITweens.Services
                 }
 
                 currentBuilder = decl.Spawn(this);
+                TweenHandle currentHandle = currentBuilder.GetHandle();
 
-                if (i > 0 && previousHandle.IsValid && currentBuilder != null)
-                    LinkTweens(previousHandle, currentBuilder.GetHandle());
+                if (!currentHandle.IsValid)
+                    continue;
 
-                if (currentBuilder != null)
-                    previousHandle = currentBuilder.GetHandle();
+                if (previousHandle.IsValid)
+                    LinkTweens(previousHandle, currentHandle);
+                else
+                    firstHandle = currentHandle;
+
+                previousHandle = currentHandle;
             }
 
-            return currentBuilder ?? new TweenBuilder(this);
+            if (firstHandle.IsValid)
+                TweenSequencer.Activate(firstHandle.Entity);
+
+            return currentBuilder;
         }
 
         /// <summary>
@@ -177,7 +184,7 @@ namespace UITweens.Services
         }
 
         /// <summary>
-        /// NEW: Phase 10 - Get the initializer instance.
+        /// Get the initializer instance.
         /// Used by TweenBuilder.Delay() to set delay on entity.
         /// </summary>
         internal TweenInitializer GetInitializer()

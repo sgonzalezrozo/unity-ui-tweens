@@ -27,7 +27,8 @@ namespace UITweens.Services
             }
 
             UnityEngine.Color startColor = target.color;
-            return spawner.ColorFromTo(target, startColor, targetColor, duration, ease, easeParameter);
+            return spawner.ColorFromTo(target, startColor, targetColor, duration, ease, easeParameter)
+                .StartFromCurrent();
         }
 
         /// <summary>

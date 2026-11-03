@@ -81,6 +81,10 @@ namespace UITweens.Systems
             if (!entity.IsAlive() || target.RectTransform == null)
                 return;
 
+            // A tween with an explicit start value, such as DOColorFromTo, keeps it.
+            if (!entity.Get<TweenClockComponent>().StartFromCurrent)
+                return;
+
             // Check which property is being animated and update its start value
             if (entity.Has<TweenAlphaComponent>() && target.CanvasGroup != null)
             {

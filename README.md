@@ -3,18 +3,20 @@
 **An ECS-based animation engine for Unity UI, running 350+ simultaneous tweens with zero GC allocations.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
+[![Version 0.2.0](https://img.shields.io/badge/version-0.2.0-blue.svg)](CHANGELOG.md)
 
 UI Tweens runs on LeoECS and provides a fluent API for `RectTransform`, `Image` and `CanvasGroup`, with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel controls.
 
-> **TODO:** Add a GIF of tweens running together.
+<!-- Demo GIF: Documentation~/images/demo.gif -->
 
 ## Why I built it
 
-On mobile games, smooth UI often comes down to allocation discipline. On World War Doh, keeping scrolling UI at 60 FPS came mostly from cutting GC allocations.
+I've used DOTween Pro for as long as I can remember. When everything goes well, there's no problem. But finding an issue with a tween can be really time-consuming, and that was the main reason I wanted to make my own.
 
-I wanted UI animation that kept that same discipline, with a simple API and explicit tracking of each component's tweens.
+My first idea was a wrapper around DOTween. Then I wondered whether it would be better to run tweens in an always-running world, an ECS, rather than in something that appears and disappears.
 
-> **TODO:** Replace this with your own story, including why you chose to build this instead of using DOTween or another existing library.
+That was meant as a possible performance improvement, and it turned out to matter. DOTween works great, but in my experience it can have FPS issues beyond a couple of hundred tweens, and in gameplay they add up very fast.
 
 ## Is it right for your project?
 
@@ -46,11 +48,11 @@ I wanted UI animation that kept that same discipline, with a simple API and expl
 
 | Requirement | Supported |
 |---|---|
-| Unity | 2022.3 or newer. **TODO:** add tested versions. |
-| Scripting backend | **TODO:** confirm Mono and IL2CPP |
-| Platforms | **TODO:** list tested platforms |
+| Unity | Tested on Unity 6 (`6000.3.16f1`). The package declares `2022.3` as its minimum, but older versions aren't tested yet. |
+| Scripting backend | Not verified yet |
+| Platforms | Not verified yet |
 | UI targets | `RectTransform`, `Image`, `CanvasGroup` |
-| Enter Play Mode with domain reload disabled | **TODO:** confirm support |
+| Enter Play Mode with domain reload disabled | Not verified yet. The package has no static reset for this mode, so keep domain reload on until you've tested it. |
 | Dependencies | LeoECS Core, uGUI |
 
 ## Installation
@@ -69,7 +71,7 @@ UI Tweens requires [LeoECS Core](https://openupm.com/packages/com.leopotam.ecs).
 3. Select **Save** or **Apply**.
 4. Open **Window > Package Manager**, select **My Registries**, then install LeoECS (`com.leopotam.ecs`).
 
-> **TODO:** Add the LeoECS version you tested, and test these steps in a clean project.
+UI Tweens uses classic LeoECS (`com.leopotam.ecs`), not LeoECS Lite. Tested LeoECS versions aren't published yet.
 
 ### 2. Install UI Tweens
 
@@ -156,27 +158,39 @@ To use it without Screen System, remove `IScreenLifecycle` and call these method
 
 ## Tween methods
 
-| Target | Methods |
-|---|---|
-| `RectTransform` | `DOAnchorPos`, `DOAnchorPosX`, `DOAnchorPosY`, `DOScale`, `DOScaleX`, `DOScaleY`, `DOScaleZ`, `DORotate`, `DOSizeDelta`, `DOPivot` |
-| `Image` | `DOFade`, `DOColor`, `DOColorFromTo` |
-| `CanvasGroup` | `DOFade`, `DOFadeFromTo` |
+Every method ends with the same three parameters: `float duration`, `EaseType ease = EaseType.Linear` and `float easeParameter = -1f`.
 
-For custom values, use `TweenManager.GetSpawner().CustomFloat(...)` or `CustomVector(...)`.
+| Target | Method | Values before `duration` |
+|---|---|---|
+| `RectTransform` | `DOAnchorPos` | `Vector2 targetPos` |
+| | `DOAnchorPosX`, `DOAnchorPosY` | `float targetX`, `float targetY` |
+| | `DOScale` | `Vector3 targetScale` |
+| | `DOScaleX`, `DOScaleY`, `DOScaleZ` | `float targetX`, `float targetY`, `float targetZ` |
+| | `DORotate` | `float targetRotation` |
+| | `DOSizeDelta` | `Vector2 targetSize` |
+| | `DOPivot` | `Vector2 targetPivot` |
+| `Image` | `DOFade` | `float targetAlpha` |
+| | `DOColor` | `Color targetColor` |
+| | `DOColorFromTo` | `Color startColor`, `Color endColor` |
+| `CanvasGroup` | `DOFade` | `float targetAlpha` |
+| | `DOFadeFromTo` | `float startAlpha`, `float endAlpha` |
+
+`easeParameter` adjusts curves that support it, such as the overshoot of `Back`.
 
 ## Tween options
 
 | Method | Purpose |
 |---|---|
 | `Delay(seconds)` | Wait before starting |
-| `Loop(repeatCount)` | Repeat a set number of times |
+| `Loop(repeatCount)` | Repeat after the first play, so `Loop(2)` plays three times |
 | `LoopInfinite()` | Repeat until cancelled |
-| `Then(handle)` | Run another tween next |
+| `Then(handle)` | Run another tween when this one finishes |
 | `OnStart(callback)` | Run code when the tween starts |
 | `OnUpdate(callback)` | Run code on each update |
+| `OnFloatUpdate(callback)`, `OnVectorUpdate(callback)` | Receive the current value of a custom tween |
 | `OnComplete(callback)` | Run code when the tween finishes |
 | `GetHandle()` | Get a `TweenHandle` for later control |
-| `DeclareOnly()` | Create a declaration to spawn later |
+| `DeclareOnly()` | Hold a tween so it can be passed to `Sequential()` |
 
 ## Controlling tweens
 
@@ -203,6 +217,106 @@ TweenManager.Cancel(handle);
 
 `TweenHandle` also has `IsPlaying`, `IsPaused`, `IsCancelled` and `IsFinished`.
 
+## Recipes
+
+### Run tweens in order
+
+Use `Then` to start a tween when another one finishes. It works on the same property too, and the second tween starts from wherever the first one ended:
+
+```csharp
+panel.DOAnchorPos(Vector2.zero, 0.35f, EaseType.BackOut)
+    .Then(panel.DOAnchorPosX(40f, 0.2f).GetHandle())
+    .OnComplete(() => Debug.Log("Both finished"));
+```
+
+`Then` returns a builder for the next tween, so `OnComplete` here belongs to the second tween. Cancelling a tween also cancels the ones waiting for it.
+
+For longer sequences, declare each tween, then pass them to `Sequential`. A declared tween waits until it's passed in:
+
+```csharp
+TweenSpawner spawner = TweenManager.GetSpawner();
+
+spawner.Sequential(
+    panel.DOAnchorPos(Vector2.zero, 0.35f, EaseType.BackOut).DeclareOnly(),
+    spawner.Wait(0.2f),
+    content.DOFade(1f, 0.2f).DeclareOnly());
+```
+
+To overlap two tweens on different properties, use `Delay`:
+
+```csharp
+panel.DOAnchorPos(Vector2.zero, 0.35f, EaseType.BackOut);
+content.DOFade(1f, 0.2f).Delay(0.25f);
+```
+
+### Loop a tween
+
+```csharp
+icon.DOScale(Vector3.one * 1.1f, 0.4f, EaseType.SineInOut).LoopInfinite();
+
+// Later:
+icon.DoCancel();
+```
+
+Each loop restarts from the beginning of the tween. There's no public API for back-and-forth loops yet.
+
+### Animate a custom value
+
+`CustomFloat` and `CustomVector` animate a value that isn't tied to a UI component:
+
+```csharp
+using UITweens;
+using UITweens.Math;
+using UITweens.Services;
+```
+
+```csharp
+TweenManager.GetSpawner()
+    .CustomFloat(0f, 1000f, 0.5f, EaseType.QuadOut)
+    .OnFloatUpdate(value => scoreLabel.text = Mathf.RoundToInt(value).ToString());
+```
+
+You can also read the current value with `TweenHandle.FloatValue` or `TweenHandle.VectorValue`.
+
+## Pool sizes
+
+UI Tweens creates a pool of tween entities at startup. Without a config, it adds up the defaults below for a pool of 210 entities.
+
+| Field | Default |
+|---|---|
+| `MaxConcurrentAlphaTweens` | 40 |
+| `MaxConcurrentPositionTweens` | 60 |
+| `MaxConcurrentScaleTweens` | 30 |
+| `MaxConcurrentRotationTweens` | 20 |
+| `MaxConcurrentColorTweens` | 30 |
+| `MaxConcurrentSizeTweens` | 20 |
+| `MaxConcurrentPivotTweens` | 10 |
+| `LogPoolAllocations` | Off. Logs the pool size at startup. |
+
+To change them, create a `UITweenPoolConfig` asset at `Assets/Resources/UITweenPoolConfig.asset`. There's no menu item yet, so run this once from an Editor script:
+
+```csharp
+using UITweens;
+using UnityEditor;
+using UnityEngine;
+
+public static class CreateTweenPoolConfig
+{
+    [MenuItem("Tools/UI Tweens/Create Pool Config")]
+    private static void Create()
+    {
+        AssetDatabase.CreateAsset(
+            ScriptableObject.CreateInstance<UITweenPoolConfig>(),
+            "Assets/Resources/UITweenPoolConfig.asset");
+    }
+}
+```
+
+- **Minimum:** the pool always holds at least 64 entities.
+- **Per-type fields:** these are added together into one shared pool. They aren't separate limits.
+- **After a tween ends:** LeoECS recycles its entity for the next tween.
+- **When more tweens run at once than ever before:** a new entity is created, which allocates memory, and tweens keep working. Set the pool to your peak to avoid this.
+
 ## Easing
 
 | Family | Types |
@@ -222,6 +336,19 @@ TweenManager.Cancel(handle);
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    A["DOAnchorPos and other<br>extension methods"] --> B["TweenSpawner<br>takes a pooled entity"]
+    B --> C["LeoECS world"]
+    C --> D["DelayedTweenCompletionSystem"]
+    D --> E["TweenMathSystem<br>calculates values"]
+    E --> F["UGUITweenApplySystem<br>applies them to components"]
+    F -->|finished| G["Entity is recycled"]
+    F -->|still running| C
+```
+
+`TweenManager` runs these systems once per frame.
+
 - `TweenManager` owns the execution loop and lifecycle cleanup.
 - `TweenBuilder` composes tween behavior and callbacks.
 - `TweenSpawner` creates tween entities in the LeoECS world.
@@ -235,7 +362,25 @@ TweenManager.Cancel(handle);
 | Simultaneous tweens | 350+ |
 | GC allocations | 0 |
 
-> **TODO:** Add the device, Unity version, scripting backend, build type and a link to the benchmark project. State whether the zero-allocation result covers tween creation and callbacks, or the update loop only.
+These are the author's own measurements. The test setup and benchmark project aren't published yet, so measure your own project.
+
+Creating, running and cancelling a tween doesn't allocate once the pool has warmed up. Your own code can still allocate: a callback that captures variables creates a closure. `DeclareOnly()` and `Wait()` also allocate a small object each.
+
+## How it compares
+
+| | UI Tweens | [DOTween](https://dotween.demigiant.com/) | [PrimeTween](https://github.com/KyryloKuzyk/PrimeTween) | [LitMotion](https://github.com/annulusgames/LitMotion) |
+|---|---|---|---|---|
+| Focus | Unity UI | General purpose | General purpose | General purpose |
+| Allocations | None once warmed up, apart from capturing callbacks | Recycles tweens to reduce allocations | Advertises no runtime allocations | Advertises zero allocations, including tween creation |
+| Sequences | `Then` and `Sequential` | Yes | Yes | Yes |
+| Unscaled time | No | Yes | Yes | Yes |
+| TextMeshPro | No | Yes, in the paid Pro version | Through examples | Yes |
+| Dependencies | LeoECS | None | None | Burst, Collections, Mathematics |
+| Track record | Pre-release, single author | Long-established, large community | Established | Established |
+
+**Where the others win:** richer sequencing, unscaled time, wider target support and years of production use. DOTween has the largest ecosystem, and LitMotion and PrimeTween are the stronger choices if allocation is your main concern.
+
+**Where UI Tweens fits:** you want UI animation in an always-running ECS world, with tracking and control per component. If you already use LeoECS, it doesn't add a second runtime model.
 
 ## Troubleshooting
 
@@ -245,21 +390,25 @@ TweenManager.Cancel(handle);
 | `TweenManager prefab not found` | Run Tools > UI Tweens > Setup. |
 | Tweens stop in a pause menu | Tweens follow `Time.timeScale` |
 | A tween doesn't start in `Awake()` | Start it from `Start()` or later |
+| A declared tween never starts | Pass it to `Sequential()` |
 
 ## Limitations
 
 - Tweens can't use unscaled time.
 - TextMeshPro and UI Toolkit aren't supported directly.
+- Back-and-forth loops aren't available through the public API.
 
 ## Project status
 
 This is a pre-release package at version `0.2.0`. Its API and behavior may change before `1.0.0`.
 
-> **TODO:** Add a roadmap link and breaking-change policy.
+Until `1.0.0`, minor versions (`0.x.0`) can include breaking changes, and patch versions (`0.x.y`) don't. Breaking changes are marked **Breaking** in the [changelog](CHANGELOG.md).
+
+There's no public roadmap yet. Known gaps are listed under [Limitations](#limitations), and planned work is tracked in [issues](https://github.com/sgonzalezrozo/unity-ui-tweens/issues).
 
 ## Contributing
 
-Bug reports and pull requests are welcome. Please open an issue before starting a large change.
+Bug reports and pull requests are welcome. Please open an issue before starting a large change. See the [contributing guide](.github/CONTRIBUTING.md) and [security policy](.github/SECURITY.md).
 
 ## Related packages
 
@@ -275,6 +424,6 @@ Bug reports and pull requests are welcome. Please open an issue before starting 
 
 Released under the [MIT License](LICENSE).
 
-UI Tweens depends on [LeoECS Core](https://openupm.com/packages/com.leopotam.ecs), a separate project under its own license.
+UI Tweens depends on [LeoECS Core](https://openupm.com/packages/com.leopotam.ecs), a separate project with its own license. Current releases are dual-licensed, under a proprietary license and MIT-Red, which adds conditions to the standard MIT terms. Read the license of the version you install before you ship.
 
-> **TODO:** Confirm the LeoECS license for the version you use, and credit any easing code derived from other work.
+The easing curves follow the standard easing equations by Robert Penner.
