@@ -321,6 +321,8 @@ public static class CreateTweenPoolConfig
 
 ## Easing
 
+![The 33 easing curves animating](Documentation~/images/easing-reference.gif)
+
 | Family | Types |
 |---|---|
 | Linear | `Linear` |
