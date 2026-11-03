@@ -53,25 +53,27 @@ That was meant as a possible performance improvement, and it turned out to matte
 | Platforms | Not verified yet |
 | UI targets | `RectTransform`, `Image`, `CanvasGroup` |
 | Enter Play Mode with domain reload disabled | Not verified yet. The package has no static reset for this mode, so keep domain reload on until you've tested it. |
-| Dependencies | LeoECS Core, uGUI |
+| Dependencies | [LeoECS Core](https://github.com/LeoECSCommunity/ecs) `2022.2.22`, uGUI |
 
 ## Installation
 
 Git must be installed on your machine.
 
-UI Tweens requires [LeoECS Core](https://openupm.com/packages/com.leopotam.ecs).
+UI Tweens requires [LeoECS Core](https://github.com/LeoECSCommunity/ecs) version `2022.2.22`.
 
 ### 1. Install LeoECS
 
-1. Open **Edit > Project Settings > Package Manager**.
-2. Under **Scoped Registries**, add:
-   - **Name:** `OpenUPM`
-   - **URL:** `https://package.openupm.com`
-   - **Scope(s):** `com.leopotam`
-3. Select **Save** or **Apply**.
-4. Open **Window > Package Manager**, select **My Registries**, then install LeoECS (`com.leopotam.ecs`).
+1. In Unity, open **Window > Package Manager**.
+2. Select **+ > Add package from git URL**.
+3. Enter:
 
-UI Tweens uses classic LeoECS (`com.leopotam.ecs`), not LeoECS Lite. Tested LeoECS versions aren't published yet.
+```text
+https://github.com/LeoECSCommunity/ecs.git#91cc7e390fa0eb4fc88a5cf111df88b1f45af37e
+```
+
+Use this exact URL. It points to the last LeoECS release under the standard MIT license. Later releases from other sources use a different license.
+
+UI Tweens uses classic LeoECS (`com.leopotam.ecs`), not LeoECS Lite.
 
 ### 2. Install UI Tweens
 
@@ -424,6 +426,6 @@ Bug reports and pull requests are welcome. Please open an issue before starting 
 
 Released under the [MIT License](LICENSE).
 
-UI Tweens depends on [LeoECS Core](https://openupm.com/packages/com.leopotam.ecs), a separate project with its own license. Current releases are dual-licensed, under a proprietary license and MIT-Red, which adds conditions to the standard MIT terms. Read the license of the version you install before you ship.
+UI Tweens depends on [LeoECS Core](https://github.com/LeoECSCommunity/ecs) `2022.2.22`, a separate project released under the MIT license.
 
 The easing curves follow the standard easing equations by Robert Penner.
