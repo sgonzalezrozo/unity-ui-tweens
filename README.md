@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
-[![Version 0.2.0](https://img.shields.io/badge/version-0.2.0-blue.svg)](CHANGELOG.md)
+[![Version 0.3.0](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
 
 UI Tweens runs on LeoECS and provides a fluent API for `RectTransform`, `Image` and `CanvasGroup`, with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel controls.
 
@@ -88,7 +88,7 @@ https://github.com/sgonzalezrozo/unity-ui-tweens.git
 To pin a release, add its tag:
 
 ```text
-https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.2.0
+https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.3.0
 ```
 
 ## Setup
@@ -402,7 +402,7 @@ Creating, running and cancelling a tween doesn't allocate once the pool has warm
 
 ## Project status
 
-This is a pre-release package at version `0.2.0`. Its API and behavior may change before `1.0.0`.
+This is a pre-release package at version `0.3.0`. Its API and behavior may change before `1.0.0`.
 
 Until `1.0.0`, minor versions (`0.x.0`) can include breaking changes, and patch versions (`0.x.y`) don't. Breaking changes are marked **Breaking** in the [changelog](CHANGELOG.md).
 
