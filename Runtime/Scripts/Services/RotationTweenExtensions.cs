@@ -21,7 +21,8 @@ namespace UITweens.Services
             float easeParameter = -1f)
         {
             float startRotation = element.eulerAngles.z;
-            return spawner.RotationZFromTo(element, startRotation, targetRotation, duration, ease, easeParameter);
+            return spawner.RotationZFromTo(element, startRotation, targetRotation, duration, ease, easeParameter)
+                .StartFromCurrent();
         }
 
         /// <summary>

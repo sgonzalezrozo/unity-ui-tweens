@@ -1,5 +1,3 @@
-// File: Assets/Tools/UITweens/Runtime/Scripts/Services/ITweenDeclaration.cs
-// Phase 6: Declaration interface for deferred tween execution
 
 using System;
 using UITweens.Math;
@@ -10,7 +8,7 @@ namespace UITweens.Services
     /// <summary>
     /// Represents a tween declaration that hasn't been spawned yet.
     /// Used with DeclareOnly() + Sequential() for declarative sequence building.
-    /// NEW: Phase 6 - Declarative sequence API
+    /// Declarative sequence API
     /// </summary>
     public interface ITweenDeclaration
     {
@@ -23,7 +21,6 @@ namespace UITweens.Services
 
     /// <summary>
     /// A declared tween that stores its builder for deferred execution.
-    /// NEW: Phase 6
     /// </summary>
     public class DeclaredTween : ITweenDeclaration
     {
@@ -36,14 +33,13 @@ namespace UITweens.Services
 
         public TweenBuilder Spawn(TweenSpawner spawner)
         {
-            return spawnFunc?.Invoke(spawner) ?? new TweenBuilder(spawner);
+            return spawnFunc != null ? spawnFunc.Invoke(spawner) : new TweenBuilder(spawner);
         }
     }
 
     /// <summary>
     /// A wait/delay declaration (no animated properties, just waiting).
     /// Usage: spawner.Wait(0.5f)
-    /// NEW: Phase 6
     /// </summary>
     public class TweenWait : ITweenDeclaration
     {
@@ -62,13 +58,7 @@ namespace UITweens.Services
                 return new TweenBuilder(spawner);
             }
 
-            // Create a dummy tween with zero movement to just delay
-            RectTransform dummyRect = new GameObject("[UITweens-Wait]").AddComponent<RectTransform>();
-            GameObject dummyObj = dummyRect.gameObject;
-            dummyObj.SetActive(false);
-
-            return spawner.Position(dummyRect, Vector2.zero, Duration, EaseType.Linear)
-                .OnComplete(() => UnityEngine.Object.Destroy(dummyObj));
+            return spawner.CustomFloat(0f, 1f, Duration, EaseType.Linear);
         }
     }
 }

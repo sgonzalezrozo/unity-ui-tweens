@@ -6,6 +6,7 @@ namespace UITweens.Extensions
 {
     public static class RectTransformTweenExtensions
     {
+        /// <summary>Animates anchoredPosition.</summary>
         public static TweenBuilder DOAnchorPos(
             this RectTransform rect,
             Vector2 targetPos,
@@ -28,6 +29,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates anchoredPosition.x.</summary>
         public static TweenBuilder DOAnchorPosX(
             this RectTransform rect,
             float targetX,
@@ -48,6 +50,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates anchoredPosition.y.</summary>
         public static TweenBuilder DOAnchorPosY(
             this RectTransform rect,
             float targetY,
@@ -68,6 +71,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates localScale.</summary>
         public static TweenBuilder DOScale(
             this RectTransform rect,
             Vector3 targetScale,
@@ -88,6 +92,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates localScale.x.</summary>
         public static TweenBuilder DOScaleX(
             this RectTransform rect,
             float targetX,
@@ -108,6 +113,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates localScale.y.</summary>
         public static TweenBuilder DOScaleY(
             this RectTransform rect,
             float targetY,
@@ -128,6 +134,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates localScale.z.</summary>
         public static TweenBuilder DOScaleZ(
             this RectTransform rect,
             float targetZ,
@@ -148,6 +155,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates the Z rotation.</summary>
         public static TweenBuilder DORotate(
             this RectTransform rect,
             float targetRotation,
@@ -168,6 +176,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates sizeDelta.</summary>
         public static TweenBuilder DOSizeDelta(
             this RectTransform rect,
             Vector2 targetSize,
@@ -188,6 +197,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates pivot.</summary>
         public static TweenBuilder DOPivot(
             this RectTransform rect,
             Vector2 targetPivot,

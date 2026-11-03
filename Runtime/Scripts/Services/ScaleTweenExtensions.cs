@@ -1,3 +1,4 @@
+using UITweens.Components;
 using UITweens.Math;
 using UnityEngine;
 
@@ -21,7 +22,8 @@ namespace UITweens.Services
             float easeParameter = -1f)
         {
             Vector3 startScale = element.localScale;
-            return spawner.ScaleFromTo(element, startScale, targetScale, duration, ease, easeParameter);
+            return spawner.ScaleFromTo(element, startScale, targetScale, duration, ease, easeParameter)
+                .StartFromCurrent();
         }
 
         /// <summary>
@@ -54,7 +56,8 @@ namespace UITweens.Services
         {
             Vector3 currentScale = element.localScale;
             Vector3 targetScale = new Vector3(targetScaleX, currentScale.y, currentScale.z);
-            return spawner.ScaleFromTo(element, currentScale, targetScale, duration, ease, easeParameter);
+            return spawner.ScaleFromTo(element, currentScale, targetScale, duration, ease, easeParameter)
+                .StartFromCurrent(TweenClockComponent.AXIS_X);
         }
 
         /// <summary>
@@ -70,7 +73,8 @@ namespace UITweens.Services
         {
             Vector3 currentScale = element.localScale;
             Vector3 targetScale = new Vector3(currentScale.x, targetScaleY, currentScale.z);
-            return spawner.ScaleFromTo(element, currentScale, targetScale, duration, ease, easeParameter);
+            return spawner.ScaleFromTo(element, currentScale, targetScale, duration, ease, easeParameter)
+                .StartFromCurrent(TweenClockComponent.AXIS_Y);
         }
 
         /// <summary>
@@ -86,7 +90,8 @@ namespace UITweens.Services
         {
             Vector3 currentScale = element.localScale;
             Vector3 targetScale = new Vector3(currentScale.x, currentScale.y, targetScaleZ);
-            return spawner.ScaleFromTo(element, currentScale, targetScale, duration, ease, easeParameter);
+            return spawner.ScaleFromTo(element, currentScale, targetScale, duration, ease, easeParameter)
+                .StartFromCurrent(TweenClockComponent.AXIS_Z);
         }
     }
 }

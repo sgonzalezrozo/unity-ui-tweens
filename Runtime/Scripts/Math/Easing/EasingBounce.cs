@@ -15,7 +15,7 @@ namespace UITweens.Math.Easing
 
         internal static float EvaluateBounceOut(float t)
         {
-            const float n1 = 4.0f;
+            const float n1 = 7.5625f;
 
             if (t < THRESHOLD_1)
                 return n1 * t * t;

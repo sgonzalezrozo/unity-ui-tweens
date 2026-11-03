@@ -3,11 +3,14 @@ using UITweens.Components;
 
 namespace UITweens.Services
 {
+    /// <summary>A reference to one tween.</summary>
     public struct TweenHandle
     {
+        /// <summary>True when this handle refers to a tween.</summary>
         public bool IsValid { get; private set; }
         internal EcsEntity Entity { get; private set; }
 
+        /// <summary>True while the tween is playing.</summary>
         public bool IsPlaying
         {
             get
@@ -20,6 +23,7 @@ namespace UITweens.Services
             }
         }
 
+        /// <summary>True while the tween is paused.</summary>
         public bool IsPaused
         {
             get
@@ -32,6 +36,7 @@ namespace UITweens.Services
             }
         }
 
+        /// <summary>True once the tween has been cancelled.</summary>
         public bool IsCancelled
         {
             get
@@ -44,6 +49,7 @@ namespace UITweens.Services
             }
         }
 
+        /// <summary>True once the tween has finished.</summary>
         public bool IsFinished
         {
             get
@@ -53,6 +59,30 @@ namespace UITweens.Services
 
                 ref var clock = ref Entity.Get<TweenClockComponent>();
                 return clock.IsFinished;
+            }
+        }
+
+        /// <summary>The current value of a CustomFloat tween, or 0 once it has ended.</summary>
+        public float FloatValue
+        {
+            get
+            {
+                if (!IsValid || !Entity.IsAlive() || !Entity.Has<TweenCustomFloatComponent>())
+                    return 0f;
+
+                return Entity.Get<TweenCustomFloatComponent>().CurrentValue;
+            }
+        }
+
+        /// <summary>The current value of a CustomVector tween, or zero once it has ended.</summary>
+        public UnityEngine.Vector3 VectorValue
+        {
+            get
+            {
+                if (!IsValid || !Entity.IsAlive() || !Entity.Has<TweenCustomVectorComponent>())
+                    return UnityEngine.Vector3.zero;
+
+                return Entity.Get<TweenCustomVectorComponent>().CurrentValue;
             }
         }
 

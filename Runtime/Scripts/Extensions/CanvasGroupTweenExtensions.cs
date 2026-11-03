@@ -6,6 +6,7 @@ namespace UITweens.Extensions
 {
     public static class CanvasGroupTweenExtensions
     {
+        /// <summary>Animates the alpha from its current value.</summary>
         public static TweenBuilder DOFade(
             this CanvasGroup canvasGroup,
             float targetAlpha,
@@ -30,6 +31,7 @@ namespace UITweens.Extensions
             return builder;
         }
 
+        /// <summary>Animates the alpha between two values.</summary>
         public static TweenBuilder DOFadeFromTo(
             this CanvasGroup canvasGroup,
             float startAlpha,

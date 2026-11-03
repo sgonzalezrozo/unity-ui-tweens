@@ -21,7 +21,8 @@ namespace UITweens.Services
             float easeParameter = -1f)
         {
             Vector2 startSize = element.sizeDelta;
-            return spawner.SizeFromTo(element, startSize, targetSize, duration, ease, easeParameter);
+            return spawner.SizeFromTo(element, startSize, targetSize, duration, ease, easeParameter)
+                .StartFromCurrent();
         }
 
         /// <summary>
@@ -53,7 +54,8 @@ namespace UITweens.Services
             float easeParameter = -1f)
         {
             Vector2 startPivot = element.pivot;
-            return spawner.PivotFromTo(element, startPivot, targetPivot, duration, ease, easeParameter);
+            return spawner.PivotFromTo(element, startPivot, targetPivot, duration, ease, easeParameter)
+                .StartFromCurrent();
         }
 
         /// <summary>

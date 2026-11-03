@@ -1,3 +1,4 @@
+using UITweens.Components;
 using UITweens.Math;
 using UnityEngine;
 
@@ -21,7 +22,8 @@ namespace UITweens.Services
             float easeParameter = -1f)
         {
             Vector2 startPosition = element.anchoredPosition;
-            return spawner.PositionFromTo(element, startPosition, targetPosition, duration, ease, easeParameter);
+            return spawner.PositionFromTo(element, startPosition, targetPosition, duration, ease, easeParameter)
+                .StartFromCurrent();
         }
 
         /// <summary>
@@ -58,7 +60,8 @@ namespace UITweens.Services
         {
             Vector2 currentPos = element.anchoredPosition;
             Vector2 targetPos = new Vector2(targetX, currentPos.y);
-            return spawner.PositionFromTo(element, currentPos, targetPos, duration, ease, easeParameter);
+            return spawner.PositionFromTo(element, currentPos, targetPos, duration, ease, easeParameter)
+                .StartFromCurrent(TweenClockComponent.AXIS_X);
         }
 
         /// <summary>
@@ -74,7 +77,8 @@ namespace UITweens.Services
         {
             Vector2 currentPos = element.anchoredPosition;
             Vector2 targetPos = new Vector2(currentPos.x, targetY);
-            return spawner.PositionFromTo(element, currentPos, targetPos, duration, ease, easeParameter);
+            return spawner.PositionFromTo(element, currentPos, targetPos, duration, ease, easeParameter)
+                .StartFromCurrent(TweenClockComponent.AXIS_Y);
         }
     }
 }
