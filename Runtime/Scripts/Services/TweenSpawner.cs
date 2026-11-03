@@ -177,7 +177,7 @@ namespace UITweens.Services
         }
 
         /// <summary>
-        /// NEW: Phase 10 - Get the initializer instance.
+        /// Get the initializer instance.
         /// Used by TweenBuilder.Delay() to set delay on entity.
         /// </summary>
         internal TweenInitializer GetInitializer()

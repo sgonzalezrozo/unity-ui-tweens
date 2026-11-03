@@ -17,15 +17,15 @@ namespace UITweens
         [Tooltip("Maximum concurrent rotation tweens. Default ~20 for typical mobile UI.")]
         public int MaxConcurrentRotationTweens = 20;
 
-        // NEW: Phase 2 - Color animations
+        // Color animations
         [Tooltip("Maximum concurrent color tweens. Default ~30 for typical mobile UI.")]
         public int MaxConcurrentColorTweens = 30;
 
-        // NEW: Phase 2 - Size animations
+        // Size animations
         [Tooltip("Maximum concurrent size delta tweens. Default ~20 for typical mobile UI.")]
         public int MaxConcurrentSizeTweens = 20;
 
-        // NEW: Phase 2 - Pivot animations
+        // Pivot animations
         [Tooltip("Maximum concurrent pivot tweens. Default ~10 for typical mobile UI.")]
         public int MaxConcurrentPivotTweens = 10;
 

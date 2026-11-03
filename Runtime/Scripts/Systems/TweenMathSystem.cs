@@ -20,8 +20,8 @@ namespace UITweens.Systems
     ///   Output: TweenResultComponent (computed float/Vector values)
     ///
     /// The UGUITweenApplySystem reads these results on the main thread and applies them to UI.
-    /// NEW: Phase 3 - Respects TweenControlComponent.State (pause/resume/cancel)
-    /// NEW: Phase 6 - Handles Color, SizeDelta, Pivot components
+    /// Respects TweenControlComponent.State (pause/resume/cancel)
+    /// Handles Color, SizeDelta, Pivot components
     /// </summary>
     public class TweenMathSystem : IEcsRunSystem
     {
@@ -34,7 +34,7 @@ namespace UITweens.Systems
         private EcsFilter<TweenClockComponent, TweenScaleComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> scaleFilter;
         private EcsFilter<TweenClockComponent, TweenRotationComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> rotationFilter;
 
-        // NEW: Phase 2 - Color, Size, Pivot filters
+        // Color, Size, Pivot filters
         private EcsFilter<TweenClockComponent, TweenColorComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> colorFilter;
         private EcsFilter<TweenClockComponent, TweenSizeDeltaComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> sizeFilter;
         private EcsFilter<TweenClockComponent, TweenPivotComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> pivotFilter;
@@ -61,7 +61,7 @@ namespace UITweens.Systems
                 ref TweenResultComponent result = ref alphaFilter.Get3(idx);
                 ref TweenControlComponent control = ref alphaFilter.Get4(idx);
 
-                // NEW: Phase 10 - Skip cancelled tweens
+                // Skip cancelled tweens
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
                     continue;
 
@@ -435,7 +435,7 @@ namespace UITweens.Systems
                     clock.ElapsedDelay += deltaTime;
                     if (clock.IsDelayFinished)
                     {
-                        // PHASE 12 FIX: Cancel predecessor when delayed tween's delay finishes
+                        // Cancel predecessor when delayed tween's delay finishes
                         if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
                         {
                             TweenManager.Cancel(control.PredecessorHandle);
@@ -685,7 +685,6 @@ namespace UITweens.Systems
         /// <summary>
         /// Check if tween should loop and process loop logic.
         /// Returns true if looping should continue, false if animation is finished.
-        /// Fixes Bug #1: Loop(N) and LoopInfinite() now work correctly.
         /// CRITICAL FIX: Only allow looping if Mode is explicitly set to Infinite or Repeat/Reverse/PingPong
         /// </summary>
         private bool TryProcessLoop(ref EcsEntity entity, ref TweenClockComponent clock)
@@ -737,7 +736,6 @@ namespace UITweens.Systems
 
         /// <summary>
         /// Process sequence links - spawn next tween when previous tween finishes.
-        /// Fixes Bug #2: .Then() chaining now works correctly.
         /// </summary>
         private void ProcessSequenceLinks()
         {

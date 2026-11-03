@@ -83,7 +83,7 @@ namespace UITweens.Services
             return activeEntities;
         }
 
-        // PHASE 2 OPTIMIZATION: Only pre-initialize core components (20-30ms gain)
+        // Only pre-initialize core components (20-30ms gain)
         // Optional components (callbacks, loop, delay) are allocated on-demand
         // This reduces 10 Gets per entity to 5 Gets, cutting pre-allocation overhead by 50%
         private void PreInitializeEntity(EcsEntity entity)

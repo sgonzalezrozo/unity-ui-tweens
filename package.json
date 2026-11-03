@@ -19,6 +19,13 @@
     "animation",
     "ecs"
   ],
+  "samples": [
+    {
+      "displayName": "Quick Start",
+      "description": "A self-contained demo that builds its own canvas and animates several UI elements.",
+      "path": "Samples~/QuickStart"
+    }
+  ],
   "dependencies": {
     "com.unity.ugui": "1.0.0"
   }

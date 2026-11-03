@@ -21,7 +21,7 @@ namespace UITweens.Services
 
         /// <summary>
         /// Initialize tween entity with base configuration and timing.
-        /// NEW: Phase 10 - Initialize with NotStarted state for proper state machine flow.
+        /// Initialize with NotStarted state for proper state machine flow.
         /// </summary>
         public void InitializeBaseTween(
             EcsEntity entity,
@@ -216,7 +216,7 @@ namespace UITweens.Services
         }
 
         /// <summary>
-        /// NEW: Phase 10 - Set delay duration and transition state from NotStarted to Delayed.
+        /// Set delay duration and transition state from NotStarted to Delayed.
         /// This is called by TweenBuilder.Delay() to integrate delay into the unified state machine.
         /// </summary>
         public void SetDelay(EcsEntity entity, float delaySeconds)

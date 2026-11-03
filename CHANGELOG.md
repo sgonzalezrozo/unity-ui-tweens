@@ -2,6 +2,15 @@
 
 All notable changes to this package are documented in this file.
 
+## [Unreleased]
+
+### Documentation
+
+- Corrected the documentation for chaining and custom tweens, and narrowed the zero-allocation claim to running tweens.
+- Added method signatures, recipes, pool size documentation, an architecture diagram and a comparison with other libraries.
+- Added contributing, security and issue template files, and a Quick Start sample.
+- Removed internal development notes from code comments, and added XML documentation to the main APIs.
+
 ## [0.2.0] - Unreleased
 
 ### Added

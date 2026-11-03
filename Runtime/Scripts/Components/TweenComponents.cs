@@ -9,7 +9,7 @@ namespace UITweens.Components
     /// Core clock component that tracks time for any tween.
     /// Add this to any entity that needs animation. Timing is shared across all
     /// animation types on the same entity (position + alpha + scale can share one clock).
-    /// NEW: Phase 10 - Integrated delay tracking for unified state machine.
+    /// Integrated delay tracking for unified state machine.
     /// </summary>
     public struct TweenClockComponent
     {
@@ -18,7 +18,7 @@ namespace UITweens.Components
         public EaseType Ease;
         public float EaseParameter; // For Back overshoot, Elastic amplitude. Default -1 uses preset.
 
-        // NEW: Phase 10 - Delay tracking integrated into clock
+        // Delay tracking integrated into clock
         public float ElapsedDelay;     // How much delay has elapsed
         public float DelayDuration;    // Total delay in seconds (0 if no delay)
         public bool HasCapturedStartValues; // Flag: start values captured on Delayed → Playing transition
@@ -47,13 +47,13 @@ namespace UITweens.Components
             => ElapsedTime >= Duration;
 
         /// <summary>
-        /// NEW: Phase 10 - True when delay has finished (ElapsedDelay >= DelayDuration).
+        /// True when delay has finished (ElapsedDelay >= DelayDuration).
         /// </summary>
         public bool IsDelayFinished
             => ElapsedDelay >= DelayDuration;
 
         /// <summary>
-        /// NEW: Phase 10 - True if this tween has a delay.
+        /// True if this tween has a delay.
         /// </summary>
         public bool HasDelay
             => DelayDuration > 0f;
@@ -125,7 +125,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Tween animation for color (any UI element).
-    /// NEW: Phase 2 - Color animations
+    /// Color animations
     /// </summary>
     public struct TweenColorComponent
     {
@@ -141,7 +141,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Tween animation for RectTransform.sizeDelta (UI sizing).
-    /// NEW: Phase 2 - Size animations
+    /// Size animations
     /// </summary>
     public struct TweenSizeDeltaComponent
     {
@@ -157,7 +157,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Tween animation for RectTransform.pivot.
-    /// NEW: Phase 2 - Pivot animations
+    /// Pivot animations
     /// </summary>
     public struct TweenPivotComponent
     {
@@ -181,9 +181,9 @@ namespace UITweens.Components
         public Vector2 PositionResult;
         public Vector3 ScaleResult;
         public float RotationResult;
-        public Color ColorResult;       // NEW: Phase 2
-        public Vector2 SizeDeltaResult; // NEW: Phase 2
-        public Vector2 PivotResult;     // NEW: Phase 2
+        public Color ColorResult;
+        public Vector2 SizeDeltaResult;
+        public Vector2 PivotResult;
     }
 
     /// <summary>
@@ -197,8 +197,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Control state for tween playback (pause, resume, cancel).
-    /// NEW: Phase 10 - Extended state machine: NotStarted → Delayed → Playing → Completed
-    /// This replaces Phase 3's simple 3-state enum with explicit lifecycle tracking.
+    /// Extended state machine: NotStarted → Delayed → Playing → Completed
     /// </summary>
     public struct TweenControlComponent
     {
@@ -214,11 +213,11 @@ namespace UITweens.Components
         public ControlState State;
         public float PausedElapsedTime; // Snapshot when paused
 
-        // NEW: Phase 10 - Flag to ensure kill-competitors logic runs exactly once
+        // Flag to ensure kill-competitors logic runs exactly once
         // when transitioning from Delayed → Playing
         public bool HasKilledCompetitors;
 
-        // NEW: Phase 12 - Store the tween this one is replacing (for delayed tweens)
+        // Store the tween this one is replacing (for delayed tweens)
         // When a delayed tween's delay finishes, it cancels this predecessor
         public TweenHandle PredecessorHandle;
     }
@@ -226,7 +225,7 @@ namespace UITweens.Components
     /// <summary>
     /// Callback storage for tween completion.
     /// Uses parameterless Action to avoid closure allocations (ZERO-GC).
-    /// NEW: Phase 4 - Callback System
+    /// Callback System
     /// </summary>
     public struct TweenCallbackComponent
     {
@@ -255,7 +254,7 @@ namespace UITweens.Components
     {
         public RectTransform RectTransform;
         public CanvasGroup CanvasGroup;
-        public UnityEngine.UI.Image Image; // NEW: Phase 2 (for color tweens)
+        public UnityEngine.UI.Image Image; // For color tweens
     }
 
     /// <summary>
@@ -268,9 +267,9 @@ namespace UITweens.Components
         public bool ApplyPosition;
         public bool ApplyScale;
         public bool ApplyRotation;
-        public bool ApplyColor;      // NEW: Phase 2
-        public bool ApplySizeDelta;  // NEW: Phase 2
-        public bool ApplyPivot;      // NEW: Phase 2
+        public bool ApplyColor;
+        public bool ApplySizeDelta;
+        public bool ApplyPivot;
     }
 
     /// <summary>
@@ -288,7 +287,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Loop settings for repeat behavior.
-    /// NEW: Phase 4 - Loop/Repeat support
+    /// Loop/Repeat support
     /// </summary>
     public struct TweenLoopComponent
     {
@@ -309,7 +308,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Advanced callback support for OnStart and OnUpdate.
-    /// NEW: Phase 4 - Advanced callbacks
+    /// Advanced callbacks
     /// </summary>
     public struct TweenAdvancedCallbackComponent
     {
@@ -320,7 +319,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Custom float property animation (for flexible user-defined properties).
-    /// NEW: Phase 4 - Custom properties
+    /// Custom properties
     /// </summary>
     public struct TweenCustomFloatComponent
     {
@@ -331,7 +330,7 @@ namespace UITweens.Components
 
     /// <summary>
     /// Custom vector property animation (for flexible user-defined properties).
-    /// NEW: Phase 4 - Custom properties
+    /// Custom properties
     /// </summary>
     public struct TweenCustomVectorComponent
     {

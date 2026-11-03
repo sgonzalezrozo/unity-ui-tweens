@@ -19,6 +19,7 @@ namespace UITweens
         // OPTIMIZATION: Cache TweenSpawner singleton (20-50ms gain - avoid repeated allocation)
         private static TweenSpawner cachedSpawner;
 
+        /// <summary>Gets the spawner used to create tweens.</summary>
         public static TweenSpawner GetSpawner()
         {
             if (instance == null)
@@ -34,18 +35,22 @@ namespace UITweens
             return cachedSpawner;
         }
 
+        /// <summary>Pauses a tween.</summary>
         public static void Pause(TweenHandle handle)
             => TweenControlOperations.Pause(handle);
 
+        /// <summary>Resumes a paused tween.</summary>
         public static void Resume(TweenHandle handle)
             => TweenControlOperations.Resume(handle);
 
+        /// <summary>Cancels a tween.</summary>
         public static void Cancel(TweenHandle handle)
             => TweenControlOperations.Cancel(handle);
 
         public static void Cancel(EcsEntity entity)
             => TweenControlOperations.Cancel(entity);
 
+        /// <summary>Pauses a playing tween or resumes a paused one.</summary>
         public static void TogglePause(TweenHandle handle)
             => TweenControlOperations.TogglePause(handle);
 
@@ -70,7 +75,7 @@ namespace UITweens
             instance = this;
             DontDestroyOnLoad(gameObject);
 
-            // PHASE 2 OPTIMIZATION: Defer initialization to Start() for frame-spreading (50-100ms gain)
+            // Defer initialization to Start() for frame-spreading (50-100ms gain)
             // Awake only sets up singleton
         }
 
