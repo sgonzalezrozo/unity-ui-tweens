@@ -23,6 +23,10 @@ Start the app and leave it running. The screen stays on and shows progress. It t
 
 Frame time can't go below the display's refresh interval on mobile, so use the tween update time to judge capacity.
 
+`tween-update-loop` covers the tween update. `tween-create-per-frame` covers the scenario's own calls that start and cancel tweens. For scenarios that create tweens, add the two together.
+
+Canvas-per-target mode skips scenarios above 1000 targets. Leave it off in the Editor, because it froze the Editor on an Intel Mac with an AMD GPU.
+
 ## Results
 
 Each file is written as soon as its scenario ends, to:

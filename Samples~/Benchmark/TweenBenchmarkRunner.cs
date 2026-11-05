@@ -12,6 +12,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 {
     private const int AllocationTargetCount = 400;
     private const int MinMobileFrameRate = 120;
+    private const int MaxCanvasPerTargetCount = 1000;
     private const string SharedCanvasVariant = "shared-canvas";
     private const string CanvasPerTargetVariant = "canvas-per-target";
 
@@ -45,6 +46,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     private TweenBenchmarkTargets targets;
     private TweenBenchmarkStatus status;
     private Camera clearCamera;
+    private readonly System.Diagnostics.Stopwatch createStopwatch = new();
     private string validatedCommitHash;
 
     private readonly struct Scenario
@@ -116,7 +118,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
             List<Scenario> scenarios = BuildScenarios();
             int variantCount = includeCanvasPerTargetMode ? 2 : 1;
-            int total = scenarios.Count * variantCount * runsPerScenario;
+            int total = CountScenarioRuns(scenarios, variantCount);
             int completed = 0;
 
             // Each run visits every scenario once, so device heat spreads across all of them.
@@ -129,6 +131,9 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
                     for (int i = 0; i < scenarios.Count; i++)
                     {
+                        if (!ShouldRun(scenarios[i], separateCanvasPerTarget))
+                            continue;
+
                         completed++;
                         status.Show($"Running {completed}/{total}\n{scenarios[i].Name}\n{variant}, run {runIndex}/{runsPerScenario}");
                         yield return MeasureScenario(scenarios[i], variant, separateCanvasPerTarget, runIndex);
@@ -177,6 +182,25 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
         // Rendering can't exceed the display's refresh rate, so a high target is safe.
         return Mathf.Max(MinMobileFrameRate, Mathf.CeilToInt((float)Screen.currentResolution.refreshRateRatio.value));
+    }
+
+    // Thousands of canvases measure uGUI rather than tweens, and they froze a Mac's GPU driver.
+    private static bool ShouldRun(Scenario scenario, bool separateCanvasPerTarget)
+        => !separateCanvasPerTarget || scenario.TargetCount <= MaxCanvasPerTargetCount;
+
+    private int CountScenarioRuns(List<Scenario> scenarios, int variantCount)
+    {
+        int count = 0;
+        for (int variantIndex = 0; variantIndex < variantCount; variantIndex++)
+        {
+            for (int i = 0; i < scenarios.Count; i++)
+            {
+                if (ShouldRun(scenarios[i], variantIndex == 1))
+                    count++;
+            }
+        }
+
+        return count * runsPerScenario;
     }
 
     private List<Scenario> BuildScenarios()
@@ -260,7 +284,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             session,
             accumulator,
             includeGcMetric,
-            includeTweenMetric: false);
+            includeTweenMetric: false,
+            includeCreateMetric: false);
 
         if (includeGcMetric)
         {
@@ -297,14 +322,20 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         bool includeTweenMetric = Debug.isDebugBuild && tweenRecorder.Valid;
 #endif
 
+        bool includeCreateMetric = scenario.FrameAction != null;
         int totalFrames = warmupFrames + measuredFrames;
         for (int frame = 0; frame < totalFrames; frame++)
         {
+            createStopwatch.Restart();
             scenario.FrameAction?.Invoke(frame, spawner, targets);
+            createStopwatch.Stop();
 
             if (frame >= warmupFrames)
             {
                 accumulator.RecordFrame(Time.unscaledDeltaTime * 1000d);
+
+                if (includeCreateMetric)
+                    accumulator.RecordCreateMs(createStopwatch.ElapsedTicks * (1000d / System.Diagnostics.Stopwatch.Frequency));
 
                 if (includeGcMetric)
                     accumulator.RecordGcBytes(Math.Max(0L, gcRecorder.LastValue));
@@ -336,7 +367,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             session,
             accumulator,
             includeGcMetric,
-            includeTweenMetric));
+            includeTweenMetric,
+            includeCreateMetric));
     }
 
     private TweenBenchmarkSession CreateSession()
@@ -440,7 +472,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         TweenBenchmarkSession session,
         MeasureAccumulator accumulator,
         bool includeGcMetric,
-        bool includeTweenMetric)
+        bool includeTweenMetric,
+        bool includeCreateMetric)
     {
         List<TweenBenchmarkMetric> metrics = new()
         {
@@ -454,6 +487,13 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             metrics.Add(new TweenBenchmarkMetric { name = "tween-update-loop", value = accumulator.TweenMedianMs, unit = "ms", aggregation = "median" });
             metrics.Add(new TweenBenchmarkMetric { name = "tween-update-loop", value = accumulator.TweenP95Ms, unit = "ms", aggregation = "p95" });
             metrics.Add(new TweenBenchmarkMetric { name = "tween-update-loop", value = accumulator.TweenMaxMs, unit = "ms", aggregation = "max" });
+        }
+
+        if (includeCreateMetric)
+        {
+            metrics.Add(new TweenBenchmarkMetric { name = "tween-create-per-frame", value = accumulator.CreateMedianMs, unit = "ms", aggregation = "median" });
+            metrics.Add(new TweenBenchmarkMetric { name = "tween-create-per-frame", value = accumulator.CreateP95Ms, unit = "ms", aggregation = "p95" });
+            metrics.Add(new TweenBenchmarkMetric { name = "tween-create-per-frame", value = accumulator.CreateMaxMs, unit = "ms", aggregation = "max" });
         }
 
         if (includeGcMetric)
@@ -524,6 +564,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     {
         private readonly List<double> frameMs;
         private readonly List<double> tweenNs;
+        private readonly List<double> createMs;
         private readonly List<double> gcPerFrameBytes;
         private long totalGcBytes;
 
@@ -532,6 +573,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             int capacity = Math.Max(1, expectedSamples);
             frameMs = new List<double>(capacity);
             tweenNs = new List<double>(capacity);
+            createMs = new List<double>(capacity);
             gcPerFrameBytes = new List<double>(capacity);
         }
 
@@ -541,6 +583,9 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         public double TweenMedianMs => ComputePercentile(tweenNs, 50) / 1_000_000d;
         public double TweenP95Ms => ComputePercentile(tweenNs, 95) / 1_000_000d;
         public double TweenMaxMs => ComputeMax(tweenNs) / 1_000_000d;
+        public double CreateMedianMs => ComputePercentile(createMs, 50);
+        public double CreateP95Ms => ComputePercentile(createMs, 95);
+        public double CreateMaxMs => ComputeMax(createMs);
         public long TotalGcBytes => totalGcBytes;
         public double GcP95Bytes => ComputePercentile(gcPerFrameBytes, 95);
         public double GcMaxBytes => ComputeMax(gcPerFrameBytes);
@@ -550,6 +595,9 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
         public void RecordTweenNs(long nanoseconds)
             => tweenNs.Add(nanoseconds);
+
+        public void RecordCreateMs(double milliseconds)
+            => createMs.Add(milliseconds);
 
         public void RecordGcBytes(long bytes)
         {
