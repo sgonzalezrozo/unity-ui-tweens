@@ -76,11 +76,11 @@ namespace UITweens.Tests
             // Verify: Should be ~0.8 (Tween B target), NOT ~0.6 (midway to Tween A target)
             if (Mathf.Abs(finalAlpha - 0.8f) < 0.1f)
             {
-                Debug.Log("[Test1] ✅ PASS - Only Tween B played (alpha ~0.8)");
+                Debug.Log("[Test1] PASS - Only Tween B played (alpha ~0.8)");
             }
             else
             {
-                Debug.LogError($"[Test1] ❌ FAIL - Expected alpha ~0.8, got {finalAlpha}");
+                Debug.LogError($"[Test1] FAIL - Expected alpha ~0.8, got {finalAlpha}");
             }
         }
 
@@ -126,11 +126,11 @@ namespace UITweens.Tests
             // Verify: Should be ~0.9 (Tween B target)
             if (Mathf.Abs(finalAlpha - 0.9f) < 0.1f)
             {
-                Debug.Log("[Test2] ✅ PASS - Tween B cancelled A and completed (alpha ~0.9)");
+                Debug.Log("[Test2] PASS - Tween B cancelled A and completed (alpha ~0.9)");
             }
             else
             {
-                Debug.LogError($"[Test2] ❌ FAIL - Expected alpha ~0.9, got {finalAlpha}");
+                Debug.LogError($"[Test2] FAIL - Expected alpha ~0.9, got {finalAlpha}");
             }
         }
 
@@ -175,11 +175,11 @@ namespace UITweens.Tests
             // Verify: Should be ~0.3 (Tween A target)
             if (Mathf.Abs(finalAlpha - 0.3f) < 0.1f)
             {
-                Debug.Log("[Test3] ✅ PASS - Tween A cancelled B and completed (alpha ~0.3)");
+                Debug.Log("[Test3] PASS - Tween A cancelled B and completed (alpha ~0.3)");
             }
             else
             {
-                Debug.LogError($"[Test3] ❌ FAIL - Expected alpha ~0.3, got {finalAlpha}");
+                Debug.LogError($"[Test3] FAIL - Expected alpha ~0.3, got {finalAlpha}");
             }
         }
 
@@ -221,11 +221,11 @@ namespace UITweens.Tests
             // Verify: Should be ~0.6 (Tween B target), NOT 0.2 (Tween A target)
             if (Mathf.Abs(finalAlpha - 0.6f) < 0.1f)
             {
-                Debug.Log("[Test4] ✅ PASS - Only Tween B spawned (alpha ~0.6)");
+                Debug.Log("[Test4] PASS - Only Tween B spawned (alpha ~0.6)");
             }
             else
             {
-                Debug.LogError($"[Test4] ❌ FAIL - Expected alpha ~0.6, got {finalAlpha}");
+                Debug.LogError($"[Test4] FAIL - Expected alpha ~0.6, got {finalAlpha}");
             }
         }
     }
