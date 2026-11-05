@@ -20,6 +20,25 @@ namespace UITweens
         /// so this is how the benchmark sample times them.
         /// </summary>
         public static long LastUpdateLoopNanoseconds { get; private set; }
+
+        /// <summary>Time spent loading the prefab and setting up the tween world and services.</summary>
+        public static double InitializationMilliseconds { get; private set; }
+
+        /// <summary>Managed memory added by the same setup work.</summary>
+        public static long InitializationBytes { get; private set; }
+
+        internal static void BeginInitializationSample(out long startTimestamp, out long startBytes)
+        {
+            startBytes = System.GC.GetTotalMemory(false);
+            startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+        }
+
+        internal static void EndInitializationSample(long startTimestamp, long startBytes)
+        {
+            long endTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+            InitializationMilliseconds += (endTimestamp - startTimestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
+            InitializationBytes += System.Math.Max(0L, System.GC.GetTotalMemory(false) - startBytes);
+        }
 #endif
 
         public static TweenManager Instance
@@ -159,9 +178,17 @@ namespace UITweens
             if (tweenBootstrapper != null)
                 return;
 
+#if UITWEENS_BENCHMARK
+            BeginInitializationSample(out long startTimestamp, out long startBytes);
+#endif
+
             tweenBootstrapper = new TweenWorldBootstrapper();
             tweenBootstrapper.Initialize();
             world = tweenBootstrapper.World;
+
+#if UITWEENS_BENCHMARK
+            EndInitializationSample(startTimestamp, startBytes);
+#endif
         }
 
         private void InitializeServices()
@@ -169,9 +196,17 @@ namespace UITweens
             if (tracker != null)
                 return;
 
+#if UITWEENS_BENCHMARK
+            BeginInitializationSample(out long startTimestamp, out long startBytes);
+#endif
+
             tracker = new TweenTracker();
             cleaner = new TweenCleaner();
             delayedSpawner = new TweenDelayedSpawner(tracker);
+
+#if UITWEENS_BENCHMARK
+            EndInitializationSample(startTimestamp, startBytes);
+#endif
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

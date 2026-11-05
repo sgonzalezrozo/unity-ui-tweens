@@ -9,6 +9,10 @@ namespace UITweens
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void InitializeTweenManager()
         {
+#if UITWEENS_BENCHMARK
+            TweenManager.BeginInitializationSample(out long startTimestamp, out long startBytes);
+#endif
+
             GameObject prefab = Resources.Load<GameObject>(TWEEN_MANAGER_RESOURCE_PATH);
 
             if (prefab == null)
@@ -21,6 +25,10 @@ namespace UITweens
 
             GameObject instance = Object.Instantiate(prefab);
             instance.name = "TweenManager";
+
+#if UITWEENS_BENCHMARK
+            TweenManager.EndInitializationSample(startTimestamp, startBytes);
+#endif
         }
     }
 }

@@ -14,6 +14,46 @@ namespace UITweens.Services
         private const int INITIAL_POOL_SIZE = 64;
         private int totalCreated;
 
+#if UITWEENS_BENCHMARK
+        /// <summary>Times entity creation when the pool is empty. Off by default because it adds work.</summary>
+        public static bool TrackGrowth { get; set; }
+
+        public static double PreAllocationMilliseconds { get; private set; }
+        public static long PreAllocationBytes { get; private set; }
+        public static int GrowthEntities { get; private set; }
+        public static int GrowthAllocations { get; private set; }
+        public static double GrowthTotalMilliseconds { get; private set; }
+        public static double GrowthMaxMilliseconds { get; private set; }
+        public static long GrowthBytes { get; private set; }
+
+        private static double TimestampToMilliseconds(long ticks)
+            => ticks * (1000d / System.Diagnostics.Stopwatch.Frequency);
+
+        private EcsEntity CreateTrackedEntity()
+        {
+            long startBytes = System.GC.GetTotalMemory(false);
+            long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+
+            EcsEntity entity = world.NewEntity();
+            PreInitializeEntity(entity);
+
+            double milliseconds = TimestampToMilliseconds(System.Diagnostics.Stopwatch.GetTimestamp() - startTimestamp);
+            long bytes = System.GC.GetTotalMemory(false) - startBytes;
+
+            GrowthEntities++;
+            GrowthTotalMilliseconds += milliseconds;
+            GrowthMaxMilliseconds = System.Math.Max(GrowthMaxMilliseconds, milliseconds);
+
+            if (bytes > 0L)
+            {
+                GrowthAllocations++;
+                GrowthBytes += bytes;
+            }
+
+            return entity;
+        }
+#endif
+
         // OPTIMIZATION: Accept pool size parameter for configurable pre-allocation (50-100ms gain)
         public TweenPoolManager(EcsWorld world, int poolSize = INITIAL_POOL_SIZE)
         {
@@ -24,7 +64,23 @@ namespace UITweens.Services
             activeEntities = new HashSet<EcsEntity>(poolSize);  // OPTIMIZATION: Pre-size HashSet
             totalCreated = 0;
 
+#if UITWEENS_BENCHMARK
+            GrowthEntities = 0;
+            GrowthAllocations = 0;
+            GrowthTotalMilliseconds = 0d;
+            GrowthMaxMilliseconds = 0d;
+            GrowthBytes = 0L;
+
+            long startBytes = System.GC.GetTotalMemory(false);
+            long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+#endif
+
             PreAllocatePool(poolSize);
+
+#if UITWEENS_BENCHMARK
+            PreAllocationMilliseconds = TimestampToMilliseconds(System.Diagnostics.Stopwatch.GetTimestamp() - startTimestamp);
+            PreAllocationBytes = System.Math.Max(0L, System.GC.GetTotalMemory(false) - startBytes);
+#endif
         }
 
         private void PreAllocatePool(int poolSize)
@@ -48,8 +104,20 @@ namespace UITweens.Services
             }
             else
             {
+#if UITWEENS_BENCHMARK
+                if (TrackGrowth)
+                {
+                    entity = CreateTrackedEntity();
+                }
+                else
+                {
+                    entity = world.NewEntity();
+                    PreInitializeEntity(entity);
+                }
+#else
                 entity = world.NewEntity();
                 PreInitializeEntity(entity);
+#endif
                 totalCreated++;
             }
 

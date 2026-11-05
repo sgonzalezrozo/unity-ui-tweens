@@ -30,7 +30,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     [SerializeField] private string notes = "";
 
     // 0 and 10 show the fixed cost each frame, which every user pays.
-    private static readonly int[] CapacitySteps = { 0, 10, 100, 350, 1000, 2500, 5000 };
+    private static readonly int[] CapacitySteps = { 0, 10, 50, 100, 150, 350, 1000, 2500, 5000 };
     private static readonly Action NoCaptureCallback = StaticNoCaptureCallback;
 
     // The pool never shrinks, so growth can only be measured once per process.
@@ -48,6 +48,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     private TweenBenchmarkStatus status;
     private Camera clearCamera;
     private readonly System.Diagnostics.Stopwatch createStopwatch = new();
+    private readonly FrameTiming[] frameTimings = new FrameTiming[1];
     private string validatedCommitHash;
 
     private readonly struct Scenario
@@ -254,6 +255,10 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         bool includeGcMetric = Debug.isDebugBuild && gcRecorder.Valid;
         int lastAllocatingFrame = -1;
 
+#if UITWEENS_BENCHMARK
+        TweenPoolManager.TrackGrowth = true;
+#endif
+
         for (int frame = 0; frame < totalFrames; frame++)
         {
             OnPoolStress(frame, spawner, targets);
@@ -271,6 +276,10 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             yield return null;
         }
 
+#if UITWEENS_BENCHMARK
+        TweenPoolManager.TrackGrowth = false;
+#endif
+
         targets.CancelAllTweens();
         yield return null;
 
@@ -287,6 +296,30 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             includeGcMetric,
             includeTweenMetric: false,
             includeCreateMetric: false);
+
+#if UITWEENS_BENCHMARK
+        result.metrics.Add(new TweenBenchmarkMetric
+        {
+            name = "startup-init",
+            value = TweenManager.InitializationMilliseconds,
+            unit = "ms",
+            aggregation = "single"
+        });
+        result.metrics.Add(new TweenBenchmarkMetric
+        {
+            name = "startup-gc",
+            value = TweenManager.InitializationBytes,
+            unit = "bytes",
+            aggregation = "single"
+        });
+        AddSingleMetric(result, "pool-prealloc-time", TweenPoolManager.PreAllocationMilliseconds, "ms");
+        AddSingleMetric(result, "pool-prealloc-gc", TweenPoolManager.PreAllocationBytes, "bytes");
+        AddSingleMetric(result, "pool-growth-entities", TweenPoolManager.GrowthEntities, "count");
+        AddSingleMetric(result, "pool-growth-allocations", TweenPoolManager.GrowthAllocations, "count");
+        AddSingleMetric(result, "pool-growth-time-total", TweenPoolManager.GrowthTotalMilliseconds, "ms");
+        AddSingleMetric(result, "pool-growth-time-max", TweenPoolManager.GrowthMaxMilliseconds, "ms");
+        AddSingleMetric(result, "pool-growth-gc", TweenPoolManager.GrowthBytes, "bytes");
+#endif
 
         if (includeGcMetric)
         {
@@ -327,6 +360,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         int totalFrames = warmupFrames + measuredFrames;
         for (int frame = 0; frame < totalFrames; frame++)
         {
+            FrameTimingManager.CaptureFrameTimings();
+
             createStopwatch.Restart();
             scenario.FrameAction?.Invoke(frame, spawner, targets);
             createStopwatch.Stop();
@@ -334,6 +369,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             if (frame >= warmupFrames)
             {
                 accumulator.RecordFrame(Time.unscaledDeltaTime * 1000d);
+                RecordCpuTiming(accumulator);
 
                 if (includeCreateMetric)
                     accumulator.RecordCreateMs(createStopwatch.ElapsedTicks * (1000d / System.Diagnostics.Stopwatch.Frequency));
@@ -371,6 +407,25 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             includeTweenMetric,
             includeCreateMetric));
     }
+
+    // Unlike frame time, these exclude the wait for the display, so they show real work below the
+    // refresh rate. Subtracting capacity-0 gives the full cost of N tweens, including uGUI.
+    private void RecordCpuTiming(MeasureAccumulator accumulator)
+    {
+        if (FrameTimingManager.GetLatestTimings(1, frameTimings) == 0)
+            return;
+
+        FrameTiming timing = frameTimings[0];
+        if (timing.cpuMainThreadFrameTime > 0d)
+            accumulator.RecordCpuMs(timing.cpuMainThreadFrameTime, timing.cpuRenderThreadFrameTime);
+    }
+
+#if UITWEENS_BENCHMARK
+    private static void AddSingleMetric(TweenBenchmarkResult result, string name, double value, string unit)
+    {
+        result.metrics.Add(new TweenBenchmarkMetric { name = name, value = value, unit = unit, aggregation = "single" });
+    }
+#endif
 
     private TweenBenchmarkSession CreateSession()
         => TweenBenchmarkReport.CreateSession(validatedCommitHash, BuildSessionNotes());
@@ -490,6 +545,14 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             metrics.Add(new TweenBenchmarkMetric { name = "tween-update-loop", value = accumulator.TweenMaxMs, unit = "ms", aggregation = "max" });
         }
 
+        if (accumulator.HasCpuTiming)
+        {
+            metrics.Add(new TweenBenchmarkMetric { name = "cpu-main-thread", value = accumulator.CpuMainMedianMs, unit = "ms", aggregation = "median" });
+            metrics.Add(new TweenBenchmarkMetric { name = "cpu-main-thread", value = accumulator.CpuMainP95Ms, unit = "ms", aggregation = "p95" });
+            metrics.Add(new TweenBenchmarkMetric { name = "cpu-render-thread", value = accumulator.CpuRenderMedianMs, unit = "ms", aggregation = "median" });
+            metrics.Add(new TweenBenchmarkMetric { name = "cpu-render-thread", value = accumulator.CpuRenderP95Ms, unit = "ms", aggregation = "p95" });
+        }
+
         if (includeCreateMetric)
         {
             metrics.Add(new TweenBenchmarkMetric { name = "tween-create-per-frame", value = accumulator.CreateMedianMs, unit = "ms", aggregation = "median" });
@@ -566,6 +629,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         private readonly List<double> frameMs;
         private readonly List<double> tweenNs;
         private readonly List<double> createMs;
+        private readonly List<double> cpuMainMs;
+        private readonly List<double> cpuRenderMs;
         private readonly List<double> gcPerFrameBytes;
         private long totalGcBytes;
 
@@ -575,6 +640,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             frameMs = new List<double>(capacity);
             tweenNs = new List<double>(capacity);
             createMs = new List<double>(capacity);
+            cpuMainMs = new List<double>(capacity);
+            cpuRenderMs = new List<double>(capacity);
             gcPerFrameBytes = new List<double>(capacity);
         }
 
@@ -584,6 +651,11 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         public double TweenMedianMs => ComputePercentile(tweenNs, 50) / 1_000_000d;
         public double TweenP95Ms => ComputePercentile(tweenNs, 95) / 1_000_000d;
         public double TweenMaxMs => ComputeMax(tweenNs) / 1_000_000d;
+        public bool HasCpuTiming => cpuMainMs.Count > 0;
+        public double CpuMainMedianMs => ComputePercentile(cpuMainMs, 50);
+        public double CpuMainP95Ms => ComputePercentile(cpuMainMs, 95);
+        public double CpuRenderMedianMs => ComputePercentile(cpuRenderMs, 50);
+        public double CpuRenderP95Ms => ComputePercentile(cpuRenderMs, 95);
         public double CreateMedianMs => ComputePercentile(createMs, 50);
         public double CreateP95Ms => ComputePercentile(createMs, 95);
         public double CreateMaxMs => ComputeMax(createMs);
@@ -599,6 +671,12 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
         public void RecordCreateMs(double milliseconds)
             => createMs.Add(milliseconds);
+
+        public void RecordCpuMs(double mainThreadMs, double renderThreadMs)
+        {
+            cpuMainMs.Add(mainThreadMs);
+            cpuRenderMs.Add(renderThreadMs);
+        }
 
         public void RecordGcBytes(long bytes)
         {

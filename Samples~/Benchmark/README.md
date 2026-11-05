@@ -21,7 +21,7 @@ Results for publishing come from IL2CPP builds on a real device. Add the scene t
 
 Start the app and leave it running. The screen stays on and shows progress. It takes about 1.6 hours at 60 fps with the default settings, and longer on a slower device. To reduce that, lower **Runs Per Scenario** or turn off **Include Canvas Per Target Mode**.
 
-Frame time can't go below the display's refresh interval on mobile, so use the tween update time to judge capacity.
+Frame time can't go below the display's refresh interval on mobile, so use the tween update time to judge capacity. For the full per-frame cost, including uGUI, turn on **Project Settings > Player > Other Settings > Frame Timing Stats** and subtract `capacity-0` from `capacity-N` in `cpu-main-thread` and `cpu-render-thread`.
 
 `tween-update-loop` covers the tween update. `tween-create-per-frame` covers the scenario's own calls that start and cancel tweens. For scenarios that create tweens, add the two together.
 
