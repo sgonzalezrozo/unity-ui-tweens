@@ -11,6 +11,7 @@ using UnityEngine;
 public sealed class TweenBenchmarkRunner : MonoBehaviour
 {
     private const int AllocationTargetCount = 400;
+    private const int MinMobileFrameRate = 120;
     private const string SharedCanvasVariant = "shared-canvas";
     private const string CanvasPerTargetVariant = "canvas-per-target";
 
@@ -174,7 +175,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         if (!Application.isMobilePlatform)
             return -1;
 
-        return Mathf.CeilToInt((float)Screen.currentResolution.refreshRateRatio.value);
+        // Rendering can't exceed the display's refresh rate, so a high target is safe.
+        return Mathf.Max(MinMobileFrameRate, Mathf.CeilToInt((float)Screen.currentResolution.refreshRateRatio.value));
     }
 
     private List<Scenario> BuildScenarios()
@@ -500,6 +502,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
         if (Application.isEditor)
             parts.Add("Editor run, not valid for publishing.");
+
+        parts.Add($"targetFrameRate {Application.targetFrameRate}, display {Screen.currentResolution.refreshRateRatio.value:0.##} Hz.");
 
         if (!Debug.isDebugBuild)
             parts.Add("GC metrics omitted because this run is not a Development build.");
