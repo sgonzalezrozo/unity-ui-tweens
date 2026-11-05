@@ -22,7 +22,6 @@ namespace UITweens.Extensions
 
             TweenBuilder builder = TweenManager.GetSpawner()
                 .Position(rect, targetPos, duration, ease, easeParameter);
-            TweenManager.TrackTweenForComponent(rect, builder.GetHandle());
             builder.SetTrackedComponent(rect);
             builder.SetTrackedComponent(rect);
 
@@ -45,7 +44,6 @@ namespace UITweens.Extensions
 
             TweenBuilder builder = TweenManager.GetSpawner()
                 .PositionX(rect, targetX, duration, ease, easeParameter);
-            TweenManager.TrackTweenForComponent(rect, builder.GetHandle());
             builder.SetTrackedComponent(rect);
             return builder;
         }
@@ -66,7 +64,6 @@ namespace UITweens.Extensions
 
             TweenBuilder builder = TweenManager.GetSpawner()
                 .PositionY(rect, targetY, duration, ease, easeParameter);
-            TweenManager.TrackTweenForComponent(rect, builder.GetHandle());
             builder.SetTrackedComponent(rect);
             return builder;
         }

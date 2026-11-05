@@ -251,19 +251,27 @@ namespace UITweens.Services
             delayComp.DelayTime = 0f;
             delayComp.ElapsedDelay = 0f;
             delayComp.DelayNotified = false; // Explicitly initialize
+        }
 
+        /// <summary>Adds a clean loop component the first time a tween needs one.</summary>
+        internal static void EnsureLoopComponent(EcsEntity entity)
+        {
+            if (entity.Has<TweenLoopComponent>())
+                return;
 
-            ref var loopComp = ref entity.Get<TweenLoopComponent>();
-            loopComp.Mode = TweenLoopComponent.LoopMode.None;
-            loopComp.LoopCount = 1;
-            loopComp.CurrentLoop = 0;
+            ref TweenLoopComponent loop = ref entity.Get<TweenLoopComponent>();
+            loop = default;
+            loop.LoopCount = 1;
+        }
 
-            ref var advCallbacks = ref entity.Get<TweenAdvancedCallbackComponent>();
-            advCallbacks.OnStart = null;
-            advCallbacks.OnUpdate = null;
-            advCallbacks.OnFloatUpdate = null;
-            advCallbacks.OnVectorUpdate = null;
-            advCallbacks.StartCalled = false;
+        /// <summary>Adds a clean callback component the first time a tween needs one.</summary>
+        internal static void EnsureAdvancedCallbackComponent(EcsEntity entity)
+        {
+            if (entity.Has<TweenAdvancedCallbackComponent>())
+                return;
+
+            ref TweenAdvancedCallbackComponent callbacks = ref entity.Get<TweenAdvancedCallbackComponent>();
+            callbacks = default;
         }
 
         private void RegisterWithTweenManager(RectTransform element, CanvasGroup canvasGroup, Image image)

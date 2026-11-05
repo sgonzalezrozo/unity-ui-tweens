@@ -118,6 +118,7 @@ namespace UITweens.Services
         {
             if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
             {
+                TweenInitializer.EnsureLoopComponent(lastHandle.Entity);
                 ref TweenLoopComponent loopComp = ref lastHandle.Entity.Get<TweenLoopComponent>();
                 loopComp.Mode = TweenLoopComponent.LoopMode.Repeat;
                 loopComp.LoopCount = repeatCount;
@@ -132,6 +133,7 @@ namespace UITweens.Services
         {
             if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
             {
+                TweenInitializer.EnsureLoopComponent(lastHandle.Entity);
                 ref var loopComp = ref lastHandle.Entity.Get<TweenLoopComponent>();
                 loopComp.Mode = TweenLoopComponent.LoopMode.Infinite;
             }
@@ -169,6 +171,7 @@ namespace UITweens.Services
         {
             if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
             {
+                TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
                 advancedCb.OnStart = callback;
                 advancedCb.StartCalled = false;
@@ -182,6 +185,7 @@ namespace UITweens.Services
         {
             if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
             {
+                TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
                 advancedCb.OnUpdate = callback;
             }
@@ -194,6 +198,7 @@ namespace UITweens.Services
         {
             if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
             {
+                TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
                 advancedCb.OnFloatUpdate = callback;
             }
@@ -206,6 +211,7 @@ namespace UITweens.Services
         {
             if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
             {
+                TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
                 advancedCb.OnVectorUpdate = callback;
             }

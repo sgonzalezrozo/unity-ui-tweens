@@ -115,6 +115,7 @@ namespace UITweens.Services
 
             if (def.OnStart != null || def.OnUpdate != null)
             {
+                TweenInitializer.EnsureAdvancedCallbackComponent(handle.Entity);
                 ref TweenAdvancedCallbackComponent advCallback = ref handle.Entity.Get<TweenAdvancedCallbackComponent>();
                 advCallback.OnStart = def.OnStart;
                 advCallback.OnUpdate = def.OnUpdate;
@@ -133,11 +134,13 @@ namespace UITweens.Services
         {
             if (def.IsInfiniteLoop)
             {
+                TweenInitializer.EnsureLoopComponent(handle.Entity);
                 ref TweenLoopComponent loop = ref handle.Entity.Get<TweenLoopComponent>();
                 loop.Mode = TweenLoopComponent.LoopMode.Infinite;
             }
             else if (def.LoopCount > 0)
             {
+                TweenInitializer.EnsureLoopComponent(handle.Entity);
                 ref TweenLoopComponent loop = ref handle.Entity.Get<TweenLoopComponent>();
                 loop.Mode = TweenLoopComponent.LoopMode.Repeat;
                 loop.LoopCount = def.LoopCount;

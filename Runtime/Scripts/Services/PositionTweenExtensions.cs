@@ -42,7 +42,7 @@ namespace UITweens.Services
             spawner.InitializePositionInternal(handle, startPosition, endPosition);
 
             // Track the tween so it can be controlled later.
-            TweenManager.TrackTweenForComponent(element, handle);
+            TweenManager.TrackTween(element.GetInstanceID(), TweenPropertyType.Position, handle);
 
             return new TweenBuilder(spawner).SetHandle(handle);
         }

@@ -58,26 +58,30 @@ namespace UITweens.Systems
             if (state != TweenControlComponent.ControlState.Playing)
                 return;
 
-            if (entity.Get<TweenTargetComponent>().RectTransform == null)
+            ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+            if (target.RectTransform == null)
             {
                 TweenControlOperations.Cancel(entity);
                 cancelledEntities.Add(entity);
                 return;
             }
 
-            ApplyValues(entity);
-            InvokeUpdateCallbacks(entity);
+            ApplyValues(entity, ref target);
 
+            bool hasCallbacks = entity.Has<TweenAdvancedCallbackComponent>();
+            if (hasCallbacks)
+                InvokeUpdateCallbacks(entity);
+
+            // Only a callback can change the state after the check above.
             if (entity.Get<TweenClockComponent>().IsFinished
-                && entity.Get<TweenControlComponent>().State == TweenControlComponent.ControlState.Playing)
+                && (!hasCallbacks || entity.Get<TweenControlComponent>().State == TweenControlComponent.ControlState.Playing))
             {
                 finishedEntities.Add(entity);
             }
         }
 
-        private static void ApplyValues(EcsEntity entity)
+        private static void ApplyValues(EcsEntity entity, ref TweenTargetComponent target)
         {
-            ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
             ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
             ref TweenApplyFlagsComponent flags = ref entity.Get<TweenApplyFlagsComponent>();
 

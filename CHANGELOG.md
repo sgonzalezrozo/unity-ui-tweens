@@ -18,6 +18,7 @@ All notable changes to this package are documented in this file.
 
 ### Changed
 
+- Tweens add loop and advanced callback data only when they use it, and position tweens are tracked once. This lowers the cost of creating and updating tweens.
 - Test logs use PASS and FAIL instead of emojis.
 
 ### Fixed
