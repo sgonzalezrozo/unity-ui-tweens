@@ -103,12 +103,12 @@ namespace UITweens.Tests
 
         private void OnTestStart()
         {
-            Debug.Log("[Test3] ✅ OnStart fired! Tween animation beginning now.");
+            Debug.Log("[Test3] OnStart fired! Tween animation beginning now.");
         }
 
         private void OnTestComplete()
         {
-            Debug.Log("[Test3] ✅ OnComplete fired! Tween animation finished.");
+            Debug.Log("[Test3] OnComplete fired! Tween animation finished.");
         }
     }
 }

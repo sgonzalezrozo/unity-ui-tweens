@@ -4,6 +4,10 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Test logs use PASS and FAIL instead of emojis.
+
 ### Fixed
 
 - `CubicInOut` no longer jumps at the halfway point.

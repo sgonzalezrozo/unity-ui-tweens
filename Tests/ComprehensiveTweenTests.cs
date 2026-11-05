@@ -71,12 +71,12 @@ namespace UITweens.Tests
 
             if (Vector2.Distance(rectTransform.anchoredPosition, new Vector2(100f, 50f)) < 5f)
             {
-                Debug.Log("✅ Position Tween");
+                Debug.Log("PASS: Position Tween");
                 testsPassed++;
             }
             else
             {
-                Debug.LogError("❌ Position Tween");
+                Debug.LogError("FAIL: Position Tween");
             }
         }
 
@@ -89,12 +89,12 @@ namespace UITweens.Tests
 
             if (Vector3.Distance(rectTransform.localScale, new Vector3(2f, 2f, 2f)) < 0.1f)
             {
-                Debug.Log("✅ Scale Tween");
+                Debug.Log("PASS: Scale Tween");
                 testsPassed++;
             }
             else
             {
-                Debug.LogError("❌ Scale Tween");
+                Debug.LogError("FAIL: Scale Tween");
             }
         }
 
@@ -107,12 +107,12 @@ namespace UITweens.Tests
 
             if (Mathf.Abs(canvasGroup.alpha) < 0.05f)
             {
-                Debug.Log("✅ Alpha Tween");
+                Debug.Log("PASS: Alpha Tween");
                 testsPassed++;
             }
             else
             {
-                Debug.LogError("❌ Alpha Tween");
+                Debug.LogError("FAIL: Alpha Tween");
             }
         }
 
@@ -130,12 +130,12 @@ namespace UITweens.Tests
 
             if (Vector2.Distance(beforeDelay, Vector2.zero) < 2f && afterDelay.x > 20f)
             {
-                Debug.Log("✅ Delay Feature");
+                Debug.Log("PASS: Delay Feature");
                 testsPassed++;
             }
             else
             {
-                Debug.LogError("❌ Delay Feature");
+                Debug.LogError("FAIL: Delay Feature");
             }
         }
 
@@ -149,12 +149,12 @@ namespace UITweens.Tests
 
             if (Mathf.Abs(rectTransform.anchoredPosition.x - 100f) < 10f)
             {
-                Debug.Log("✅ Loop Feature");
+                Debug.Log("PASS: Loop Feature");
                 testsPassed++;
             }
             else
             {
-                Debug.LogError("❌ Loop Feature");
+                Debug.LogError("FAIL: Loop Feature");
             }
         }
 
@@ -181,12 +181,12 @@ namespace UITweens.Tests
             if (Mathf.Abs(afterFirst.x - 100f) < 20f &&
                 Vector2.Distance(afterSecond, Vector2.zero) < 20f)
             {
-                Debug.Log("✅ Chaining Feature");
+                Debug.Log("PASS: Chaining Feature");
                 testsPassed++;
             }
             else
             {
-                Debug.LogError("❌ Chaining Feature");
+                Debug.LogError("FAIL: Chaining Feature");
             }
         }
     }
