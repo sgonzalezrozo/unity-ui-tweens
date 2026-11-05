@@ -2,6 +2,16 @@
 
 All notable changes to this package are documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- `CubicInOut` no longer jumps at the halfway point.
+
+### Documentation
+
+- Added an animated easing reference.
+
 ## [0.3.0] - 2026-11-03
 
 ### Added
