@@ -18,6 +18,8 @@ My first idea was a wrapper around DOTween. Then I wondered whether it would be 
 
 That was meant as a possible performance improvement, and it turned out to matter. DOTween works great, but in my experience it can have FPS issues beyond a couple of hundred tweens, and in gameplay they add up very fast.
 
+I built and refined it on my own time, reusing it across my projects. In November 2026 I extracted it into this standalone package, with documentation and tests. Earlier history lives in a private repository.
+
 ## Is it right for your project?
 
 **Use UI Tweens if you want:**
