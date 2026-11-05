@@ -4,6 +4,13 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added a benchmark sample under `Samples~/Benchmark`. It covers allocation, capacity and pool growth, and writes one JSON file per scenario run.
+- Added the benchmark result schema, evidence rules and summary script under `Documentation~/benchmarks/`.
+- Added a `UITweens.UpdateLoop` profiler marker around the tween update, including orphan cleanup.
+- Added `TweenManager.LastUpdateLoopNanoseconds`, available with the `UITWEENS_BENCHMARK` define, so Release builds can time the tween update.
+
 ### Documentation
 
 - Removed the unpublished 350+ tweens and zero-GC claims until a reproducible benchmark exists.
@@ -11,6 +18,7 @@ All notable changes to this package are documented in this file.
 
 ### Changed
 
+- `TweenManager.GetSpawner()` returns null until the tween world is ready, instead of throwing an exception.
 - Test logs use PASS and FAIL instead of emojis.
 
 ### Fixed

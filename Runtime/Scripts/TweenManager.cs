@@ -1,6 +1,7 @@
 using System.Collections;
 using Leopotam.Ecs;
 using UITweens.Services;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +10,17 @@ namespace UITweens
     public class TweenManager : MonoBehaviour
     {
         private const int CLEANUP_INTERVAL_FRAMES = 60;
+        private static readonly ProfilerMarker UpdateLoopMarker = new("UITweens.UpdateLoop");
+
+#if UITWEENS_BENCHMARK
+        private static readonly System.Diagnostics.Stopwatch UpdateLoopStopwatch = new();
+
+        /// <summary>
+        /// Duration of the last tween update. ProfilerMarker is compiled out of Release players,
+        /// so this is how the benchmark sample times them.
+        /// </summary>
+        public static long LastUpdateLoopNanoseconds { get; private set; }
+#endif
 
         public static TweenManager Instance
             => instance;
@@ -27,6 +39,9 @@ namespace UITweens
                 Debug.LogError("[UITweens] TweenManager not initialized. Call TweenManager.Initialize() first.");
                 return null;
             }
+
+            if (instance.world == null || instance.tweenBootstrapper == null)
+                return null;
 
             // Return cached instance instead of creating new one every time
             if (cachedSpawner == null)
@@ -101,15 +116,27 @@ namespace UITweens
             if (tracker == null || delayedSpawner == null || tweenBootstrapper == null)
                 return;
 
-            tracker.ProcessPendingCancellations();
-            delayedSpawner.ProcessDelayQueue(Time.deltaTime, world);
-            tweenBootstrapper.Update();
+#if UITWEENS_BENCHMARK
+            UpdateLoopStopwatch.Restart();
+#endif
 
-            if (Time.frameCount - lastCleanupFrame < CLEANUP_INTERVAL_FRAMES)
-                return;
+            using (UpdateLoopMarker.Auto())
+            {
+                tracker.ProcessPendingCancellations();
+                delayedSpawner.ProcessDelayQueue(Time.deltaTime, world);
+                tweenBootstrapper.Update();
 
-            cleaner.CleanupOrphanedTweens(tracker);
-            lastCleanupFrame = Time.frameCount;
+                if (Time.frameCount - lastCleanupFrame >= CLEANUP_INTERVAL_FRAMES)
+                {
+                    cleaner.CleanupOrphanedTweens(tracker);
+                    lastCleanupFrame = Time.frameCount;
+                }
+            }
+
+#if UITWEENS_BENCHMARK
+            UpdateLoopStopwatch.Stop();
+            LastUpdateLoopNanoseconds = (long)(UpdateLoopStopwatch.ElapsedTicks * (1_000_000_000d / System.Diagnostics.Stopwatch.Frequency));
+#endif
         }
 
         private void OnDestroy()
@@ -224,4 +251,3 @@ namespace UITweens
         }
     }
 }
-

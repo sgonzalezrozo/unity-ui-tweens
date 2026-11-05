@@ -364,6 +364,7 @@ flowchart LR
 ## Performance
 
 Benchmarks aren't published yet, so measure your own project.
+When benchmarks are published, each claim will link to raw JSON evidence under `Documentation~/benchmarks/`, validated against `Documentation~/benchmarks/benchmark-result.schema.json`.
 
 UI Tweens pools tween entities to reduce allocations. Your own code can still allocate: a callback that captures variables creates a closure. `DeclareOnly()` and `Wait()` also allocate a small object each.
 

@@ -24,6 +24,11 @@
       "displayName": "Quick Start",
       "description": "A self-contained demo that builds its own canvas and animates several UI elements.",
       "path": "Samples~/QuickStart"
+    },
+    {
+      "displayName": "Benchmark",
+      "description": "Runs allocation and capacity scenarios and writes JSON benchmark reports.",
+      "path": "Samples~/Benchmark"
     }
   ],
   "dependencies": {
