@@ -74,8 +74,7 @@ namespace UITweens.Extensions
 
             if (TweenManager.TryGetComponentTween(image, out TweenHandle handle))
             {
-                TweenManager.Cancel(handle);
-                TweenManager.ClearComponentTween(image);
+                TweenManager.CancelComponentTweens(image);
                 return new CancelTweenBuilder(handle);
             }
             else
@@ -138,8 +137,7 @@ namespace UITweens.Extensions
 
             if (TweenManager.TryGetComponentTween(rect, out TweenHandle handle))
             {
-                TweenManager.Cancel(handle);
-                TweenManager.ClearComponentTween(rect);
+                TweenManager.CancelComponentTweens(rect);
                 return new CancelTweenBuilder(handle);
             }
 
@@ -198,8 +196,7 @@ namespace UITweens.Extensions
 
             if (TweenManager.TryGetComponentTween(group, out TweenHandle handle))
             {
-                TweenManager.Cancel(handle);
-                TweenManager.ClearComponentTween(group);
+                TweenManager.CancelComponentTweens(group);
                 return new CancelTweenBuilder(handle);
             }
             else

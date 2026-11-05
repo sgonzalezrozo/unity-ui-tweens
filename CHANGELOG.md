@@ -19,10 +19,12 @@ All notable changes to this package are documented in this file.
 ### Changed
 
 - Tweens add loop and advanced callback data only when they use it, and position tweens are tracked once. This lowers the cost of creating and updating tweens.
+- `DoCancel` and other per-component tween lookups no longer scan every tracked tween, and replaced tweens are cancelled with less work.
 - Test logs use PASS and FAIL instead of emojis.
 
 ### Fixed
 
+- `DoCancel` now cancels every tween on the component. It used to cancel one and stop tracking the rest, so they kept playing and couldn't be cancelled.
 - Starting a tween in `Start()` on the first frame no longer throws a `NullReferenceException`. `TweenManager` now finishes its setup when the first tween needs it.
 - `CubicInOut` no longer jumps at the halfway point.
 

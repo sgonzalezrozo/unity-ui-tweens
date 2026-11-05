@@ -7,12 +7,32 @@ namespace UITweens.Services
 {
     public class TweenTracker
     {
+        private static readonly TweenPropertyType[] AllPropertyTypes =
+        {
+            TweenPropertyType.Alpha,
+            TweenPropertyType.Position,
+            TweenPropertyType.Scale,
+            TweenPropertyType.Rotation,
+            TweenPropertyType.Color,
+            TweenPropertyType.SizeDelta,
+            TweenPropertyType.Pivot,
+            TweenPropertyType.Unknown
+        };
+
         // OPTIMIZATION: Pre-size collections to avoid resizing overhead (5-10ms gain)
-        private Dictionary<(int, TweenPropertyType), TweenHandle> componentPropertyTweenHandles = new(256);
-        private Dictionary<(int, TweenPropertyType), TweenHandle> pendingCancellations = new(64);
-        private List<(int, TweenPropertyType)> cachedKeysToRemoveList = new(64);
-        private List<(int, TweenPropertyType)> cachedPendingKeysToProcess = new(64);
-        private List<(int, TweenPropertyType)> cachedKeysToRemove = new(16);
+        private Dictionary<(int, TweenPropertyType), TweenHandle> componentPropertyTweenHandles = new(256, TrackingKeyComparer.Instance);
+        private Dictionary<(int, TweenPropertyType), TweenHandle> pendingCancellations = new(64, TrackingKeyComparer.Instance);
+
+        private sealed class TrackingKeyComparer : IEqualityComparer<(int, TweenPropertyType)>
+        {
+            public static readonly TrackingKeyComparer Instance = new();
+
+            public bool Equals((int, TweenPropertyType) x, (int, TweenPropertyType) y)
+                => x.Item1 == y.Item1 && x.Item2 == y.Item2;
+
+            public int GetHashCode((int, TweenPropertyType) key)
+                => (key.Item1 * 397) ^ (int)key.Item2;
+        }
 
         public int TrackedTweenCount
             => componentPropertyTweenHandles.Count;
@@ -80,41 +100,26 @@ namespace UITweens.Services
             componentPropertyTweenHandles[key] = handle;
         }
 
+        /// <summary>
+        /// Cancels replaced tweens. This waits until the next update so that Delay(), Then() and
+        /// Sequential() can claim the old tween first and keep it running until theirs starts.
+        /// </summary>
         public void ProcessPendingCancellations()
         {
             if (pendingCancellations.Count == 0)
                 return;
 
-            cachedPendingKeysToProcess.Clear();
-            cachedKeysToRemoveList.Clear();
-
-            cachedPendingKeysToProcess.AddRange(pendingCancellations.Keys);
-
-            for (int i = 0; i < cachedPendingKeysToProcess.Count; i++)
+            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in pendingCancellations)
             {
-                (int, TweenPropertyType) key = cachedPendingKeysToProcess[i];
-                TweenHandle handle = pendingCancellations[key];
-
+                TweenHandle handle = kvp.Value;
                 if (!handle.IsValid || !handle.Entity.IsAlive())
-                {
-                    cachedKeysToRemoveList.Add(key);
                     continue;
-                }
 
-                ref TweenControlComponent control = ref handle.Entity.Get<TweenControlComponent>();
-
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    cachedKeysToRemoveList.Add(key);
-                    continue;
-                }
-
-                TweenControlOperations.Cancel(handle);
-                cachedKeysToRemoveList.Add(key);
+                if (handle.Entity.Get<TweenControlComponent>().State != TweenControlComponent.ControlState.Delayed)
+                    TweenControlOperations.Cancel(handle);
             }
 
-            for (int i = 0; i < cachedKeysToRemoveList.Count; i++)
-                pendingCancellations.Remove(cachedKeysToRemoveList[i]);
+            pendingCancellations.Clear();
         }
 
         public bool TryGetTween(UnityEngine.Object component, TweenPropertyType propertyType, out TweenHandle handle)
@@ -133,13 +138,10 @@ namespace UITweens.Services
                 return false;
 
             int componentId = component.GetInstanceID();
-            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
+            for (int i = 0; i < AllPropertyTypes.Length; i++)
             {
-                if (kvp.Key.Item1 == componentId)
-                {
-                    handle = kvp.Value;
+                if (componentPropertyTweenHandles.TryGetValue((componentId, AllPropertyTypes[i]), out handle))
                     return true;
-                }
             }
 
             return false;
@@ -159,35 +161,21 @@ namespace UITweens.Services
                 return;
 
             int componentId = component.GetInstanceID();
-            List<(int, TweenPropertyType)> keysToRemove = cachedKeysToRemove;
-            keysToRemove.Clear();
-
-            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
-            {
-                if (kvp.Key.Item1 == componentId)
-                    keysToRemove.Add(kvp.Key);
-            }
-
-            for (int i = 0; i < keysToRemove.Count; i++)
-                componentPropertyTweenHandles.Remove(keysToRemove[i]);
+            for (int i = 0; i < AllPropertyTypes.Length; i++)
+                componentPropertyTweenHandles.Remove((componentId, AllPropertyTypes[i]));
         }
 
         public void CancelAllTweensForComponent(int componentId)
         {
-            List<(int, TweenPropertyType)> keysToRemove = cachedKeysToRemove;
-            keysToRemove.Clear();
-
-            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
+            for (int i = 0; i < AllPropertyTypes.Length; i++)
             {
-                if (kvp.Key.Item1 == componentId && kvp.Value.IsValid)
-                {
-                    TweenControlOperations.Cancel(kvp.Value);
-                    keysToRemove.Add(kvp.Key);
-                }
-            }
+                (int, TweenPropertyType) key = (componentId, AllPropertyTypes[i]);
+                if (!componentPropertyTweenHandles.TryGetValue(key, out TweenHandle handle) || !handle.IsValid)
+                    continue;
 
-            for (int i = 0; i < keysToRemove.Count; i++)
-                componentPropertyTweenHandles.Remove(keysToRemove[i]);
+                TweenControlOperations.Cancel(handle);
+                componentPropertyTweenHandles.Remove(key);
+            }
         }
 
         public void RemoveFromPendingCancellations(UnityEngine.Object component, TweenPropertyType propertyType)
@@ -230,23 +218,13 @@ namespace UITweens.Services
             int componentId = target.RectTransform.GetInstanceID();
             (int, TweenPropertyType) key = (componentId, propertyType);
 
-            int killedCount = 0;
-            List<(int, TweenPropertyType)> keysToRemove = cachedKeysToRemove;
-            keysToRemove.Clear();
-
-            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
+            if (componentPropertyTweenHandles.TryGetValue(key, out TweenHandle competitor)
+                && competitor.Entity != entity
+                && competitor.IsValid)
             {
-                if (kvp.Key == key && kvp.Value.Entity != entity && kvp.Value.IsValid)
-                {
-                    TweenControlOperations.Cancel(kvp.Value);
-                    keysToRemove.Add(kvp.Key);
-                    killedCount++;
-                }
+                TweenControlOperations.Cancel(competitor);
+                componentPropertyTweenHandles.Remove(key);
             }
-
-            for (int i = 0; i < keysToRemove.Count; i++)
-                componentPropertyTweenHandles.Remove(keysToRemove[i]);
-
         }
 
         public Dictionary<(int, TweenPropertyType), TweenHandle> GetAllTrackedTweens()
@@ -254,8 +232,7 @@ namespace UITweens.Services
 
         public void Cleanup()
         {
-            cachedKeysToRemoveList?.Clear();
-            cachedPendingKeysToProcess?.Clear();
+            pendingCancellations.Clear();
         }
 
         public TweenPropertyType DetectPropertyType(TweenHandle handle)
