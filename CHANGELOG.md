@@ -18,11 +18,11 @@ All notable changes to this package are documented in this file.
 
 ### Changed
 
-- `TweenManager.GetSpawner()` returns null until the tween world is ready, instead of throwing an exception.
 - Test logs use PASS and FAIL instead of emojis.
 
 ### Fixed
 
+- Starting a tween in `Start()` on the first frame no longer throws a `NullReferenceException`. `TweenManager` now finishes its setup when the first tween needs it.
 - `CubicInOut` no longer jumps at the halfway point.
 
 ### Documentation

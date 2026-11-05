@@ -40,8 +40,8 @@ namespace UITweens
                 return null;
             }
 
-            if (instance.world == null || instance.tweenBootstrapper == null)
-                return null;
+            // Tweens can start before the frame-spread setup has finished, for example in Start().
+            instance.EnsureInitialized();
 
             // Return cached instance instead of creating new one every time
             if (cachedSpawner == null)
@@ -148,8 +148,17 @@ namespace UITweens
             cachedSpawner = null;  // Clear cached spawner
         }
 
+        private void EnsureInitialized()
+        {
+            InitializeEcsWorld();
+            InitializeServices();
+        }
+
         private void InitializeEcsWorld()
         {
+            if (tweenBootstrapper != null)
+                return;
+
             tweenBootstrapper = new TweenWorldBootstrapper();
             tweenBootstrapper.Initialize();
             world = tweenBootstrapper.World;
@@ -157,6 +166,9 @@ namespace UITweens
 
         private void InitializeServices()
         {
+            if (tracker != null)
+                return;
+
             tracker = new TweenTracker();
             cleaner = new TweenCleaner();
             delayedSpawner = new TweenDelayedSpawner(tracker);
