@@ -1,6 +1,6 @@
 # UI Tweens
 
-**An ECS-based animation engine for Unity UI, running 350+ simultaneous tweens with zero GC allocations.**
+**An ECS-based animation engine for Unity UI.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
@@ -18,7 +18,7 @@ My first idea was a wrapper around DOTween. Then I wondered whether it would be 
 
 That was meant as a possible performance improvement, and it turned out to matter. DOTween works great, but in my experience it can have FPS issues beyond a couple of hundred tweens, and in gameplay they add up very fast.
 
-I built and refined it on my own time, reusing it across my projects. In November 2026 I extracted it into this standalone package, with documentation and tests. Earlier history lives in a private repository.
+I built and refined it on my own time in personal projects. It isn't used in production yet. In November 2026 I extracted it into this standalone package, with documentation and tests. Earlier history lives in a private repository.
 
 ## Is it right for your project?
 
@@ -363,21 +363,16 @@ flowchart LR
 
 ## Performance
 
-| Test | Result |
-|---|---|
-| Simultaneous tweens | 350+ |
-| GC allocations | 0 |
+Benchmarks aren't published yet, so measure your own project.
 
-These are the author's own measurements. The test setup and benchmark project aren't published yet, so measure your own project.
-
-Creating, running and cancelling a tween doesn't allocate once the pool has warmed up. Your own code can still allocate: a callback that captures variables creates a closure. `DeclareOnly()` and `Wait()` also allocate a small object each.
+UI Tweens pools tween entities to reduce allocations. Your own code can still allocate: a callback that captures variables creates a closure. `DeclareOnly()` and `Wait()` also allocate a small object each.
 
 ## How it compares
 
 | | UI Tweens | [DOTween](https://dotween.demigiant.com/) | [PrimeTween](https://github.com/KyryloKuzyk/PrimeTween) | [LitMotion](https://github.com/annulusgames/LitMotion) |
 |---|---|---|---|---|
 | Focus | Unity UI | General purpose | General purpose | General purpose |
-| Allocations | None once warmed up, apart from capturing callbacks | Recycles tweens to reduce allocations | Advertises no runtime allocations | Advertises zero allocations, including tween creation |
+| Allocations | Pools tweens to reduce allocations. Not benchmarked yet. | Recycles tweens to reduce allocations | Advertises no runtime allocations | Advertises zero allocations, including tween creation |
 | Sequences | `Then` and `Sequential` | Yes | Yes | Yes |
 | Unscaled time | No | Yes | Yes | Yes |
 | TextMeshPro | No | Yes, in the paid Pro version | Through examples | Yes |
@@ -406,7 +401,7 @@ Creating, running and cancelling a tween doesn't allocate once the pool has warm
 
 ## Project status
 
-This is a pre-release package at version `0.3.0`. Its API and behavior may change before `1.0.0`.
+This is a pre-release package at version `0.3.0`. Its API and behavior may change before `1.0.0`. Not yet used in a shipped game.
 
 Until `1.0.0`, minor versions (`0.x.0`) can include breaking changes, and patch versions (`0.x.y`) don't. Breaking changes are marked **Breaking** in the [changelog](CHANGELOG.md).
 

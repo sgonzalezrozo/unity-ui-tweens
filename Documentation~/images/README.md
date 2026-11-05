@@ -9,4 +9,3 @@ Keep GIFs to 10–15 seconds, about 800 px wide and under 5 MB. Use lowercase na
 | File | What to capture | README section |
 |---|---|---|
 | `demo.gif` | Several UI elements animating together | Top of the README |
-| `profiler-zero-gc.png` | The Profiler showing the zero-GC result, with the test setup | Performance |

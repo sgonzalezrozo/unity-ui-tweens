@@ -4,6 +4,11 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+### Documentation
+
+- Removed the unpublished 350+ tweens and zero-GC claims until a reproducible benchmark exists.
+- Said that the package isn't used in production or in a shipped game yet.
+
 ### Changed
 
 - Test logs use PASS and FAIL instead of emojis.
