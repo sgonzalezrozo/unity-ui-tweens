@@ -178,6 +178,44 @@ namespace UITweens.Services
             }
         }
 
+        public void PauseAllTweensForComponent(int componentId)
+        {
+            for (int i = 0; i < AllPropertyTypes.Length; i++)
+            {
+                if (TryGetLiveTween(componentId, AllPropertyTypes[i], out TweenHandle handle))
+                    TweenControlOperations.Pause(handle);
+            }
+        }
+
+        public void ResumeAllTweensForComponent(int componentId)
+        {
+            for (int i = 0; i < AllPropertyTypes.Length; i++)
+            {
+                if (TryGetLiveTween(componentId, AllPropertyTypes[i], out TweenHandle handle))
+                    TweenControlOperations.Resume(handle);
+            }
+        }
+
+        /// <summary>Pauses everything if any tween is playing, so tweens stay in step.</summary>
+        public void TogglePauseAllTweensForComponent(int componentId)
+        {
+            for (int i = 0; i < AllPropertyTypes.Length; i++)
+            {
+                if (TryGetLiveTween(componentId, AllPropertyTypes[i], out TweenHandle handle) && handle.IsPlaying)
+                {
+                    PauseAllTweensForComponent(componentId);
+                    return;
+                }
+            }
+
+            ResumeAllTweensForComponent(componentId);
+        }
+
+        private bool TryGetLiveTween(int componentId, TweenPropertyType propertyType, out TweenHandle handle)
+            => componentPropertyTweenHandles.TryGetValue((componentId, propertyType), out handle)
+               && handle.IsValid
+               && handle.Entity.IsAlive();
+
         public void RemoveFromPendingCancellations(UnityEngine.Object component, TweenPropertyType propertyType)
         {
             if (component == null)

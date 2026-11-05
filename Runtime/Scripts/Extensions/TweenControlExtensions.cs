@@ -45,7 +45,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(image, out TweenHandle handle))
-                TweenManager.Pause(handle);
+                TweenManager.PauseComponentTweens(image);
             else
                 Debug.LogWarning("[UITweens] No active tween to pause on Image: " + image.name);
         }
@@ -59,7 +59,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(image, out TweenHandle handle))
-                TweenManager.Resume(handle);
+                TweenManager.ResumeComponentTweens(image);
             else
                 Debug.LogWarning("[UITweens] No paused tween to resume on Image: " + image.name);
         }
@@ -93,7 +93,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(image, out TweenHandle handle))
-                TweenManager.TogglePause(handle);
+                TweenManager.TogglePauseComponentTweens(image);
             else
                 Debug.LogWarning("[UITweens] No active tween to toggle on Image: " + image.name);
         }
@@ -107,7 +107,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(rect, out TweenHandle handle))
-                TweenManager.Pause(handle);
+                TweenManager.PauseComponentTweens(rect);
             else
                 Debug.LogWarning("[UITweens] No active tween to pause on RectTransform: " + rect.name);
         }
@@ -121,7 +121,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(rect, out TweenHandle handle))
-                TweenManager.Resume(handle);
+                TweenManager.ResumeComponentTweens(rect);
             else
                 Debug.LogWarning("[UITweens] No paused tween to resume on RectTransform: " + rect.name);
         }
@@ -153,7 +153,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(rect, out TweenHandle handle))
-                TweenManager.TogglePause(handle);
+                TweenManager.TogglePauseComponentTweens(rect);
             else
                 Debug.LogWarning("[UITweens] No active tween to toggle on RectTransform: " + rect.name);
         }
@@ -167,7 +167,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(group, out TweenHandle handle))
-                TweenManager.Pause(handle);
+                TweenManager.PauseComponentTweens(group);
             else
                 Debug.LogWarning("[UITweens] No active tween to pause on CanvasGroup: " + group.name);
         }
@@ -181,7 +181,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(group, out TweenHandle handle))
-                TweenManager.Resume(handle);
+                TweenManager.ResumeComponentTweens(group);
             else
                 Debug.LogWarning("[UITweens] No paused tween to resume on CanvasGroup: " + group.name);
         }
@@ -215,7 +215,7 @@ namespace UITweens.Extensions
             }
 
             if (TweenManager.TryGetComponentTween(group, out TweenHandle handle))
-                TweenManager.TogglePause(handle);
+                TweenManager.TogglePauseComponentTweens(group);
             else
                 Debug.LogWarning("[UITweens] No active tween to toggle on CanvasGroup: " + group.name);
         }

@@ -24,6 +24,7 @@ All notable changes to this package are documented in this file.
 
 ### Fixed
 
+- `DoPause`, `DoPlay` and `DoTogglePause` now act on every tween on the component. They used to affect only one.
 - `DoCancel` now cancels every tween on the component. It used to cancel one and stop tracking the rest, so they kept playing and couldn't be cancelled.
 - Starting a tween in `Start()` on the first frame no longer throws a `NullReferenceException`. `TweenManager` now finishes its setup when the first tween needs it.
 - `CubicInOut` no longer jumps at the halfway point.

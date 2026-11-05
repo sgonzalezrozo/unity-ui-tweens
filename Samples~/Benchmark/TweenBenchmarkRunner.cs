@@ -29,7 +29,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     [SerializeField] private int seed = 14051991;
     [SerializeField] private string notes = "";
 
-    private static readonly int[] CapacitySteps = { 100, 350, 1000, 2500, 5000 };
+    // 0 and 10 show the fixed cost each frame, which every user pays.
+    private static readonly int[] CapacitySteps = { 0, 10, 100, 350, 1000, 2500, 5000 };
     private static readonly Action NoCaptureCallback = StaticNoCaptureCallback;
 
     // The pool never shrinks, so growth can only be measured once per process.

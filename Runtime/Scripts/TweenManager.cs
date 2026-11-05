@@ -245,6 +245,24 @@ namespace UITweens
         internal static void RemoveComponentTween(UnityEngine.Object component, TweenPropertyType propertyType)
             => instance?.tracker?.RemoveTween(component, propertyType);
 
+        internal static void PauseComponentTweens(UnityEngine.Object component)
+        {
+            if (component != null)
+                instance?.tracker?.PauseAllTweensForComponent(component.GetInstanceID());
+        }
+
+        internal static void ResumeComponentTweens(UnityEngine.Object component)
+        {
+            if (component != null)
+                instance?.tracker?.ResumeAllTweensForComponent(component.GetInstanceID());
+        }
+
+        internal static void TogglePauseComponentTweens(UnityEngine.Object component)
+        {
+            if (component != null)
+                instance?.tracker?.TogglePauseAllTweensForComponent(component.GetInstanceID());
+        }
+
         internal static void CancelComponentTweens(UnityEngine.Object component)
         {
             if (component != null)
