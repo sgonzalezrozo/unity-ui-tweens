@@ -11,7 +11,12 @@ namespace UITweens.Services
         private readonly Stack<EcsEntity> availableEntities;
         private readonly HashSet<EcsEntity> activeEntities;
 
-        private const int INITIAL_POOL_SIZE = 64;
+        private const int DEFAULT_POOL_SIZE = 32;
+        private const int DEFAULT_REFILL_THRESHOLD = 2;
+        private const int DEFAULT_GROWTH_BATCH_SIZE = 12;
+
+        private readonly int refillThreshold;
+        private readonly int growthBatchSize;
         private int totalCreated;
 
 #if UITWEENS_BENCHMARK
@@ -55,11 +60,17 @@ namespace UITweens.Services
 #endif
 
         // OPTIMIZATION: Accept pool size parameter for configurable pre-allocation (50-100ms gain)
-        public TweenPoolManager(EcsWorld world, int poolSize = INITIAL_POOL_SIZE)
+        public TweenPoolManager(
+            EcsWorld world,
+            int poolSize = DEFAULT_POOL_SIZE,
+            int refillThreshold = DEFAULT_REFILL_THRESHOLD,
+            int growthBatchSize = DEFAULT_GROWTH_BATCH_SIZE)
         {
             this.world = world;
             // Ensure minimum of 64, use provided size otherwise
-            poolSize = poolSize > INITIAL_POOL_SIZE ? poolSize : INITIAL_POOL_SIZE;
+            this.refillThreshold = refillThreshold;
+            this.growthBatchSize = growthBatchSize;
+            poolSize = poolSize > 0 ? poolSize : 0;
             availableEntities = new Stack<EcsEntity>(poolSize);
             activeEntities = new HashSet<EcsEntity>(poolSize);  // OPTIMIZATION: Pre-size HashSet
             totalCreated = 0;
@@ -104,24 +115,37 @@ namespace UITweens.Services
             }
             else
             {
-#if UITWEENS_BENCHMARK
-                if (TrackGrowth)
-                {
-                    entity = CreateTrackedEntity();
-                }
-                else
-                {
-                    entity = world.NewEntity();
-                    PreInitializeEntity(entity);
-                }
-#else
-                entity = world.NewEntity();
-                PreInitializeEntity(entity);
-#endif
-                totalCreated++;
+                entity = CreateEntity();
             }
 
             activeEntities.Add(entity);
+            return entity;
+        }
+
+        /// <summary>
+        /// Adds a batch when the pool is nearly empty. This runs in the update, not when a tween is
+        /// requested, so the next tween finds an entity ready and doesn't pay for the growth.
+        /// </summary>
+        public void RefillIfLow()
+        {
+            if (availableEntities.Count > refillThreshold)
+                return;
+
+            for (int i = 0; i < growthBatchSize; i++)
+                availableEntities.Push(CreateEntity());
+        }
+
+        private EcsEntity CreateEntity()
+        {
+            totalCreated++;
+
+#if UITWEENS_BENCHMARK
+            if (TrackGrowth)
+                return CreateTrackedEntity();
+#endif
+
+            EcsEntity entity = world.NewEntity();
+            PreInitializeEntity(entity);
             return entity;
         }
 

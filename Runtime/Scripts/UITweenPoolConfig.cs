@@ -4,33 +4,18 @@ namespace UITweens
 {
     public class UITweenPoolConfig : ScriptableObject
     {
-        [Header("Pool Warm-Up Configuration")]
-        [Tooltip("Maximum concurrent alpha tweens. Default ~40 for typical mobile UI.")]
-        public int MaxConcurrentAlphaTweens = 40;
+        [Header("Pool")]
+        [Tooltip("Tween entities created at startup. Lower values reduce startup work.")]
+        [Min(0)] public int InitialPoolSize = 32;
 
-        [Tooltip("Maximum concurrent position tweens. Default ~60 for typical mobile UI.")]
-        public int MaxConcurrentPositionTweens = 60;
+        [Tooltip("When this many entities or fewer are left, the pool refills on the next update.")]
+        [Min(0)] public int RefillThreshold = 2;
 
-        [Tooltip("Maximum concurrent scale tweens. Default ~30 for typical mobile UI.")]
-        public int MaxConcurrentScaleTweens = 30;
-
-        [Tooltip("Maximum concurrent rotation tweens. Default ~20 for typical mobile UI.")]
-        public int MaxConcurrentRotationTweens = 20;
-
-        // Color animations
-        [Tooltip("Maximum concurrent color tweens. Default ~30 for typical mobile UI.")]
-        public int MaxConcurrentColorTweens = 30;
-
-        // Size animations
-        [Tooltip("Maximum concurrent size delta tweens. Default ~20 for typical mobile UI.")]
-        public int MaxConcurrentSizeTweens = 20;
-
-        // Pivot animations
-        [Tooltip("Maximum concurrent pivot tweens. Default ~10 for typical mobile UI.")]
-        public int MaxConcurrentPivotTweens = 10;
+        [Tooltip("Entities added by each refill. 0 turns refills off.")]
+        [Min(0)] public int GrowthBatchSize = 12;
 
         [Header("Advanced")]
-        [Tooltip("If true, logs pool allocations at startup for profiling.")]
+        [Tooltip("If true, logs the pool size at startup.")]
         public bool LogPoolAllocations = false;
 
         public static UITweenPoolConfig Instance { get; private set; }
@@ -40,11 +25,5 @@ namespace UITweens
             if (Instance == null)
                 Instance = this;
         }
-
-        public int TotalEstimatedEntities
-            => MaxConcurrentAlphaTweens + MaxConcurrentPositionTweens + MaxConcurrentScaleTweens +
-               MaxConcurrentRotationTweens + MaxConcurrentColorTweens + MaxConcurrentSizeTweens +
-               MaxConcurrentPivotTweens;
     }
 }
-

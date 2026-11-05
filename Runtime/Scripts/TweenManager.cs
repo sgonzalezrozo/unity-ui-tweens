@@ -33,11 +33,22 @@ namespace UITweens
             startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
         }
 
-        internal static void EndInitializationSample(long startTimestamp, long startBytes)
+        /// <summary>Time spent loading and instantiating the prefab.</summary>
+        public static double StartupPrefabMilliseconds { get; internal set; }
+
+        /// <summary>Time spent building the tween world, including the pool.</summary>
+        public static double StartupWorldMilliseconds { get; private set; }
+
+        /// <summary>Time spent creating the tracker and other services.</summary>
+        public static double StartupServicesMilliseconds { get; private set; }
+
+        internal static double EndInitializationSample(long startTimestamp, long startBytes)
         {
             long endTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
-            InitializationMilliseconds += (endTimestamp - startTimestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
+            double milliseconds = (endTimestamp - startTimestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
+            InitializationMilliseconds += milliseconds;
             InitializationBytes += System.Math.Max(0L, System.GC.GetTotalMemory(false) - startBytes);
+            return milliseconds;
         }
 #endif
 
@@ -150,6 +161,8 @@ namespace UITweens
                     cleaner.CleanupOrphanedTweens(tracker);
                     lastCleanupFrame = Time.frameCount;
                 }
+
+                tweenBootstrapper.PoolManager.RefillIfLow();
             }
 
 #if UITWEENS_BENCHMARK
@@ -187,7 +200,7 @@ namespace UITweens
             world = tweenBootstrapper.World;
 
 #if UITWEENS_BENCHMARK
-            EndInitializationSample(startTimestamp, startBytes);
+            StartupWorldMilliseconds = EndInitializationSample(startTimestamp, startBytes);
 #endif
         }
 
@@ -205,7 +218,7 @@ namespace UITweens
             delayedSpawner = new TweenDelayedSpawner(tracker);
 
 #if UITWEENS_BENCHMARK
-            EndInitializationSample(startTimestamp, startBytes);
+            StartupServicesMilliseconds = EndInitializationSample(startTimestamp, startBytes);
 #endif
         }
 

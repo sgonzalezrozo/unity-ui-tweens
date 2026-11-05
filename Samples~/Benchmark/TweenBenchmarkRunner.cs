@@ -312,6 +312,12 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             unit = "bytes",
             aggregation = "single"
         });
+        AddSingleMetric(result, "startup-prefab", TweenManager.StartupPrefabMilliseconds, "ms");
+        AddSingleMetric(result, "startup-world", TweenManager.StartupWorldMilliseconds, "ms");
+        AddSingleMetric(result, "startup-services", TweenManager.StartupServicesMilliseconds, "ms");
+        AddSingleMetric(result, "startup-world-ecs", UITweens.TweenWorldBootstrapper.EcsWorldMilliseconds, "ms");
+        AddSingleMetric(result, "startup-world-config", UITweens.TweenWorldBootstrapper.ConfigLoadMilliseconds, "ms");
+        AddSingleMetric(result, "startup-world-systems", UITweens.TweenWorldBootstrapper.SystemsMilliseconds, "ms");
         AddSingleMetric(result, "pool-prealloc-time", TweenPoolManager.PreAllocationMilliseconds, "ms");
         AddSingleMetric(result, "pool-prealloc-gc", TweenPoolManager.PreAllocationBytes, "bytes");
         AddSingleMetric(result, "pool-growth-entities", TweenPoolManager.GrowthEntities, "count");
@@ -608,6 +614,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             parts.Add("Editor run, not valid for publishing.");
 
         parts.Add($"targetFrameRate {Application.targetFrameRate}, display {Screen.currentResolution.refreshRateRatio.value:0.##} Hz.");
+        parts.Add($"Frame Timing Stats {(FrameTimingManager.IsFeatureEnabled() ? "on" : "off")}.");
 
         if (!Debug.isDebugBuild)
             parts.Add("GC metrics omitted because this run is not a Development build.");

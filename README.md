@@ -284,17 +284,13 @@ You can also read the current value with `TweenHandle.FloatValue` or `TweenHandl
 
 ## Pool sizes
 
-UI Tweens creates a pool of tween entities at startup. Without a config, it adds up the defaults below for a pool of 210 entities.
+UI Tweens creates a small pool of tween entities at startup, then adds more as it needs them.
 
 | Field | Default |
 |---|---|
-| `MaxConcurrentAlphaTweens` | 40 |
-| `MaxConcurrentPositionTweens` | 60 |
-| `MaxConcurrentScaleTweens` | 30 |
-| `MaxConcurrentRotationTweens` | 20 |
-| `MaxConcurrentColorTweens` | 30 |
-| `MaxConcurrentSizeTweens` | 20 |
-| `MaxConcurrentPivotTweens` | 10 |
+| `InitialPoolSize` | 32. Entities created at startup. |
+| `RefillThreshold` | 2. The pool refills on the next update when this many entities or fewer are left. |
+| `GrowthBatchSize` | 12. Entities added by each refill. Set it to 0 to turn refills off. |
 | `LogPoolAllocations` | Off. Logs the pool size at startup. |
 
 To change them, create a `UITweenPoolConfig` asset at `Assets/Resources/UITweenPoolConfig.asset`. There's no menu item yet, so run this once from an Editor script:
@@ -316,10 +312,8 @@ public static class CreateTweenPoolConfig
 }
 ```
 
-- **Minimum:** the pool always holds at least 64 entities.
-- **Per-type fields:** these are added together into one shared pool. They aren't separate limits.
 - **After a tween ends:** LeoECS recycles its entity for the next tween.
-- **When more tweens run at once than ever before:** a new entity is created, which allocates memory, and tweens keep working. Set the pool to your peak to avoid this.
+- **When more tweens start at once than the pool holds:** new entities are created, which can allocate memory, and tweens keep working. Raise `InitialPoolSize` to your peak if startup cost matters less to you than the first burst.
 
 ## Easing
 

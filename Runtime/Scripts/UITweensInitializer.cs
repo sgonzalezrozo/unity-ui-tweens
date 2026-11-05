@@ -27,7 +27,7 @@ namespace UITweens
             instance.name = "TweenManager";
 
 #if UITWEENS_BENCHMARK
-            TweenManager.EndInitializationSample(startTimestamp, startBytes);
+            TweenManager.StartupPrefabMilliseconds = TweenManager.EndInitializationSample(startTimestamp, startBytes);
 #endif
         }
     }
