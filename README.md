@@ -95,14 +95,9 @@ https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.3.0
 
 ## Setup
 
-UI Tweens loads a `TweenManager` prefab after the first scene loads.
+There's nothing to set up. `TweenManager` creates itself after the first scene loads and spreads its startup work across a few frames, so don't add it to a scene. Check `TweenManager.IsReady` if you need to know when it has finished.
 
-1. Run **Tools > UI Tweens > Setup**.
-2. Confirm that `Assets/Resources/Tools/UITweens/TweenManager.prefab` exists.
-
-The prefab loads automatically after the first scene loads, so don't add it to a scene.
-
-If the prefab is missing, the Console shows a `TweenManager prefab not found` warning. Start tweens from `Start()` or later, not `Awake()`.
+Start tweens from `Start()` or later, not `Awake()`.
 
 ## Quick start
 
@@ -383,7 +378,6 @@ UI Tweens pools tween entities to reduce allocations. Your own code can still al
 | Problem | Try this |
 |---|---|
 | Compile errors mention `Leopotam` | Install LeoECS by following [Installation](#installation) |
-| `TweenManager prefab not found` | Run Tools > UI Tweens > Setup. |
 | Tweens stop in a pause menu | Tweens follow `Time.timeScale` |
 | A tween doesn't start in `Awake()` | Start it from `Start()` or later |
 | A declared tween never starts | Pass it to `Sequential()` |

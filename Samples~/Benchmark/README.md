@@ -4,9 +4,8 @@ Measures allocations, capacity and pool growth, and writes one JSON file per sce
 
 ## Run it
 
-1. Run **Tools > UI Tweens > Setup**.
-2. Open the `TweenBenchmark` scene, and set **Commit Hash** on `TweenBenchmarkRunner` to the commit under test. Find it with `git rev-parse --short HEAD`. The run stops if the hash is empty or a placeholder.
-3. To try it first, set **Runs Per Scenario** to 1 and **Max Capacity Tweens** to 1000, then press Play. The Editor caps the run at 60 fps. Results from the Editor are marked as not valid for publishing.
+1. Open the `TweenBenchmark` scene, and set **Commit Hash** on `TweenBenchmarkRunner` to the commit under test. Find it with `git rev-parse --short HEAD`. The run stops if the hash is empty or a placeholder.
+2. To try it first, set **Runs Per Scenario** to 1 and **Max Capacity Tweens** to 1000, then press Play. The Editor caps the run at 60 fps. Results from the Editor are marked as not valid for publishing.
 
 ## Run it on a device
 

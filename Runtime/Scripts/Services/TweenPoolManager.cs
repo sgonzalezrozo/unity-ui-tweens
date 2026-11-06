@@ -15,6 +15,8 @@ namespace UITweens.Services
         private const int DEFAULT_REFILL_THRESHOLD = 2;
         private const int DEFAULT_GROWTH_BATCH_SIZE = 12;
 
+        internal TweenFilterSet Filters { get; }
+
         private readonly int refillThreshold;
         private readonly int growthBatchSize;
         private int totalCreated;
@@ -68,6 +70,7 @@ namespace UITweens.Services
         {
             this.world = world;
             // Ensure minimum of 64, use provided size otherwise
+            Filters = new TweenFilterSet(world);
             this.refillThreshold = refillThreshold;
             this.growthBatchSize = growthBatchSize;
             poolSize = poolSize > 0 ? poolSize : 0;

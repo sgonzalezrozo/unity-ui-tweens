@@ -12,16 +12,19 @@ namespace UITweens.Systems
     /// </summary>
     public class DelayedTweenCompletionSystem : IEcsRunSystem
     {
-        private readonly EcsWorld world;
-        private EcsFilter<TweenTargetComponent, TweenClockComponent, TweenControlComponent> delayedTweensFilter;
+        private readonly TweenFilterSet filters;
 
-        public DelayedTweenCompletionSystem(EcsWorld world)
+        internal DelayedTweenCompletionSystem(TweenFilterSet filters)
         {
-            this.world = world;
+            this.filters = filters;
         }
 
         public void Run()
         {
+            var delayedTweensFilter = filters.Delayed;
+            if (delayedTweensFilter == null)
+                return;
+
             foreach (int idx in delayedTweensFilter)
             {
                 ref var clock = ref delayedTweensFilter.Get2(idx);

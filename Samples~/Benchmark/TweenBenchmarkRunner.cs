@@ -246,6 +246,14 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         yield return null;
         yield return null;
 
+        // The first tween of a type creates its filter, so time it on its own.
+        createStopwatch.Restart();
+        targets.GetRect(0).DOAnchorPosX(1f, 0.05f, EaseType.Linear);
+        createStopwatch.Stop();
+        double firstTweenMs = createStopwatch.ElapsedTicks * (1000d / System.Diagnostics.Stopwatch.Frequency);
+
+        yield return null;
+
         TweenSpawner spawner = TweenManager.GetSpawner();
         TweenBenchmarkSession session = CreateSession();
         int totalFrames = warmupFrames + measuredFrames;
@@ -327,6 +335,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         AddSingleMetric(result, "pool-growth-time-max", TweenPoolManager.GrowthMaxMilliseconds, "ms");
         AddSingleMetric(result, "pool-growth-gc", TweenPoolManager.GrowthBytes, "bytes");
 #endif
+
+        result.metrics.Add(new TweenBenchmarkMetric { name = "first-tween", value = firstTweenMs, unit = "ms", aggregation = "single" });
 
         if (includeGcMetric)
         {

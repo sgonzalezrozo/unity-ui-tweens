@@ -1,6 +1,7 @@
 using Leopotam.Ecs;
 using UITweens.Components;
 using UITweens.Math;
+using UITweens.Services;
 using UnityEngine;
 
 namespace UITweens.Systems
@@ -25,36 +26,32 @@ namespace UITweens.Systems
     /// </summary>
     public class TweenMathSystem : IEcsRunSystem
     {
-        private readonly EcsWorld world;
+        private readonly TweenFilterSet filters;
 
-        // Filters for different animation combinations
-        // NOTE: All filters now include TweenActiveMarkerComponent to exclude inactive pool entities
-        private EcsFilter<TweenClockComponent, TweenAlphaComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> alphaFilter;
-        private EcsFilter<TweenClockComponent, TweenPositionComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> positionFilter;
-        private EcsFilter<TweenClockComponent, TweenScaleComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> scaleFilter;
-        private EcsFilter<TweenClockComponent, TweenRotationComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> rotationFilter;
-
-        // Color, Size, Pivot filters
-        private EcsFilter<TweenClockComponent, TweenColorComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> colorFilter;
-        private EcsFilter<TweenClockComponent, TweenSizeDeltaComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> sizeFilter;
-        private EcsFilter<TweenClockComponent, TweenPivotComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> pivotFilter;
-
-        // Custom value filters
-        private EcsFilter<TweenClockComponent, TweenCustomFloatComponent, TweenControlComponent, TweenActiveMarkerComponent> customFloatFilter;
-        private EcsFilter<TweenClockComponent, TweenCustomVectorComponent, TweenControlComponent, TweenActiveMarkerComponent> customVectorFilter;
-
-        public TweenMathSystem(EcsWorld world)
+        internal TweenMathSystem(TweenFilterSet filters)
         {
-            this.world = world;
+            this.filters = filters;
         }
 
         public void Run()
         {
             float deltaTime = Time.deltaTime;
 
+            // Filters exist only for tween types that have been used.
+            var alphaFilter = filters.Alpha;
+            var positionFilter = filters.Position;
+            var scaleFilter = filters.Scale;
+            var rotationFilter = filters.Rotation;
+            var colorFilter = filters.Color;
+            var sizeFilter = filters.SizeDelta;
+            var pivotFilter = filters.Pivot;
+            var customFloatFilter = filters.CustomFloat;
+            var customVectorFilter = filters.CustomVector;
+
             // ...existing code for alpha, position, scale, rotation filters...
 
             // Process alpha tweens
+            if (alphaFilter != null)
             foreach (int idx in alphaFilter)
             {
                 ref TweenClockComponent clock = ref alphaFilter.Get1(idx);
@@ -147,6 +144,7 @@ namespace UITweens.Systems
             }
 
             // Process position tweens
+            if (positionFilter != null)
             foreach (int idx in positionFilter)
             {
                 ref TweenClockComponent clock = ref positionFilter.Get1(idx);
@@ -233,6 +231,7 @@ namespace UITweens.Systems
             }
 
             // Process scale tweens
+            if (scaleFilter != null)
             foreach (int idx in scaleFilter)
             {
                 ref TweenClockComponent clock = ref scaleFilter.Get1(idx);
@@ -322,6 +321,7 @@ namespace UITweens.Systems
             }
 
             // Process rotation tweens
+            if (rotationFilter != null)
             foreach (int idx in rotationFilter)
             {
                 ref TweenClockComponent clock = ref rotationFilter.Get1(idx);
@@ -411,6 +411,7 @@ namespace UITweens.Systems
             }
 
             // Process color tweens
+            if (colorFilter != null)
             foreach (int idx in colorFilter)
             {
                 ref TweenClockComponent clock = ref colorFilter.Get1(idx);
@@ -502,6 +503,7 @@ namespace UITweens.Systems
 
 
             // Process size delta tweens
+            if (sizeFilter != null)
             foreach (int idx in sizeFilter)
             {
                 ref TweenClockComponent clock = ref sizeFilter.Get1(idx);
@@ -591,6 +593,7 @@ namespace UITweens.Systems
             }
 
             // Process pivot tweens
+            if (pivotFilter != null)
             foreach (int idx in pivotFilter)
             {
                 ref TweenClockComponent clock = ref pivotFilter.Get1(idx);
@@ -680,6 +683,7 @@ namespace UITweens.Systems
             }
 
             // Process custom float tweens
+            if (customFloatFilter != null)
             foreach (int idx in customFloatFilter)
             {
                 ref TweenClockComponent clock = ref customFloatFilter.Get1(idx);
@@ -701,6 +705,7 @@ namespace UITweens.Systems
             }
 
             // Process custom vector tweens
+            if (customVectorFilter != null)
             foreach (int idx in customVectorFilter)
             {
                 ref TweenClockComponent clock = ref customVectorFilter.Get1(idx);

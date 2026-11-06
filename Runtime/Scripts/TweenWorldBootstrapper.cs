@@ -8,7 +8,9 @@ namespace UITweens
     public class TweenWorldBootstrapper
     {
         private EcsWorld world;
-        private EcsSystems systems;
+        private DelayedTweenCompletionSystem delayedCompletionSystem;
+        private TweenMathSystem mathSystem;
+        private UGUITweenApplySystem applySystem;
         private TweenPoolManager poolManager;
         private UITweenPoolConfig poolConfig;
 
@@ -30,7 +32,14 @@ namespace UITweens
             long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-            world = new EcsWorld();
+            // Smaller than the LeoECS defaults. Everything here grows when it needs to.
+            world = new EcsWorld(new EcsWorldConfig
+            {
+                WorldEntitiesCacheSize = 64,
+                WorldFiltersCacheSize = 16,
+                WorldComponentPoolsCacheSize = 32,
+                FilterEntitiesCacheSize = 32
+            });
 
 #if UITWEENS_BENCHMARK
             EcsWorldMilliseconds = ElapsedMilliseconds(startTimestamp);
@@ -61,12 +70,10 @@ namespace UITweens
             long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-            systems = new EcsSystems(world);
-            systems
-                .Add(new DelayedTweenCompletionSystem(world))
-                .Add(new TweenMathSystem(world))
-                .Add(new UGUITweenApplySystem(poolManager))
-                .Init();
+            // Run directly, because EcsSystems finds its fields through reflection at startup.
+            delayedCompletionSystem = new DelayedTweenCompletionSystem(poolManager.Filters);
+            mathSystem = new TweenMathSystem(poolManager.Filters);
+            applySystem = new UGUITweenApplySystem(poolManager);
 
 #if UITWEENS_BENCHMARK
             SystemsMilliseconds = ElapsedMilliseconds(startTimestamp);
@@ -78,16 +85,19 @@ namespace UITweens
 
         public void Update()
         {
-            systems?.Run();
+            if (applySystem == null)
+                return;
+
+            delayedCompletionSystem.Run();
+            mathSystem.Run();
+            applySystem.Run();
         }
 
         public void Destroy()
         {
-            if (systems != null)
-            {
-                systems.Destroy();
-                systems = null;
-            }
+            delayedCompletionSystem = null;
+            mathSystem = null;
+            applySystem = null;
 
             if (world != null)
             {

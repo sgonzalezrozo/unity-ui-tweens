@@ -21,6 +21,8 @@ All notable changes to this package are documented in this file.
 - **Breaking:** `UITweenPoolConfig` now uses `InitialPoolSize`, `RefillThreshold` and `GrowthBatchSize` instead of the per-type `MaxConcurrent` fields and `TotalEstimatedEntities`.
 - The pool starts with 32 entities instead of 210, and the 64 entity minimum is gone. It adds 12 entities on the next update when 2 or fewer are left.
 - Startup now runs in five stages on separate frames, so it doesn't land on one frame. Added `TweenManager.IsReady`. A tween that starts earlier finishes the remaining stages at once.
+- **Breaking:** `TweenManager` creates itself in code, so **Tools > UI Tweens > Setup** and the `TweenManager` prefab are no longer needed. You can delete the prefab.
+- LeoECS filters are created the first time a tween type is used, systems run without reflection, and the ECS world starts smaller. This lowers startup time and memory.
 - Tweens add loop and advanced callback data only when they use it, and position tweens are tracked once. This lowers the cost of creating and updating tweens.
 - `DoCancel` and other per-component tween lookups no longer scan every tracked tween, and replaced tweens are cancelled with less work.
 - Test logs use PASS and FAIL instead of emojis.

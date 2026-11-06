@@ -13,7 +13,7 @@ Thanks for helping out. Bug reports, documentation fixes and pull requests are w
 1. Create a Unity 2022.3 or newer project.
 2. Clone this repository.
 3. In **Window > Package Manager**, select **+ > Add package from disk** and choose this repository's `package.json`.
-4. Install LeoECS as described in the README, then run **Tools > UI Tweens > Setup**.
+4. Install LeoECS as described in the README.
 
 ## Make a change
 

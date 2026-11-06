@@ -114,7 +114,6 @@ namespace UITweens
         private EcsWorld world;
         private TweenTracker tracker;
         private TweenCleaner cleaner;
-        private TweenDelayedSpawner delayedSpawner;
         private int lastCleanupFrame;
         private int initStage;
 
@@ -152,7 +151,7 @@ namespace UITweens
 
         private void Update()
         {
-            if (tracker == null || delayedSpawner == null || tweenBootstrapper == null)
+            if (tracker == null || cleaner == null || tweenBootstrapper == null)
                 return;
 
 #if UITWEENS_BENCHMARK
@@ -162,7 +161,6 @@ namespace UITweens
             using (UpdateLoopMarker.Auto())
             {
                 tracker.ProcessPendingCancellations();
-                delayedSpawner.ProcessDelayQueue(Time.deltaTime, world);
                 tweenBootstrapper.Update();
 
                 if (Time.frameCount - lastCleanupFrame >= CLEANUP_INTERVAL_FRAMES)
@@ -185,7 +183,6 @@ namespace UITweens
             SceneManager.sceneLoaded -= OnSceneLoaded;
             tweenBootstrapper?.Destroy();
             tracker?.Cleanup();
-            delayedSpawner?.Cleanup();
             cachedSpawner = null;  // Clear cached spawner
         }
 
@@ -226,7 +223,6 @@ namespace UITweens
 
                 case 4:
                     cleaner = new TweenCleaner();
-                    delayedSpawner = new TweenDelayedSpawner(tracker);
                     break;
             }
 
@@ -338,9 +334,6 @@ namespace UITweens
             if (component != null)
                 instance?.tracker?.CancelAllTweensForComponent(component.GetInstanceID());
         }
-
-        internal static void EnqueueDelayedTween(TweenDefinition definition)
-            => instance?.delayedSpawner?.EnqueueDelayedTween(definition);
 
         internal static void RemoveFromPendingCancellations(UnityEngine.Object component, TweenPropertyType propertyType)
             => instance?.tracker?.RemoveFromPendingCancellations(component, propertyType);

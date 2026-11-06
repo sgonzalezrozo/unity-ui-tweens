@@ -15,18 +15,12 @@ namespace UITweens.Services
         private readonly EcsWorld world;
         private readonly TweenPoolManager poolManager;
         private readonly TweenInitializer initializer;
-        private readonly TweenStrategyFactory strategyFactory;
-        private readonly TweenPlaybackEngine playbackEngine;
-        private readonly TweenProgressTracker progressTracker;
 
         public TweenSpawner(EcsWorld world, TweenPoolManager sharedPoolManager = null)
         {
             this.world = world;
-            progressTracker = new TweenProgressTracker(new EasingCurveEvaluator());
             poolManager = sharedPoolManager ?? new TweenPoolManager(world);
             initializer = new TweenInitializer(poolManager);
-            strategyFactory = new TweenStrategyFactory();
-            playbackEngine = new TweenPlaybackEngine(progressTracker);
         }
 
         /// <summary>
