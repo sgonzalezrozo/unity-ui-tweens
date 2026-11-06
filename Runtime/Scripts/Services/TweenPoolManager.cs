@@ -34,11 +34,18 @@ namespace UITweens.Services
         public static double GrowthMaxMilliseconds { get; private set; }
         public static long GrowthBytes { get; private set; }
 
+        // Details of the slowest entity creation, to tell a resize from a GC pause.
+        public static long WorstGrowthBytes { get; private set; }
+        public static int WorstGrowthEntityId { get; private set; }
+        public static int WorstGrowthFrame { get; private set; }
+        public static int WorstGrowthCollections { get; private set; }
+
         private static double TimestampToMilliseconds(long ticks)
             => ticks * (1000d / System.Diagnostics.Stopwatch.Frequency);
 
         private EcsEntity CreateTrackedEntity()
         {
+            int startCollections = System.GC.CollectionCount(0);
             long startBytes = System.GC.GetTotalMemory(false);
             long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
 
@@ -50,7 +57,15 @@ namespace UITweens.Services
 
             GrowthEntities++;
             GrowthTotalMilliseconds += milliseconds;
-            GrowthMaxMilliseconds = System.Math.Max(GrowthMaxMilliseconds, milliseconds);
+
+            if (milliseconds > GrowthMaxMilliseconds)
+            {
+                GrowthMaxMilliseconds = milliseconds;
+                WorstGrowthBytes = bytes;
+                WorstGrowthEntityId = entity.GetInternalId();
+                WorstGrowthFrame = UnityEngine.Time.frameCount;
+                WorstGrowthCollections = System.GC.CollectionCount(0) - startCollections;
+            }
 
             if (bytes > 0L)
             {
@@ -86,6 +101,10 @@ namespace UITweens.Services
             GrowthTotalMilliseconds = 0d;
             GrowthMaxMilliseconds = 0d;
             GrowthBytes = 0L;
+            WorstGrowthBytes = 0L;
+            WorstGrowthEntityId = 0;
+            WorstGrowthFrame = 0;
+            WorstGrowthCollections = 0;
 
             long startBytes = System.GC.GetTotalMemory(false);
             long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();

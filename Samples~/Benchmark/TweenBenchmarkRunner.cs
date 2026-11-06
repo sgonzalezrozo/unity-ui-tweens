@@ -265,6 +265,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         int lastAllocatingFrame = -1;
 
 #if UITWEENS_BENCHMARK
+        int growthStartFrame = Time.frameCount;
         TweenPoolManager.TrackGrowth = true;
 #endif
 
@@ -336,6 +337,10 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         AddSingleMetric(result, "pool-growth-time-total", TweenPoolManager.GrowthTotalMilliseconds, "ms");
         AddSingleMetric(result, "pool-growth-time-max", TweenPoolManager.GrowthMaxMilliseconds, "ms");
         AddSingleMetric(result, "pool-growth-gc", TweenPoolManager.GrowthBytes, "bytes");
+        AddSingleMetric(result, "pool-growth-worst-bytes", TweenPoolManager.WorstGrowthBytes, "bytes");
+        AddSingleMetric(result, "pool-growth-worst-entity-id", TweenPoolManager.WorstGrowthEntityId, "count");
+        AddSingleMetric(result, "pool-growth-worst-frame", TweenPoolManager.WorstGrowthFrame - growthStartFrame, "count");
+        AddSingleMetric(result, "pool-growth-worst-gc-runs", TweenPoolManager.WorstGrowthCollections, "count");
 #endif
 
         result.metrics.Add(new TweenBenchmarkMetric { name = "first-tween", value = firstTweenMs, unit = "ms", aggregation = "single" });

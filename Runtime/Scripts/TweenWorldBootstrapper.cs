@@ -38,7 +38,10 @@ namespace UITweens
                 WorldEntitiesCacheSize = 64,
                 WorldFiltersCacheSize = 16,
                 WorldComponentPoolsCacheSize = 32,
-                FilterEntitiesCacheSize = 32
+                FilterEntitiesCacheSize = 32,
+
+                // Sequences and callbacks reach 9 or more components. The default of 8 resizes then.
+                EntityComponentsCacheSize = 12
             });
 
 #if UITWEENS_BENCHMARK
