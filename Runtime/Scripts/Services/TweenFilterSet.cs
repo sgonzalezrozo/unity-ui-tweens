@@ -24,6 +24,31 @@ namespace UITweens.Services
         public EcsFilter<TweenClockComponent, TweenCustomFloatComponent, TweenControlComponent> CustomFloat;
         public EcsFilter<TweenClockComponent, TweenCustomVectorComponent, TweenControlComponent> CustomVector;
 
+        // Active tweens of each kind. Systems stop scanning a filter once they've seen them all,
+        // so pooled entities in the filters cost almost nothing.
+        private readonly int[] activeByKind = new int[10];
+
+        public int ActiveTotal { get; private set; }
+
+        internal void OnActivated(TweenPoolKind kind)
+        {
+            activeByKind[(int)kind]++;
+            ActiveTotal++;
+        }
+
+        internal void OnDeactivated(TweenPoolKind kind)
+        {
+            activeByKind[(int)kind]--;
+            ActiveTotal--;
+        }
+
+        /// <summary>
+        /// Active tweens of one kind. A tween with no kind can carry any property component, so
+        /// while one exists, this returns a count that never stops a scan early.
+        /// </summary>
+        public int GetActiveCount(TweenPoolKind kind)
+            => activeByKind[(int)TweenPoolKind.None] > 0 ? int.MaxValue : activeByKind[(int)kind];
+
         public TweenFilterSet(EcsWorld world)
         {
             this.world = world;

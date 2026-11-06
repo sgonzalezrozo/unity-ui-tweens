@@ -17,6 +17,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     private const string CanvasPerTargetVariant = "canvas-per-target";
 
     [SerializeField] private bool runOnStart = true;
+    [Tooltip("Measures startup only, saves one file and quits. Run the app many times to see how startup varies.")]
+    [SerializeField] private bool startupOnly = false;
     [SerializeField] private bool includeCanvasPerTargetMode = true;
     [SerializeField] private int warmupFrames = 120;
     [SerializeField] private int measuredFrames = 600;
@@ -115,6 +117,13 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
             status.Show("Waiting for TweenManager...");
             yield return WaitForTweenManager();
+
+            if (startupOnly)
+            {
+                yield return MeasureStartupOnly();
+                Application.Quit();
+                yield break;
+            }
 
             yield return MeasurePoolGrowth();
 
@@ -308,30 +317,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             includeCreateMetric: false);
 
 #if UITWEENS_BENCHMARK
-        result.metrics.Add(new TweenBenchmarkMetric
-        {
-            name = "startup-init",
-            value = TweenManager.InitializationMilliseconds,
-            unit = "ms",
-            aggregation = "single"
-        });
-        result.metrics.Add(new TweenBenchmarkMetric
-        {
-            name = "startup-gc",
-            value = TweenManager.InitializationBytes,
-            unit = "bytes",
-            aggregation = "single"
-        });
-        AddSingleMetric(result, "startup-worst-stage", TweenManager.StartupWorstStageMilliseconds, "ms");
-        AddSingleMetric(result, "startup-tracker", TweenManager.StartupTrackerMilliseconds, "ms");
-        AddSingleMetric(result, "startup-prefab", TweenManager.StartupPrefabMilliseconds, "ms");
-        AddSingleMetric(result, "startup-world", TweenManager.StartupWorldMilliseconds, "ms");
-        AddSingleMetric(result, "startup-services", TweenManager.StartupServicesMilliseconds, "ms");
-        AddSingleMetric(result, "startup-world-ecs", UITweens.TweenWorldBootstrapper.EcsWorldMilliseconds, "ms");
-        AddSingleMetric(result, "startup-world-systems", UITweens.TweenWorldBootstrapper.SystemsMilliseconds, "ms");
-        AddSingleMetric(result, "pool-prealloc-time", TweenPoolManager.PreAllocationMilliseconds, "ms");
-        AddSingleMetric(result, "pool-prealloc-max-slice", TweenPoolManager.PreAllocationMaxSliceMilliseconds, "ms");
-        AddSingleMetric(result, "pool-prealloc-gc", TweenPoolManager.PreAllocationBytes, "bytes");
+        AddStartupMetrics(result);
         AddSingleMetric(result, "pool-growth-entities", TweenPoolManager.GrowthEntities, "count");
         AddSingleMetric(result, "pool-growth-allocations", TweenPoolManager.GrowthAllocations, "count");
         AddSingleMetric(result, "pool-growth-time-total", TweenPoolManager.GrowthTotalMilliseconds, "ms");
@@ -444,7 +430,74 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             accumulator.RecordCpuMs(timing.cpuMainThreadFrameTime, timing.cpuRenderThreadFrameTime);
     }
 
+    private IEnumerator MeasureStartupOnly()
+    {
+        status.Show("Measuring startup");
+        targets.Rebuild(1, separateCanvasPerTarget: false);
+        yield return null;
+
+        createStopwatch.Restart();
+        targets.GetRect(0).DOAnchorPosX(1f, 0.05f, EaseType.Linear);
+        createStopwatch.Stop();
+        double firstTweenMs = createStopwatch.ElapsedTicks * (1000d / System.Diagnostics.Stopwatch.Frequency);
+
+        // A second tracker shows whether the first one's cost was one-time setup.
+        createStopwatch.Restart();
+        _ = new TweenTracker();
+        createStopwatch.Stop();
+        double warmTrackerMs = createStopwatch.ElapsedTicks * (1000d / System.Diagnostics.Stopwatch.Frequency);
+
+        TweenBenchmarkResult result = new()
+        {
+            timestampUtc = DateTime.UtcNow.ToString("O"),
+            session = CreateSession(),
+            workload = new TweenBenchmarkWorkload
+            {
+                profileOrScenario = "startup",
+                variant = SharedCanvasVariant,
+                runIndex = 1,
+                totalRuns = 1,
+                warmupFrames = 0,
+                measuredFrames = 1,
+                seed = seed
+            },
+            metrics = new List<TweenBenchmarkMetric>
+            {
+                new() { name = "first-tween", value = firstTweenMs, unit = "ms", aggregation = "single" },
+                new() { name = "tracker-warm", value = warmTrackerMs, unit = "ms", aggregation = "single" }
+            }
+        };
+
 #if UITWEENS_BENCHMARK
+        AddStartupMetrics(result);
+#endif
+
+        report.Save(result);
+        status.Show($"Startup saved to\n{report.Folder}");
+    }
+
+#if UITWEENS_BENCHMARK
+    private static void AddStartupMetrics(TweenBenchmarkResult result)
+    {
+        AddSingleMetric(result, "startup-init", TweenManager.InitializationMilliseconds, "ms");
+        AddSingleMetric(result, "startup-gc", TweenManager.InitializationBytes, "bytes");
+        AddSingleMetric(result, "startup-begin-time", TweenManager.StartupBeginSeconds * 1000d, "ms");
+        AddSingleMetric(result, "startup-worst-stage", TweenManager.StartupWorstStageMilliseconds, "ms");
+        AddSingleMetric(result, "startup-prefab", TweenManager.StartupPrefabMilliseconds, "ms");
+        AddSingleMetric(result, "startup-world", TweenManager.StartupWorldMilliseconds, "ms");
+        AddSingleMetric(result, "startup-services", TweenManager.StartupServicesMilliseconds, "ms");
+        AddSingleMetric(result, "startup-world-ecs", UITweens.TweenWorldBootstrapper.EcsWorldMilliseconds, "ms");
+        AddSingleMetric(result, "startup-world-systems", UITweens.TweenWorldBootstrapper.SystemsMilliseconds, "ms");
+        AddSingleMetric(result, "startup-tracker", TweenManager.StartupTrackerMilliseconds, "ms");
+        AddSingleMetric(result, "startup-tracker-handles", TweenTracker.TrackedDictionaryMilliseconds, "ms");
+        AddSingleMetric(result, "startup-tracker-pending", TweenTracker.PendingDictionaryMilliseconds, "ms");
+        AddSingleMetric(result, "startup-tracker-targets", TweenTracker.TargetDictionaryMilliseconds, "ms");
+        AddSingleMetric(result, "startup-tracker-list", TweenTracker.ListMilliseconds, "ms");
+        AddSingleMetric(result, "pool-prealloc-time", TweenPoolManager.PreAllocationMilliseconds, "ms");
+        AddSingleMetric(result, "pool-prealloc-max-slice", TweenPoolManager.PreAllocationMaxSliceMilliseconds, "ms");
+        AddSingleMetric(result, "pool-prealloc-gc", TweenPoolManager.PreAllocationBytes, "bytes");
+    }
+
     private static void AddSingleMetric(TweenBenchmarkResult result, string name, double value, string unit)
     {
         result.metrics.Add(new TweenBenchmarkMetric { name = name, value = value, unit = unit, aggregation = "single" });

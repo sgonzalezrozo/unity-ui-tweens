@@ -148,7 +148,7 @@ namespace UITweens.Services
                 entity = CreateEntity();
 
             entity.Get<TweenControlComponent>().Kind = kind;
-            AddActive(entity);
+            AddActive(entity, kind);
             return entity;
         }
 
@@ -305,8 +305,10 @@ namespace UITweens.Services
         internal List<EcsEntity> ActiveEntities
             => activeEntities;
 
-        private void AddActive(EcsEntity entity)
+        private void AddActive(EcsEntity entity, TweenPoolKind kind)
         {
+            Filters.OnActivated(kind);
+
             int entityId = entity.GetInternalId();
             if (entityId >= activeSlotByEntityId.Length)
                 System.Array.Resize(ref activeSlotByEntityId, System.Math.Max(entityId + 1, activeSlotByEntityId.Length * 2));
@@ -332,6 +334,7 @@ namespace UITweens.Services
             activeSlotByEntityId[last.GetInternalId()] = index + 1;
             activeSlotByEntityId[entityId] = 0;
             activeEntities.RemoveAt(lastIndex);
+            Filters.OnDeactivated(entity.Get<TweenControlComponent>().Kind);
             return true;
         }
 
@@ -357,7 +360,7 @@ namespace UITweens.Services
         {
             // CORE components - always needed
             entity.Get<TweenClockComponent>();           // Timer tracking
-            entity.Get<TweenControlComponent>();          // Pause/resume/cancel state
+            entity.Get<TweenControlComponent>().State = TweenControlComponent.ControlState.Pooled;
             entity.Get<TweenResultComponent>();           // Computed animation values
             entity.Get<TweenTargetComponent>();           // Unity references (RectTransform, CanvasGroup, Image)
             entity.Get<TweenApplyFlagsComponent>();       // Which properties to apply

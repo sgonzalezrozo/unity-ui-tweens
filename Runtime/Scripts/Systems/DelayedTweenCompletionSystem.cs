@@ -22,7 +22,8 @@ namespace UITweens.Systems
         public void Run()
         {
             var delayedTweensFilter = filters.Delayed;
-            if (delayedTweensFilter == null)
+            int remaining = filters.ActiveTotal;
+            if (delayedTweensFilter == null || remaining == 0)
                 return;
 
             foreach (int idx in delayedTweensFilter)
@@ -33,6 +34,14 @@ namespace UITweens.Systems
 
                 EcsEntity entity = delayedTweensFilter.GetEntity(idx);
 
+                // Every active tween has been seen, so the rest are pooled.
+                if (remaining == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remaining--;
 
                 if (control.State != TweenControlComponent.ControlState.Delayed || !clock.IsDelayFinished)
                     continue;

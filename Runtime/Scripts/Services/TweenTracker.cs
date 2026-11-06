@@ -19,12 +19,49 @@ namespace UITweens.Services
             TweenPropertyType.Unknown
         };
 
-        // OPTIMIZATION: Pre-size collections to avoid resizing overhead (5-10ms gain)
-        private Dictionary<long, TweenHandle> componentPropertyTweenHandles = new(32);
-        private Dictionary<long, TweenHandle> pendingCancellations = new(16);
+        private readonly Dictionary<long, TweenHandle> componentPropertyTweenHandles;
+        private readonly Dictionary<long, TweenHandle> pendingCancellations;
+        private readonly Dictionary<int, UnityEngine.Object> registeredTargets;
+        private readonly List<int> destroyedTargetIds;
 
-        private readonly Dictionary<int, UnityEngine.Object> registeredTargets = new();
-        private readonly List<int> destroyedTargetIds = new();
+#if UITWEENS_BENCHMARK
+        // Times each part of the constructor, to find what makes the first tracker slow.
+        public static double TrackedDictionaryMilliseconds { get; private set; }
+        public static double PendingDictionaryMilliseconds { get; private set; }
+        public static double TargetDictionaryMilliseconds { get; private set; }
+        public static double ListMilliseconds { get; private set; }
+
+        private static double Since(ref long timestamp)
+        {
+            long now = System.Diagnostics.Stopwatch.GetTimestamp();
+            double milliseconds = (now - timestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
+            timestamp = now;
+            return milliseconds;
+        }
+#endif
+
+        public TweenTracker()
+        {
+#if UITWEENS_BENCHMARK
+            long timestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+#endif
+            componentPropertyTweenHandles = new Dictionary<long, TweenHandle>(32);
+#if UITWEENS_BENCHMARK
+            TrackedDictionaryMilliseconds = Since(ref timestamp);
+#endif
+            pendingCancellations = new Dictionary<long, TweenHandle>(16);
+#if UITWEENS_BENCHMARK
+            PendingDictionaryMilliseconds = Since(ref timestamp);
+#endif
+            registeredTargets = new Dictionary<int, UnityEngine.Object>();
+#if UITWEENS_BENCHMARK
+            TargetDictionaryMilliseconds = Since(ref timestamp);
+#endif
+            destroyedTargetIds = new List<int>();
+#if UITWEENS_BENCHMARK
+            ListMilliseconds = Since(ref timestamp);
+#endif
+        }
 
         // Packs a component and property into one key, which is cheaper than a tuple key.
         private static long MakeKey(int componentId, TweenPropertyType propertyType)

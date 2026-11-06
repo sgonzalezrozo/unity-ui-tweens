@@ -48,16 +48,35 @@ namespace UITweens.Systems
             var customFloatFilter = filters.CustomFloat;
             var customVectorFilter = filters.CustomVector;
 
+            int remainingAlpha = filters.GetActiveCount(TweenPoolKind.Alpha);
+            int remainingPosition = filters.GetActiveCount(TweenPoolKind.Position);
+            int remainingScale = filters.GetActiveCount(TweenPoolKind.Scale);
+            int remainingRotation = filters.GetActiveCount(TweenPoolKind.Rotation);
+            int remainingColor = filters.GetActiveCount(TweenPoolKind.Color);
+            int remainingSizeDelta = filters.GetActiveCount(TweenPoolKind.SizeDelta);
+            int remainingPivot = filters.GetActiveCount(TweenPoolKind.Pivot);
+            int remainingCustomFloat = filters.GetActiveCount(TweenPoolKind.CustomFloat);
+            int remainingCustomVector = filters.GetActiveCount(TweenPoolKind.CustomVector);
+
             // ...existing code for alpha, position, scale, rotation filters...
 
             // Process alpha tweens
-            if (alphaFilter != null)
+            if (alphaFilter != null && remainingAlpha > 0)
             foreach (int idx in alphaFilter)
             {
                 ref TweenClockComponent clock = ref alphaFilter.Get1(idx);
                 ref TweenAlphaComponent alpha = ref alphaFilter.Get2(idx);
                 ref TweenResultComponent result = ref alphaFilter.Get3(idx);
                 ref TweenControlComponent control = ref alphaFilter.Get4(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingAlpha == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingAlpha--;
 
                 // Skip cancelled tweens
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
@@ -144,13 +163,22 @@ namespace UITweens.Systems
             }
 
             // Process position tweens
-            if (positionFilter != null)
+            if (positionFilter != null && remainingPosition > 0)
             foreach (int idx in positionFilter)
             {
                 ref TweenClockComponent clock = ref positionFilter.Get1(idx);
                 ref TweenPositionComponent position = ref positionFilter.Get2(idx);
                 ref TweenResultComponent result = ref positionFilter.Get3(idx);
                 ref TweenControlComponent control = ref positionFilter.Get4(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingPosition == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingPosition--;
 
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
                     continue;
@@ -231,13 +259,22 @@ namespace UITweens.Systems
             }
 
             // Process scale tweens
-            if (scaleFilter != null)
+            if (scaleFilter != null && remainingScale > 0)
             foreach (int idx in scaleFilter)
             {
                 ref TweenClockComponent clock = ref scaleFilter.Get1(idx);
                 ref TweenScaleComponent scale = ref scaleFilter.Get2(idx);
                 ref TweenResultComponent result = ref scaleFilter.Get3(idx);
                 ref TweenControlComponent control = ref scaleFilter.Get4(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingScale == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingScale--;
 
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
                     continue;
@@ -321,13 +358,22 @@ namespace UITweens.Systems
             }
 
             // Process rotation tweens
-            if (rotationFilter != null)
+            if (rotationFilter != null && remainingRotation > 0)
             foreach (int idx in rotationFilter)
             {
                 ref TweenClockComponent clock = ref rotationFilter.Get1(idx);
                 ref TweenRotationComponent rotation = ref rotationFilter.Get2(idx);
                 ref TweenResultComponent result = ref rotationFilter.Get3(idx);
                 ref TweenControlComponent control = ref rotationFilter.Get4(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingRotation == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingRotation--;
 
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
                     continue;
@@ -411,13 +457,22 @@ namespace UITweens.Systems
             }
 
             // Process color tweens
-            if (colorFilter != null)
+            if (colorFilter != null && remainingColor > 0)
             foreach (int idx in colorFilter)
             {
                 ref TweenClockComponent clock = ref colorFilter.Get1(idx);
                 ref TweenColorComponent color = ref colorFilter.Get2(idx);
                 ref TweenResultComponent result = ref colorFilter.Get3(idx);
                 ref TweenControlComponent control = ref colorFilter.Get4(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingColor == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingColor--;
 
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
                     continue;
@@ -503,13 +558,22 @@ namespace UITweens.Systems
 
 
             // Process size delta tweens
-            if (sizeFilter != null)
+            if (sizeFilter != null && remainingSizeDelta > 0)
             foreach (int idx in sizeFilter)
             {
                 ref TweenClockComponent clock = ref sizeFilter.Get1(idx);
                 ref TweenSizeDeltaComponent size = ref sizeFilter.Get2(idx);
                 ref TweenResultComponent result = ref sizeFilter.Get3(idx);
                 ref TweenControlComponent control = ref sizeFilter.Get4(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingSizeDelta == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingSizeDelta--;
 
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
                     continue;
@@ -593,13 +657,22 @@ namespace UITweens.Systems
             }
 
             // Process pivot tweens
-            if (pivotFilter != null)
+            if (pivotFilter != null && remainingPivot > 0)
             foreach (int idx in pivotFilter)
             {
                 ref TweenClockComponent clock = ref pivotFilter.Get1(idx);
                 ref TweenPivotComponent pivot = ref pivotFilter.Get2(idx);
                 ref TweenResultComponent result = ref pivotFilter.Get3(idx);
                 ref TweenControlComponent control = ref pivotFilter.Get4(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingPivot == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingPivot--;
 
                 if (control.State == TweenControlComponent.ControlState.Cancelled)
                     continue;
@@ -683,12 +756,21 @@ namespace UITweens.Systems
             }
 
             // Process custom float tweens
-            if (customFloatFilter != null)
+            if (customFloatFilter != null && remainingCustomFloat > 0)
             foreach (int idx in customFloatFilter)
             {
                 ref TweenClockComponent clock = ref customFloatFilter.Get1(idx);
                 ref TweenCustomFloatComponent custom = ref customFloatFilter.Get2(idx);
                 ref TweenControlComponent control = ref customFloatFilter.Get3(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingCustomFloat == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingCustomFloat--;
 
                 if (!TryAdvanceClock(ref clock, ref control, deltaTime))
                     continue;
@@ -705,12 +787,21 @@ namespace UITweens.Systems
             }
 
             // Process custom vector tweens
-            if (customVectorFilter != null)
+            if (customVectorFilter != null && remainingCustomVector > 0)
             foreach (int idx in customVectorFilter)
             {
                 ref TweenClockComponent clock = ref customVectorFilter.Get1(idx);
                 ref TweenCustomVectorComponent custom = ref customVectorFilter.Get2(idx);
                 ref TweenControlComponent control = ref customVectorFilter.Get3(idx);
+
+                // Every active tween of this kind has been seen, so the rest are pooled.
+                if (remainingCustomVector == 0)
+                    break;
+
+                if (control.State == TweenControlComponent.ControlState.Pooled)
+                    continue;
+
+                remainingCustomVector--;
 
                 if (!TryAdvanceClock(ref clock, ref control, deltaTime))
                     continue;

@@ -43,6 +43,9 @@ namespace UITweens
         /// <summary>Time spent creating the tracker and other services.</summary>
         public static double StartupServicesMilliseconds { get; private set; }
 
+        /// <summary>Seconds since launch when setup began.</summary>
+        public static double StartupBeginSeconds { get; private set; }
+
         /// <summary>Time spent creating the tracker alone.</summary>
         public static double StartupTrackerMilliseconds { get; private set; }
 
@@ -253,6 +256,9 @@ namespace UITweens
             switch (initStage)
             {
                 case 0:
+#if UITWEENS_BENCHMARK
+                    StartupBeginSeconds = Time.realtimeSinceStartupAsDouble;
+#endif
                     tweenBootstrapper = new TweenWorldBootstrapper();
                     tweenBootstrapper.InitializeWorld();
                     world = tweenBootstrapper.World;
