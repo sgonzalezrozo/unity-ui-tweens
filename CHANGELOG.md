@@ -29,7 +29,7 @@ All notable changes to this package are documented in this file.
 - The update loop reads the active tweens directly instead of copying them each frame, and tween tracking uses a cheaper key.
 - **Breaking:** `DeclareOnly()` returns the `TweenDeclaration` struct, and `TweenWait` is a struct. `Sequential()` no longer allocates with up to four steps.
 - Entities start with room for 12 components, so tweens with sequences or callbacks don't resize them.
-- Finished tweens return to the pool for reuse, so it grows only when more tweens run at once than before. Old handles stop working when a tween ends.
+- Finished tweens return to a pool for their property type, so reuse keeps their components. The pool grows only when more tweens run at once than before. Old handles stop working when a tween ends.
 - Tweens add loop and advanced callback data only when they use it, and position tweens are tracked once. This lowers the cost of creating and updating tweens.
 - `DoCancel` and other per-component tween lookups no longer scan every tracked tween, and replaced tweens are cancelled with less work.
 - Test logs use PASS and FAIL instead of emojis.

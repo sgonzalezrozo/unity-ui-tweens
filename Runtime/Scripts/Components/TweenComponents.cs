@@ -223,6 +223,7 @@ namespace UITweens.Components
             Paused = 3,      // Paused (can resume from Playing or Delayed)
             Cancelled = 4,   // Killed, will be destroyed
             Waiting = 5,     // Held by a sequence or declaration until it is activated
+            Pooled = 6,      // Finished and waiting in the pool, skipped by every system
         }
 
         public ControlState State;
@@ -230,6 +231,9 @@ namespace UITweens.Components
 
         // Changes each time this entity is reused, which invalidates old handles
         public int Serial;
+
+        // Which pool this entity returns to, so it can keep its property component
+        public TweenPoolKind Kind;
 
         // Flag to ensure kill-competitors logic runs exactly once
         // when transitioning from Delayed → Playing

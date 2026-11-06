@@ -35,7 +35,7 @@ namespace UITweens.Services
             EaseType ease = EaseType.Linear,
             float easeParameter = -1f)
         {
-            TweenHandle handle = spawner.SpawnTweenInternal(dummyRectTransform, duration, ease, easeParameter);
+            TweenHandle handle = spawner.SpawnTweenInternal(dummyRectTransform, duration, ease, easeParameter, kind: TweenPoolKind.CustomFloat);
             spawner.InitializeCustomFloatInternal(handle, startValue, endValue);
             return new TweenBuilder(spawner).SetHandle(handle);
         }
@@ -51,7 +51,7 @@ namespace UITweens.Services
             EaseType ease = EaseType.Linear,
             float easeParameter = -1f)
         {
-            TweenHandle handle = spawner.SpawnTweenInternal(dummyRectTransform, duration, ease, easeParameter);
+            TweenHandle handle = spawner.SpawnTweenInternal(dummyRectTransform, duration, ease, easeParameter, kind: TweenPoolKind.CustomVector);
             spawner.InitializeCustomVectorInternal(handle, startValue, endValue);
             return new TweenBuilder(spawner).SetHandle(handle);
         }

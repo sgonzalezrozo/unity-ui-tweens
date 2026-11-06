@@ -5,10 +5,29 @@ using UITweens.Math;
 
 namespace UITweens.Services
 {
+    /// <summary>The pool a tween returns to. None means it has no property to keep.</summary>
+    public enum TweenPoolKind : byte
+    {
+        None,
+        Alpha,
+        Position,
+        Scale,
+        Rotation,
+        Color,
+        SizeDelta,
+        Pivot,
+        CustomFloat,
+        CustomVector
+    }
+
     public class TweenPoolManager
     {
         private readonly EcsWorld world;
+        // Core components, the delay component and one property component.
+        private const int BASE_COMPONENT_COUNT = 7;
+
         private readonly Stack<EcsEntity> availableEntities;
+        private readonly Stack<EcsEntity>[] entitiesByKind = new Stack<EcsEntity>[10];
         private readonly List<EcsEntity> activeEntities;
         private int[] activeSlotByEntityId;
 
@@ -116,19 +135,19 @@ namespace UITweens.Services
             entitiesToWarmUp = poolSize;
         }
 
-        public EcsEntity AcquireEntity()
+        public EcsEntity AcquireEntity(TweenPoolKind kind = TweenPoolKind.None)
         {
             EcsEntity entity;
+            Stack<EcsEntity> sameKind = entitiesByKind[(int)kind];
 
-            if (availableEntities.Count > 0)
-            {
+            if (kind != TweenPoolKind.None && sameKind != null && sameKind.Count > 0)
+                entity = sameKind.Pop();
+            else if (availableEntities.Count > 0)
                 entity = availableEntities.Pop();
-            }
             else
-            {
                 entity = CreateEntity();
-            }
 
+            entity.Get<TweenControlComponent>().Kind = kind;
             AddActive(entity);
             return entity;
         }
@@ -217,15 +236,51 @@ namespace UITweens.Services
 
             ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
             int nextSerial = control.Serial + 1;
+            TweenPoolKind kind = control.Kind;
+
             control = default;
             control.Serial = nextSerial;
+            control.Kind = kind;
+            control.State = TweenControlComponent.ControlState.Pooled;
 
             entity.Get<TweenClockComponent>() = default;
             entity.Get<TweenResultComponent>() = default;
             entity.Get<TweenTargetComponent>() = default;
             entity.Get<TweenApplyFlagsComponent>() = default;
 
-            RemoveOptional<TweenActiveMarkerComponent>(entity);
+            if (kind == TweenPoolKind.None)
+            {
+                RemoveOptionalComponents(entity);
+                RemoveProperty(entity);
+                availableEntities.Push(entity);
+                return;
+            }
+
+            // Most tweens have no optional components, so this usually skips every lookup.
+            if (entity.GetComponentsCount() > BASE_COMPONENT_COUNT)
+                RemoveOptionalComponents(entity);
+
+            Stack<EcsEntity> sameKind = entitiesByKind[(int)kind];
+            if (sameKind == null)
+            {
+                sameKind = new Stack<EcsEntity>();
+                entitiesByKind[(int)kind] = sameKind;
+            }
+
+            sameKind.Push(entity);
+        }
+
+        private static void RemoveOptionalComponents(EcsEntity entity)
+        {
+            RemoveOptional<TweenLoopComponent>(entity);
+            RemoveOptional<TweenCallbackComponent>(entity);
+            RemoveOptional<TweenCancelCallbackComponent>(entity);
+            RemoveOptional<TweenAdvancedCallbackComponent>(entity);
+            RemoveOptional<TweenSequenceLinkComponent>(entity);
+        }
+
+        private static void RemoveProperty(EcsEntity entity)
+        {
             RemoveOptional<TweenPositionComponent>(entity);
             RemoveOptional<TweenAlphaComponent>(entity);
             RemoveOptional<TweenScaleComponent>(entity);
@@ -235,14 +290,6 @@ namespace UITweens.Services
             RemoveOptional<TweenPivotComponent>(entity);
             RemoveOptional<TweenCustomFloatComponent>(entity);
             RemoveOptional<TweenCustomVectorComponent>(entity);
-            RemoveOptional<TweenDelayComponent>(entity);
-            RemoveOptional<TweenLoopComponent>(entity);
-            RemoveOptional<TweenCallbackComponent>(entity);
-            RemoveOptional<TweenCancelCallbackComponent>(entity);
-            RemoveOptional<TweenAdvancedCallbackComponent>(entity);
-            RemoveOptional<TweenSequenceLinkComponent>(entity);
-
-            availableEntities.Push(entity);
         }
 
         private static void RemoveOptional<T>(EcsEntity entity) where T : struct
@@ -314,6 +361,7 @@ namespace UITweens.Services
             entity.Get<TweenResultComponent>();           // Computed animation values
             entity.Get<TweenTargetComponent>();           // Unity references (RectTransform, CanvasGroup, Image)
             entity.Get<TweenApplyFlagsComponent>();       // Which properties to apply
+            entity.Get<TweenDelayComponent>();            // Stays through reuse, because every tween has one
 
             // OPTIONAL components - allocated on-demand when needed:
             // - TweenCallbackComponent: Only if OnComplete callback used

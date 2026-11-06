@@ -37,7 +37,7 @@ namespace UITweens.Services
             EaseType ease = EaseType.Linear,
             float easeParameter = -1f)
         {
-            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter);
+            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter, kind: TweenPoolKind.SizeDelta);
             spawner.InitializeSizeDeltaInternal(handle, startSize, endSize);
             return new TweenBuilder(spawner).SetHandle(handle);
         }
@@ -70,7 +70,7 @@ namespace UITweens.Services
             EaseType ease = EaseType.Linear,
             float easeParameter = -1f)
         {
-            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter);
+            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter, kind: TweenPoolKind.Pivot);
             spawner.InitializePivotInternal(handle, startPivot, endPivot);
             return new TweenBuilder(spawner).SetHandle(handle);
         }

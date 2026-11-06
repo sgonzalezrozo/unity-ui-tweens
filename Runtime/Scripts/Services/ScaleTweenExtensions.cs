@@ -38,7 +38,7 @@ namespace UITweens.Services
             EaseType ease = EaseType.Linear,
             float easeParameter = -1f)
         {
-            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter);
+            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter, kind: TweenPoolKind.Scale);
             spawner.InitializeScaleInternal(handle, startScale, endScale);
             return new TweenBuilder(spawner).SetHandle(handle);
         }

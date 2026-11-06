@@ -33,11 +33,11 @@ namespace UITweens.Services
             EaseType ease,
             float easeParameter,
             CanvasGroup canvasGroup = null,
-            UnityEngine.UI.Image image = null)
+            UnityEngine.UI.Image image = null,
+            TweenPoolKind kind = TweenPoolKind.None)
         {
-            EcsEntity entity = poolManager.AcquireEntity();
+            EcsEntity entity = poolManager.AcquireEntity(kind);
             initializer.InitializeBaseTween(entity, element, duration, ease, easeParameter, canvasGroup, image);
-            entity.Get<TweenActiveMarkerComponent>();
             return new TweenHandle(entity);
         }
 

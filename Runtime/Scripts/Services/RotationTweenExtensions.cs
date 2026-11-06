@@ -37,7 +37,7 @@ namespace UITweens.Services
             EaseType ease = EaseType.Linear,
             float easeParameter = -1f)
         {
-            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter);
+            TweenHandle handle = spawner.SpawnTweenInternal(element, duration, ease, easeParameter, kind: TweenPoolKind.Rotation);
             spawner.InitializeRotationInternal(handle, startRotation, endRotation);
             return new TweenBuilder(spawner).SetHandle(handle);
         }

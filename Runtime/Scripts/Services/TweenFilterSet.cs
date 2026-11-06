@@ -7,20 +7,22 @@ namespace UITweens.Services
     /// LeoECS filters, created the first time a tween type needs one. Each filter allocates large
     /// arrays and touches the component pools it uses, so unused tween types cost nothing.
     /// </summary>
+    /// <remarks>Pooled entities keep their property component, so filters include them. The
+    /// systems skip them through their Pooled state, which avoids filter updates on each reuse.</remarks>
     internal sealed class TweenFilterSet
     {
         private readonly EcsWorld world;
 
         public EcsFilter<TweenTargetComponent, TweenClockComponent, TweenControlComponent> Delayed;
-        public EcsFilter<TweenClockComponent, TweenAlphaComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> Alpha;
-        public EcsFilter<TweenClockComponent, TweenPositionComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> Position;
-        public EcsFilter<TweenClockComponent, TweenScaleComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> Scale;
-        public EcsFilter<TweenClockComponent, TweenRotationComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> Rotation;
-        public EcsFilter<TweenClockComponent, TweenColorComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> Color;
-        public EcsFilter<TweenClockComponent, TweenSizeDeltaComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> SizeDelta;
-        public EcsFilter<TweenClockComponent, TweenPivotComponent, TweenResultComponent, TweenControlComponent, TweenActiveMarkerComponent> Pivot;
-        public EcsFilter<TweenClockComponent, TweenCustomFloatComponent, TweenControlComponent, TweenActiveMarkerComponent> CustomFloat;
-        public EcsFilter<TweenClockComponent, TweenCustomVectorComponent, TweenControlComponent, TweenActiveMarkerComponent> CustomVector;
+        public EcsFilter<TweenClockComponent, TweenAlphaComponent, TweenResultComponent, TweenControlComponent> Alpha;
+        public EcsFilter<TweenClockComponent, TweenPositionComponent, TweenResultComponent, TweenControlComponent> Position;
+        public EcsFilter<TweenClockComponent, TweenScaleComponent, TweenResultComponent, TweenControlComponent> Scale;
+        public EcsFilter<TweenClockComponent, TweenRotationComponent, TweenResultComponent, TweenControlComponent> Rotation;
+        public EcsFilter<TweenClockComponent, TweenColorComponent, TweenResultComponent, TweenControlComponent> Color;
+        public EcsFilter<TweenClockComponent, TweenSizeDeltaComponent, TweenResultComponent, TweenControlComponent> SizeDelta;
+        public EcsFilter<TweenClockComponent, TweenPivotComponent, TweenResultComponent, TweenControlComponent> Pivot;
+        public EcsFilter<TweenClockComponent, TweenCustomFloatComponent, TweenControlComponent> CustomFloat;
+        public EcsFilter<TweenClockComponent, TweenCustomVectorComponent, TweenControlComponent> CustomVector;
 
         public TweenFilterSet(EcsWorld world)
         {

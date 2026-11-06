@@ -57,7 +57,7 @@ namespace UITweens.Services
                 return new TweenBuilder(spawner);
             }
 
-            TweenHandle handle = spawner.SpawnTweenInternal(rectTransform, duration, ease, easeParameter, canvasGroup);
+            TweenHandle handle = spawner.SpawnTweenInternal(rectTransform, duration, ease, easeParameter, canvasGroup, kind: TweenPoolKind.Alpha);
             spawner.InitializeAlphaInternal(handle, startAlpha, endAlpha);
             return new TweenBuilder(spawner).SetHandle(handle);
         }
