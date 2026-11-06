@@ -59,8 +59,8 @@ namespace UITweens
 #endif
 
             // Run directly, because EcsSystems finds its fields through reflection at startup.
-            delayedCompletionSystem = new DelayedTweenCompletionSystem(poolManager.Filters);
-            mathSystem = new TweenMathSystem(poolManager.Filters);
+            delayedCompletionSystem = new DelayedTweenCompletionSystem(poolManager);
+            mathSystem = new TweenMathSystem(poolManager);
             applySystem = new UGUITweenApplySystem(poolManager);
 
 #if UITWEENS_BENCHMARK

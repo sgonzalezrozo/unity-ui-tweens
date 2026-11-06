@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Leopotam.Ecs;
 using UITweens.Components;
 using UITweens.Math;
@@ -26,811 +27,737 @@ namespace UITweens.Systems
     /// </summary>
     public class TweenMathSystem : IEcsRunSystem
     {
-        private readonly TweenFilterSet filters;
+        private readonly TweenPoolManager poolManager;
 
-        internal TweenMathSystem(TweenFilterSet filters)
+        internal TweenMathSystem(TweenPoolManager poolManager)
         {
-            this.filters = filters;
+            this.poolManager = poolManager;
         }
 
         public void Run()
         {
             float deltaTime = Time.deltaTime;
 
-            // Filters exist only for tween types that have been used.
-            var alphaFilter = filters.Alpha;
-            var positionFilter = filters.Position;
-            var scaleFilter = filters.Scale;
-            var rotationFilter = filters.Rotation;
-            var colorFilter = filters.Color;
-            var sizeFilter = filters.SizeDelta;
-            var pivotFilter = filters.Pivot;
-            var customFloatFilter = filters.CustomFloat;
-            var customVectorFilter = filters.CustomVector;
+            // Only active tweens are visited, so tweens waiting in the pool cost nothing.
+            List<EcsEntity> active = poolManager.ActiveEntities;
+            int count = active.Count;
 
-            int remainingAlpha = filters.GetActiveCount(TweenPoolKind.Alpha);
-            int remainingPosition = filters.GetActiveCount(TweenPoolKind.Position);
-            int remainingScale = filters.GetActiveCount(TweenPoolKind.Scale);
-            int remainingRotation = filters.GetActiveCount(TweenPoolKind.Rotation);
-            int remainingColor = filters.GetActiveCount(TweenPoolKind.Color);
-            int remainingSizeDelta = filters.GetActiveCount(TweenPoolKind.SizeDelta);
-            int remainingPivot = filters.GetActiveCount(TweenPoolKind.Pivot);
-            int remainingCustomFloat = filters.GetActiveCount(TweenPoolKind.CustomFloat);
-            int remainingCustomVector = filters.GetActiveCount(TweenPoolKind.CustomVector);
-
-            // ...existing code for alpha, position, scale, rotation filters...
-
-            // Process alpha tweens
-            if (alphaFilter != null && remainingAlpha > 0)
-            foreach (int idx in alphaFilter)
+            for (int i = 0; i < count; i++)
             {
-                ref TweenCoreComponent core = ref alphaFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenAlphaComponent alpha = ref alphaFilter.Get2(idx);
-                ref TweenResultComponent result = ref core.Result;
-                ref TweenControlComponent control = ref core.Control;
+                EcsEntity entity = active[i];
+                ref TweenCoreComponent core = ref entity.Get<TweenCoreComponent>();
 
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingAlpha == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingAlpha--;
-
-                // Skip cancelled tweens
-                if (control.State == TweenControlComponent.ControlState.Cancelled)
-                    continue;
-
-                // Skip paused tweens
-                if (control.State == TweenControlComponent.ControlState.Paused)
-                    continue;
-
-                // NotStarted → Delayed or Playing
-                if (control.State == TweenControlComponent.ControlState.NotStarted)
+                switch (core.Control.Kind)
                 {
-                    control.State = clock.HasDelay
-                        ? TweenControlComponent.ControlState.Delayed
-                        : TweenControlComponent.ControlState.Playing;
+                    case TweenPoolKind.Alpha:
+                        ProcessAlpha(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.Position:
+                        ProcessPosition(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.Scale:
+                        ProcessScale(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.Rotation:
+                        ProcessRotation(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.Color:
+                        ProcessColor(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.SizeDelta:
+                        ProcessSizeDelta(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.Pivot:
+                        ProcessPivot(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.CustomFloat:
+                        ProcessCustomFloat(entity, ref core, deltaTime);
+                        break;
+
+                    case TweenPoolKind.CustomVector:
+                        ProcessCustomVector(entity, ref core, deltaTime);
+                        break;
+
+                    default:
+                        ProcessAnyKind(entity, ref core, deltaTime);
+                        break;
                 }
-
-                // Delayed → Playing with spillover time
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    clock.ElapsedDelay += deltaTime;
-                    if (clock.IsDelayFinished)
-                    {
-                        if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
-                        {
-                            TweenManager.Cancel(control.PredecessorHandle);
-                            control.HasKilledCompetitors = true;
-
-                            EcsEntity entity = alphaFilter.GetEntity(idx);
-                            if (entity.Has<TweenCoreComponent>())
-                            {
-                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                                if (target.CanvasGroup != null)
-                                {
-                                    float currentAlpha = target.CanvasGroup.alpha;
-                                    alpha.StartValue = currentAlpha;
-                                    result.AlphaResult = currentAlpha;
-                                }
-                            }
-                        }
-
-                        if (!clock.HasCapturedStartValues)
-                            clock.HasCapturedStartValues = true;
-
-                        float spillover = clock.ElapsedDelay - clock.DelayDuration;
-                        control.State = TweenControlComponent.ControlState.Playing;
-                        clock.ElapsedTime = spillover > 0 ? spillover : 0f;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                // Only animate if playing
-                if (control.State != TweenControlComponent.ControlState.Playing)
-                    continue;
-
-                clock.ElapsedTime += deltaTime;
-                float normalizedT = clock.GetNormalizedTime();
-                float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
-
-                result.AlphaResult = TweenMath.Lerp(alpha.StartValue, alpha.EndValue, easedT);
-
-                // NEW: Handle looping - check if animation finished and should loop
-                if (clock.IsFinished)
-                {
-                    EcsEntity entity = alphaFilter.GetEntity(idx);
-
-                    if (TryProcessLoop(ref entity, ref clock))
-                    {
-                        // Loop is continuing, handle reverse mode
-                        if (entity.Has<TweenLoopComponent>())
-                        {
-                            ref var loop = ref entity.Get<TweenLoopComponent>();
-                            if (loop.ShouldReverse)
-                            {
-                                SwapValuesForReverse(ref alpha.StartValue, ref alpha.EndValue);
-                            }
-                        }
-                        // Continue to next frame, animation will restart from beginning
-                    }
-                }
-            }
-
-            // Process position tweens
-            if (positionFilter != null && remainingPosition > 0)
-            foreach (int idx in positionFilter)
-            {
-                ref TweenCoreComponent core = ref positionFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenPositionComponent position = ref positionFilter.Get2(idx);
-                ref TweenResultComponent result = ref core.Result;
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingPosition == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingPosition--;
-
-                if (control.State == TweenControlComponent.ControlState.Cancelled)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.Paused)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.NotStarted)
-                {
-                    control.State = clock.HasDelay
-                        ? TweenControlComponent.ControlState.Delayed
-                        : TweenControlComponent.ControlState.Playing;
-                }
-
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    clock.ElapsedDelay += deltaTime;
-                    if (clock.IsDelayFinished)
-                    {
-                        if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
-                        {
-                            TweenManager.Cancel(control.PredecessorHandle);
-                            control.HasKilledCompetitors = true;
-
-                            EcsEntity entity = positionFilter.GetEntity(idx);
-                            if (entity.Has<TweenCoreComponent>())
-                            {
-                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                                if (target.RectTransform != null)
-                                {
-                                    Vector2 currentPos = target.RectTransform.anchoredPosition;
-                                    position.StartValue = currentPos;
-                                    result.PositionResult = currentPos;
-                                }
-                            }
-                        }
-
-                        if (!clock.HasCapturedStartValues)
-                            clock.HasCapturedStartValues = true;
-
-                        float spillover = clock.ElapsedDelay - clock.DelayDuration;
-                        control.State = TweenControlComponent.ControlState.Playing;
-                        clock.ElapsedTime = spillover > 0 ? spillover : 0f;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                if (control.State != TweenControlComponent.ControlState.Playing)
-                    continue;
-
-
-                clock.ElapsedTime += deltaTime;
-                float normalizedT = clock.GetNormalizedTime();
-                float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
-
-                result.PositionResult = TweenMath.LerpVector2(position.StartValue, position.EndValue, easedT);
-
-                // NEW: Handle looping
-                if (clock.IsFinished)
-                {
-                    EcsEntity entity = positionFilter.GetEntity(idx);
-
-                    if (TryProcessLoop(ref entity, ref clock))
-                    {
-                        if (entity.Has<TweenLoopComponent>())
-                        {
-                            ref var loop = ref entity.Get<TweenLoopComponent>();
-                            if (loop.ShouldReverse)
-                            {
-                                SwapValuesForReverse(ref position.StartValue, ref position.EndValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Process scale tweens
-            if (scaleFilter != null && remainingScale > 0)
-            foreach (int idx in scaleFilter)
-            {
-                ref TweenCoreComponent core = ref scaleFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenScaleComponent scale = ref scaleFilter.Get2(idx);
-                ref TweenResultComponent result = ref core.Result;
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingScale == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingScale--;
-
-                if (control.State == TweenControlComponent.ControlState.Cancelled)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.Paused)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.NotStarted)
-                {
-                    control.State = clock.HasDelay
-                        ? TweenControlComponent.ControlState.Delayed
-                        : TweenControlComponent.ControlState.Playing;
-                }
-
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    clock.ElapsedDelay += deltaTime;
-                    if (clock.IsDelayFinished)
-                    {
-                        if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
-                        {
-                            TweenManager.Cancel(control.PredecessorHandle);
-                            control.HasKilledCompetitors = true;
-
-                            // Update start value from current UI state
-                            EcsEntity entity = scaleFilter.GetEntity(idx);
-                            if (entity.Has<TweenCoreComponent>())
-                            {
-                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                                if (target.RectTransform != null)
-                                {
-                                    Vector3 currentScale = target.RectTransform.localScale;
-                                    scale.StartValue = currentScale;
-                                    result.ScaleResult = currentScale;
-                                }
-                            }
-                        }
-
-                        if (!clock.HasCapturedStartValues)
-                        {
-                            clock.HasCapturedStartValues = true;
-                        }
-
-                        float spillover = clock.ElapsedDelay - clock.DelayDuration;
-                        control.State = TweenControlComponent.ControlState.Playing;
-                        clock.ElapsedTime = spillover > 0 ? spillover : 0f;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                if (control.State != TweenControlComponent.ControlState.Playing)
-                    continue;
-
-
-                clock.ElapsedTime += deltaTime;
-                float normalizedT = clock.GetNormalizedTime();
-                float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
-
-                result.ScaleResult = TweenMath.LerpVector3(scale.StartValue, scale.EndValue, easedT);
-
-                // NEW: Handle looping
-                if (clock.IsFinished)
-                {
-                    EcsEntity entity = scaleFilter.GetEntity(idx);
-
-                    if (TryProcessLoop(ref entity, ref clock))
-                    {
-                        if (entity.Has<TweenLoopComponent>())
-                        {
-                            ref var loop = ref entity.Get<TweenLoopComponent>();
-                            if (loop.ShouldReverse)
-                            {
-                                SwapValuesForReverse(ref scale.StartValue, ref scale.EndValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Process rotation tweens
-            if (rotationFilter != null && remainingRotation > 0)
-            foreach (int idx in rotationFilter)
-            {
-                ref TweenCoreComponent core = ref rotationFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenRotationComponent rotation = ref rotationFilter.Get2(idx);
-                ref TweenResultComponent result = ref core.Result;
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingRotation == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingRotation--;
-
-                if (control.State == TweenControlComponent.ControlState.Cancelled)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.Paused)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.NotStarted)
-                {
-                    control.State = clock.HasDelay
-                        ? TweenControlComponent.ControlState.Delayed
-                        : TweenControlComponent.ControlState.Playing;
-                }
-
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    clock.ElapsedDelay += deltaTime;
-                    if (clock.IsDelayFinished)
-                    {
-                        if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
-                        {
-                            TweenManager.Cancel(control.PredecessorHandle);
-                            control.HasKilledCompetitors = true;
-
-                            // Update start value from current UI state
-                            EcsEntity entity = rotationFilter.GetEntity(idx);
-                            if (entity.Has<TweenCoreComponent>())
-                            {
-                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                                if (target.RectTransform != null)
-                                {
-                                    float currentRotation = target.RectTransform.eulerAngles.z;
-                                    rotation.StartValue = currentRotation;
-                                    result.RotationResult = currentRotation;
-                                }
-                            }
-                        }
-
-                        if (!clock.HasCapturedStartValues)
-                        {
-                            clock.HasCapturedStartValues = true;
-                        }
-
-                        float spillover = clock.ElapsedDelay - clock.DelayDuration;
-                        control.State = TweenControlComponent.ControlState.Playing;
-                        clock.ElapsedTime = spillover > 0 ? spillover : 0f;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                if (control.State != TweenControlComponent.ControlState.Playing)
-                    continue;
-
-
-                clock.ElapsedTime += deltaTime;
-                float normalizedT = clock.GetNormalizedTime();
-                float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
-
-                result.RotationResult = TweenMath.Lerp(rotation.StartValue, rotation.EndValue, easedT);
-
-                // NEW: Handle looping
-                if (clock.IsFinished)
-                {
-                    EcsEntity entity = rotationFilter.GetEntity(idx);
-
-                    if (TryProcessLoop(ref entity, ref clock))
-                    {
-                        if (entity.Has<TweenLoopComponent>())
-                        {
-                            ref var loop = ref entity.Get<TweenLoopComponent>();
-                            if (loop.ShouldReverse)
-                            {
-                                SwapValuesForReverse(ref rotation.StartValue, ref rotation.EndValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Process color tweens
-            if (colorFilter != null && remainingColor > 0)
-            foreach (int idx in colorFilter)
-            {
-                ref TweenCoreComponent core = ref colorFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenColorComponent color = ref colorFilter.Get2(idx);
-                ref TweenResultComponent result = ref core.Result;
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingColor == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingColor--;
-
-                if (control.State == TweenControlComponent.ControlState.Cancelled)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.Paused)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.NotStarted)
-                {
-                    control.State = clock.HasDelay
-                        ? TweenControlComponent.ControlState.Delayed
-                        : TweenControlComponent.ControlState.Playing;
-                }
-
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    clock.ElapsedDelay += deltaTime;
-                    if (clock.IsDelayFinished)
-                    {
-                        // Cancel predecessor when delayed tween's delay finishes
-                        if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
-                        {
-                            TweenManager.Cancel(control.PredecessorHandle);
-                            control.HasKilledCompetitors = true;
-
-                            // Update start value from current UI state
-                            EcsEntity entity = colorFilter.GetEntity(idx);
-                            if (entity.Has<TweenCoreComponent>())
-                            {
-                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                                if (target.Image != null)
-                                {
-                                    Color currentColor = target.Image.color;
-                                    color.StartValue = currentColor;
-                                    result.ColorResult = currentColor;
-                                }
-                            }
-                        }
-
-                        if (!clock.HasCapturedStartValues)
-                        {
-                            clock.HasCapturedStartValues = true;
-                        }
-
-                        float spillover = clock.ElapsedDelay - clock.DelayDuration;
-                        control.State = TweenControlComponent.ControlState.Playing;
-                        clock.ElapsedTime = spillover > 0 ? spillover : 0f;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                if (control.State != TweenControlComponent.ControlState.Playing)
-                    continue;
-
-
-                clock.ElapsedTime += deltaTime;
-                float normalizedT = clock.GetNormalizedTime();
-                float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
-
-                result.ColorResult = TweenMath.LerpColor(color.StartValue, color.EndValue, easedT);
-
-                // NEW: Handle looping
-                if (clock.IsFinished)
-                {
-                    EcsEntity entity = colorFilter.GetEntity(idx);
-
-                    if (TryProcessLoop(ref entity, ref clock))
-                    {
-                        if (entity.Has<TweenLoopComponent>())
-                        {
-                            ref var loop = ref entity.Get<TweenLoopComponent>();
-                            if (loop.ShouldReverse)
-                            {
-                                SwapValuesForReverse(ref color.StartValue, ref color.EndValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            // Process size delta tweens
-            if (sizeFilter != null && remainingSizeDelta > 0)
-            foreach (int idx in sizeFilter)
-            {
-                ref TweenCoreComponent core = ref sizeFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenSizeDeltaComponent size = ref sizeFilter.Get2(idx);
-                ref TweenResultComponent result = ref core.Result;
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingSizeDelta == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingSizeDelta--;
-
-                if (control.State == TweenControlComponent.ControlState.Cancelled)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.Paused)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.NotStarted)
-                {
-                    control.State = clock.HasDelay
-                        ? TweenControlComponent.ControlState.Delayed
-                        : TweenControlComponent.ControlState.Playing;
-                }
-
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    clock.ElapsedDelay += deltaTime;
-                    if (clock.IsDelayFinished)
-                    {
-                        if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
-                        {
-                            TweenManager.Cancel(control.PredecessorHandle);
-                            control.HasKilledCompetitors = true;
-
-                            // Update start value from current UI state
-                            EcsEntity entity = sizeFilter.GetEntity(idx);
-                            if (entity.Has<TweenCoreComponent>())
-                            {
-                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                                if (target.RectTransform != null)
-                                {
-                                    Vector2 currentSize = target.RectTransform.sizeDelta;
-                                    size.StartValue = currentSize;
-                                    result.SizeDeltaResult = currentSize;
-                                }
-                            }
-                        }
-
-                        if (!clock.HasCapturedStartValues)
-                        {
-                            clock.HasCapturedStartValues = true;
-                        }
-
-                        float spillover = clock.ElapsedDelay - clock.DelayDuration;
-                        control.State = TweenControlComponent.ControlState.Playing;
-                        clock.ElapsedTime = spillover > 0 ? spillover : 0f;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                if (control.State != TweenControlComponent.ControlState.Playing)
-                    continue;
-
-
-                clock.ElapsedTime += deltaTime;
-                float normalizedT = clock.GetNormalizedTime();
-                float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
-
-                result.SizeDeltaResult = TweenMath.LerpVector2(size.StartValue, size.EndValue, easedT);
-
-                // NEW: Handle looping
-                if (clock.IsFinished)
-                {
-                    EcsEntity entity = sizeFilter.GetEntity(idx);
-
-                    if (TryProcessLoop(ref entity, ref clock))
-                    {
-                        if (entity.Has<TweenLoopComponent>())
-                        {
-                            ref var loop = ref entity.Get<TweenLoopComponent>();
-                            if (loop.ShouldReverse)
-                            {
-                                SwapValuesForReverse(ref size.StartValue, ref size.EndValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Process pivot tweens
-            if (pivotFilter != null && remainingPivot > 0)
-            foreach (int idx in pivotFilter)
-            {
-                ref TweenCoreComponent core = ref pivotFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenPivotComponent pivot = ref pivotFilter.Get2(idx);
-                ref TweenResultComponent result = ref core.Result;
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingPivot == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingPivot--;
-
-                if (control.State == TweenControlComponent.ControlState.Cancelled)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.Paused)
-                    continue;
-
-                if (control.State == TweenControlComponent.ControlState.NotStarted)
-                {
-                    control.State = clock.HasDelay
-                        ? TweenControlComponent.ControlState.Delayed
-                        : TweenControlComponent.ControlState.Playing;
-                }
-
-                if (control.State == TweenControlComponent.ControlState.Delayed)
-                {
-                    clock.ElapsedDelay += deltaTime;
-                    if (clock.IsDelayFinished)
-                    {
-                        if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
-                        {
-                            TweenManager.Cancel(control.PredecessorHandle);
-                            control.HasKilledCompetitors = true;
-
-                            // Update start value from current UI state
-                            EcsEntity entity = pivotFilter.GetEntity(idx);
-                            if (entity.Has<TweenCoreComponent>())
-                            {
-                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                                if (target.RectTransform != null)
-                                {
-                                    Vector2 currentPivot = target.RectTransform.pivot;
-                                    pivot.StartValue = currentPivot;
-                                    result.PivotResult = currentPivot;
-                                }
-                            }
-                        }
-
-                        if (!clock.HasCapturedStartValues)
-                        {
-                            clock.HasCapturedStartValues = true;
-                        }
-
-                        float spillover = clock.ElapsedDelay - clock.DelayDuration;
-                        control.State = TweenControlComponent.ControlState.Playing;
-                        clock.ElapsedTime = spillover > 0 ? spillover : 0f;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                if (control.State != TweenControlComponent.ControlState.Playing)
-                    continue;
-
-
-                clock.ElapsedTime += deltaTime;
-                float normalizedT = clock.GetNormalizedTime();
-                float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
-
-                result.PivotResult = TweenMath.LerpVector2(pivot.StartValue, pivot.EndValue, easedT);
-
-                // NEW: Handle looping
-                if (clock.IsFinished)
-                {
-                    EcsEntity entity = pivotFilter.GetEntity(idx);
-
-                    if (TryProcessLoop(ref entity, ref clock))
-                    {
-                        if (entity.Has<TweenLoopComponent>())
-                        {
-                            ref var loop = ref entity.Get<TweenLoopComponent>();
-                            if (loop.ShouldReverse)
-                            {
-                                SwapValuesForReverse(ref pivot.StartValue, ref pivot.EndValue);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Process custom float tweens
-            if (customFloatFilter != null && remainingCustomFloat > 0)
-            foreach (int idx in customFloatFilter)
-            {
-                ref TweenCoreComponent core = ref customFloatFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenCustomFloatComponent custom = ref customFloatFilter.Get2(idx);
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingCustomFloat == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingCustomFloat--;
-
-                if (!TryAdvanceClock(ref clock, ref control, deltaTime))
-                    continue;
-
-                float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
-                custom.CurrentValue = TweenMath.Lerp(custom.StartValue, custom.EndValue, easedT);
-
-                if (!clock.IsFinished)
-                    continue;
-
-                EcsEntity entity = customFloatFilter.GetEntity(idx);
-                if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
-                    SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
-            }
-
-            // Process custom vector tweens
-            if (customVectorFilter != null && remainingCustomVector > 0)
-            foreach (int idx in customVectorFilter)
-            {
-                ref TweenCoreComponent core = ref customVectorFilter.Get1(idx);
-                ref TweenClockComponent clock = ref core.Clock;
-                ref TweenCustomVectorComponent custom = ref customVectorFilter.Get2(idx);
-                ref TweenControlComponent control = ref core.Control;
-
-                // Every active tween of this kind has been seen, so the rest are pooled.
-                if (remainingCustomVector == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remainingCustomVector--;
-
-                if (!TryAdvanceClock(ref clock, ref control, deltaTime))
-                    continue;
-
-                float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
-                custom.CurrentValue = Vector3.LerpUnclamped(custom.StartValue, custom.EndValue, easedT);
-
-                if (!clock.IsFinished)
-                    continue;
-
-                EcsEntity entity = customVectorFilter.GetEntity(idx);
-                if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
-                    SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
             }
         }
 
-        /// <summary>
-        /// Moves a tween through its delay and advances its clock.
-        /// Returns true while the tween is playing.
-        /// </summary>
+        // A tween with no kind can carry any property component.
+        private void ProcessAnyKind(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            if (entity.Has<TweenAlphaComponent>())
+                ProcessAlpha(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenPositionComponent>())
+                ProcessPosition(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenScaleComponent>())
+                ProcessScale(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenRotationComponent>())
+                ProcessRotation(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenColorComponent>())
+                ProcessColor(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenSizeDeltaComponent>())
+                ProcessSizeDelta(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenPivotComponent>())
+                ProcessPivot(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenCustomFloatComponent>())
+                ProcessCustomFloat(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenCustomVectorComponent>())
+                ProcessCustomVector(entity, ref core, deltaTime);
+        }
+
+        private void ProcessAlpha(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenAlphaComponent alpha = ref entity.Get<TweenAlphaComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            // Skip cancelled tweens
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            // Skip paused tweens
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            // NotStarted → Delayed or Playing
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            // Delayed → Playing with spillover time
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        if (entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.CanvasGroup != null)
+                            {
+                                float currentAlpha = target.CanvasGroup.alpha;
+                                alpha.StartValue = currentAlpha;
+                                result.AlphaResult = currentAlpha;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                        clock.HasCapturedStartValues = true;
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // Only animate if playing
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            clock.ElapsedTime += deltaTime;
+            float normalizedT = clock.GetNormalizedTime();
+            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+
+            result.AlphaResult = TweenMath.Lerp(alpha.StartValue, alpha.EndValue, easedT);
+
+            // NEW: Handle looping - check if animation finished and should loop
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    // Loop is continuing, handle reverse mode
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.ShouldReverse)
+                        {
+                            SwapValuesForReverse(ref alpha.StartValue, ref alpha.EndValue);
+                        }
+                    }
+                    // Continue to next frame, animation will restart from beginning
+                }
+            }
+        }
+
+        private void ProcessPosition(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenPositionComponent position = ref entity.Get<TweenPositionComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        if (entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.RectTransform != null)
+                            {
+                                Vector2 currentPos = target.RectTransform.anchoredPosition;
+                                position.StartValue = currentPos;
+                                result.PositionResult = currentPos;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                        clock.HasCapturedStartValues = true;
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            clock.ElapsedTime += deltaTime;
+            float normalizedT = clock.GetNormalizedTime();
+            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+
+            result.PositionResult = TweenMath.LerpVector2(position.StartValue, position.EndValue, easedT);
+
+            // NEW: Handle looping
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.ShouldReverse)
+                        {
+                            SwapValuesForReverse(ref position.StartValue, ref position.EndValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProcessScale(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenScaleComponent scale = ref entity.Get<TweenScaleComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        // Update start value from current UI state
+                        if (entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.RectTransform != null)
+                            {
+                                Vector3 currentScale = target.RectTransform.localScale;
+                                scale.StartValue = currentScale;
+                                result.ScaleResult = currentScale;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                    {
+                        clock.HasCapturedStartValues = true;
+                    }
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            clock.ElapsedTime += deltaTime;
+            float normalizedT = clock.GetNormalizedTime();
+            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+
+            result.ScaleResult = TweenMath.LerpVector3(scale.StartValue, scale.EndValue, easedT);
+
+            // NEW: Handle looping
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.ShouldReverse)
+                        {
+                            SwapValuesForReverse(ref scale.StartValue, ref scale.EndValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProcessRotation(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenRotationComponent rotation = ref entity.Get<TweenRotationComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        // Update start value from current UI state
+                        if (entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.RectTransform != null)
+                            {
+                                float currentRotation = target.RectTransform.eulerAngles.z;
+                                rotation.StartValue = currentRotation;
+                                result.RotationResult = currentRotation;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                    {
+                        clock.HasCapturedStartValues = true;
+                    }
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            clock.ElapsedTime += deltaTime;
+            float normalizedT = clock.GetNormalizedTime();
+            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+
+            result.RotationResult = TweenMath.Lerp(rotation.StartValue, rotation.EndValue, easedT);
+
+            // NEW: Handle looping
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.ShouldReverse)
+                        {
+                            SwapValuesForReverse(ref rotation.StartValue, ref rotation.EndValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProcessColor(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenColorComponent color = ref entity.Get<TweenColorComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    // Cancel predecessor when delayed tween's delay finishes
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        // Update start value from current UI state
+                        if (entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.Image != null)
+                            {
+                                Color currentColor = target.Image.color;
+                                color.StartValue = currentColor;
+                                result.ColorResult = currentColor;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                    {
+                        clock.HasCapturedStartValues = true;
+                    }
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            clock.ElapsedTime += deltaTime;
+            float normalizedT = clock.GetNormalizedTime();
+            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+
+            result.ColorResult = TweenMath.LerpColor(color.StartValue, color.EndValue, easedT);
+
+            // NEW: Handle looping
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.ShouldReverse)
+                        {
+                            SwapValuesForReverse(ref color.StartValue, ref color.EndValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProcessSizeDelta(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenSizeDeltaComponent size = ref entity.Get<TweenSizeDeltaComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        // Update start value from current UI state
+                        if (entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.RectTransform != null)
+                            {
+                                Vector2 currentSize = target.RectTransform.sizeDelta;
+                                size.StartValue = currentSize;
+                                result.SizeDeltaResult = currentSize;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                    {
+                        clock.HasCapturedStartValues = true;
+                    }
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            clock.ElapsedTime += deltaTime;
+            float normalizedT = clock.GetNormalizedTime();
+            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+
+            result.SizeDeltaResult = TweenMath.LerpVector2(size.StartValue, size.EndValue, easedT);
+
+            // NEW: Handle looping
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.ShouldReverse)
+                        {
+                            SwapValuesForReverse(ref size.StartValue, ref size.EndValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProcessPivot(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenPivotComponent pivot = ref entity.Get<TweenPivotComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        // Update start value from current UI state
+                        if (entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.RectTransform != null)
+                            {
+                                Vector2 currentPivot = target.RectTransform.pivot;
+                                pivot.StartValue = currentPivot;
+                                result.PivotResult = currentPivot;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                    {
+                        clock.HasCapturedStartValues = true;
+                    }
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            clock.ElapsedTime += deltaTime;
+            float normalizedT = clock.GetNormalizedTime();
+            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+
+            result.PivotResult = TweenMath.LerpVector2(pivot.StartValue, pivot.EndValue, easedT);
+
+            // NEW: Handle looping
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.ShouldReverse)
+                        {
+                            SwapValuesForReverse(ref pivot.StartValue, ref pivot.EndValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ProcessCustomFloat(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenCustomFloatComponent custom = ref entity.Get<TweenCustomFloatComponent>();
+            ref TweenControlComponent control = ref core.Control;
+
+            if (!TryAdvanceClock(ref clock, ref control, deltaTime))
+                return;
+
+            float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
+            custom.CurrentValue = TweenMath.Lerp(custom.StartValue, custom.EndValue, easedT);
+
+            if (!clock.IsFinished)
+                return;
+
+            if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
+                SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
+        }
+
+        private void ProcessCustomVector(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenCustomVectorComponent custom = ref entity.Get<TweenCustomVectorComponent>();
+            ref TweenControlComponent control = ref core.Control;
+
+            if (!TryAdvanceClock(ref clock, ref control, deltaTime))
+                return;
+
+            float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
+            custom.CurrentValue = Vector3.LerpUnclamped(custom.StartValue, custom.EndValue, easedT);
+
+            if (!clock.IsFinished)
+                return;
+
+            if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
+                SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
+        }
+
         private static bool TryAdvanceClock(ref TweenClockComponent clock, ref TweenControlComponent control, float deltaTime)
         {
             if (control.State == TweenControlComponent.ControlState.NotStarted)
@@ -885,7 +812,6 @@ namespace UITweens.Systems
             {
                 return false; // Loop finished
             }
-
 
             // Reset animation progress for next iteration
             clock.ElapsedTime = 0f;

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Leopotam.Ecs;
 using UITweens.Components;
 using UITweens.Services;
@@ -12,37 +13,26 @@ namespace UITweens.Systems
     /// </summary>
     public class DelayedTweenCompletionSystem : IEcsRunSystem
     {
-        private readonly TweenFilterSet filters;
+        private readonly TweenPoolManager poolManager;
 
-        internal DelayedTweenCompletionSystem(TweenFilterSet filters)
+        internal DelayedTweenCompletionSystem(TweenPoolManager poolManager)
         {
-            this.filters = filters;
+            this.poolManager = poolManager;
         }
 
         public void Run()
         {
-            var delayedTweensFilter = filters.Delayed;
-            int remaining = filters.ActiveTotal;
-            if (delayedTweensFilter == null || remaining == 0)
-                return;
+            // Only active tweens are visited, so tweens waiting in the pool cost nothing.
+            List<EcsEntity> active = poolManager.ActiveEntities;
+            int count = active.Count;
 
-            foreach (int idx in delayedTweensFilter)
+            for (int i = 0; i < count; i++)
             {
-                ref TweenCoreComponent core = ref delayedTweensFilter.Get1(idx);
+                EcsEntity entity = active[i];
+                ref TweenCoreComponent core = ref entity.Get<TweenCoreComponent>();
                 ref var clock = ref core.Clock;
                 ref var control = ref core.Control;
                 ref var target = ref core.Target;
-
-                EcsEntity entity = delayedTweensFilter.GetEntity(idx);
-
-                // Every active tween has been seen, so the rest are pooled.
-                if (remaining == 0)
-                    break;
-
-                if (control.State == TweenControlComponent.ControlState.Pooled)
-                    continue;
-
-                remaining--;
 
                 if (control.State != TweenControlComponent.ControlState.Delayed || !clock.IsDelayFinished)
                     continue;

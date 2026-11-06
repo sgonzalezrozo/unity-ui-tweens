@@ -95,7 +95,7 @@ namespace UITweens
         }
 
         /// <summary>
-        /// Finishes startup and prepares entities now, along with position, alpha and scale tweens.
+        /// Finishes startup and prepares entities now, along with the position, alpha and scale component pools.
         /// Call it during a loading screen so that the first tweens don't pay for this work.
         /// </summary>
         public static void Prewarm(int entityCount)

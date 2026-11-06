@@ -30,7 +30,7 @@ All notable changes to this package are documented in this file.
 - **Breaking:** `DeclareOnly()` returns the `TweenDeclaration` struct, and `TweenWait` is a struct. `Sequential()` no longer allocates with up to four steps.
 - Entities start with room for 12 components, so tweens with sequences or callbacks don't resize them.
 - Finished tweens return to a pool for their property type, so reuse keeps their components. The pool grows only when more tweens run at once than before. Old handles stop working when a tween ends.
-- Systems stop scanning once they've seen every active tween, so pooled tweens add almost no cost to each frame.
+- Systems update only the list of active tweens, so tweens waiting in the pool cost nothing each frame, even after a large burst. LeoECS filters are no longer used, which also removes their startup and per-tween cost.
 - **Breaking:** the clock, control, result, target, apply flags and delay components are now fields of one `TweenCoreComponent`. Each ECS component type costs extra the first time it's used, so this lowers startup and first-tween cost.
 - **Breaking:** removed `TweenManager.RegisterTransform`, `RegisterCanvasGroup` and `RegisterImage`. Cleanup now reads each tween's own target, so tweens no longer register objects separately.
 - Tweens add loop and advanced callback data only when they use it, and position tweens are tracked once. This lowers the cost of creating and updating tweens.

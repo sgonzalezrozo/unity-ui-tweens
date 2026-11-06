@@ -79,8 +79,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupAlpha(EcsEntity entity, float startAlpha, float endAlpha)
         {
-            poolManager.Filters.RequireAlpha();
-
             ref var alphaComp = ref entity.Get<TweenAlphaComponent>();
             alphaComp.StartValue = startAlpha;
             alphaComp.EndValue = endAlpha;
@@ -98,8 +96,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupPosition(EcsEntity entity, Vector2 startPosition, Vector2 endPosition)
         {
-            poolManager.Filters.RequirePosition();
-
             ref var posComp = ref entity.Get<TweenPositionComponent>();
             posComp.StartValue = startPosition;
             posComp.EndValue = endPosition;
@@ -117,8 +113,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupScale(EcsEntity entity, Vector3 startScale, Vector3 endScale)
         {
-            poolManager.Filters.RequireScale();
-
             ref var scaleComp = ref entity.Get<TweenScaleComponent>();
             scaleComp.StartValue = startScale;
             scaleComp.EndValue = endScale;
@@ -136,8 +130,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupRotation(EcsEntity entity, float startRotation, float endRotation)
         {
-            poolManager.Filters.RequireRotation();
-
             ref var rotComp = ref entity.Get<TweenRotationComponent>();
             rotComp.StartValue = startRotation;
             rotComp.EndValue = endRotation;
@@ -155,8 +147,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupColor(EcsEntity entity, Color startColor, Color endColor)
         {
-            poolManager.Filters.RequireColor();
-
             ref var colorComp = ref entity.Get<TweenColorComponent>();
             colorComp.StartValue = startColor;
             colorComp.EndValue = endColor;
@@ -174,8 +164,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupSizeDelta(EcsEntity entity, Vector2 startSize, Vector2 endSize)
         {
-            poolManager.Filters.RequireSizeDelta();
-
             ref var sizeComp = ref entity.Get<TweenSizeDeltaComponent>();
             sizeComp.StartValue = startSize;
             sizeComp.EndValue = endSize;
@@ -193,8 +181,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupPivot(EcsEntity entity, Vector2 startPivot, Vector2 endPivot)
         {
-            poolManager.Filters.RequirePivot();
-
             ref var pivotComp = ref entity.Get<TweenPivotComponent>();
             pivotComp.StartValue = startPivot;
             pivotComp.EndValue = endPivot;
@@ -212,8 +198,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupCustomFloat(EcsEntity entity, float startValue, float endValue)
         {
-            poolManager.Filters.RequireCustomFloat();
-
             ref var customFloat = ref entity.Get<TweenCustomFloatComponent>();
             customFloat.StartValue = startValue;
             customFloat.EndValue = endValue;
@@ -225,8 +209,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetupCustomVector(EcsEntity entity, Vector3 startValue, Vector3 endValue)
         {
-            poolManager.Filters.RequireCustomVector();
-
             ref var customVec = ref entity.Get<TweenCustomVectorComponent>();
             customVec.StartValue = startValue;
             customVec.EndValue = endValue;
@@ -239,8 +221,6 @@ namespace UITweens.Services
         /// </summary>
         public void SetDelay(EcsEntity entity, float delaySeconds)
         {
-            poolManager.Filters.RequireDelayed();
-
             if (!entity.IsAlive())
                 return;
 

@@ -35,7 +35,6 @@ namespace UITweens.Services
         private const int DEFAULT_REFILL_THRESHOLD = 2;
         private const int DEFAULT_GROWTH_BATCH_SIZE = 12;
 
-        internal TweenFilterSet Filters { get; }
 
         private readonly int refillThreshold;
         private readonly int growthBatchSize;
@@ -106,7 +105,6 @@ namespace UITweens.Services
             int growthBatchSize = DEFAULT_GROWTH_BATCH_SIZE)
         {
             this.world = world;
-            Filters = new TweenFilterSet(world);
             this.refillThreshold = refillThreshold;
             this.growthBatchSize = growthBatchSize;
             poolSize = poolSize > 0 ? poolSize : 0;
@@ -148,7 +146,7 @@ namespace UITweens.Services
                 entity = CreateEntity();
 
             entity.Get<TweenCoreComponent>().Control.Kind = kind;
-            AddActive(entity, kind);
+            AddActive(entity);
             return entity;
         }
 
@@ -171,12 +169,12 @@ namespace UITweens.Services
                 availableEntities.Push(CreateEntity());
         }
 
-        /// <summary>Creates entities now, and the filters for the most common tween types.</summary>
+        /// <summary>Creates entities now, and the component pools for the most common tween types.</summary>
         public void Prewarm(int entityCount)
         {
-            Filters.RequirePosition();
-            Filters.RequireAlpha();
-            Filters.RequireScale();
+            world.GetPool<TweenPositionComponent>();
+            world.GetPool<TweenAlphaComponent>();
+            world.GetPool<TweenScaleComponent>();
 
             entitiesToWarmUp = 0;
             while (availableEntities.Count < entityCount)
@@ -300,9 +298,8 @@ namespace UITweens.Services
         internal List<EcsEntity> ActiveEntities
             => activeEntities;
 
-        private void AddActive(EcsEntity entity, TweenPoolKind kind)
+        private void AddActive(EcsEntity entity)
         {
-            Filters.OnActivated(kind);
 
             int entityId = entity.GetInternalId();
             if (entityId >= activeSlotByEntityId.Length)
@@ -329,7 +326,6 @@ namespace UITweens.Services
             activeSlotByEntityId[last.GetInternalId()] = index + 1;
             activeSlotByEntityId[entityId] = 0;
             activeEntities.RemoveAt(lastIndex);
-            Filters.OnDeactivated(entity.Get<TweenCoreComponent>().Control.Kind);
             return true;
         }
 
