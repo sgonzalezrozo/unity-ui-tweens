@@ -91,6 +91,11 @@ namespace UITweens
             delayedCompletionSystem.Run();
             mathSystem.Run();
             applySystem.Run();
+
+#if DEBUG
+            // Debug builds of LeoECS list every new entity until this runs. EcsSystems used to call it.
+            world.CheckForLeakedEntities(null);
+#endif
         }
 
         public void Destroy()
