@@ -64,10 +64,11 @@ namespace UITweens.Systems
             if (alphaFilter != null && remainingAlpha > 0)
             foreach (int idx in alphaFilter)
             {
-                ref TweenClockComponent clock = ref alphaFilter.Get1(idx);
+                ref TweenCoreComponent core = ref alphaFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenAlphaComponent alpha = ref alphaFilter.Get2(idx);
-                ref TweenResultComponent result = ref alphaFilter.Get3(idx);
-                ref TweenControlComponent control = ref alphaFilter.Get4(idx);
+                ref TweenResultComponent result = ref core.Result;
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingAlpha == 0)
@@ -106,9 +107,9 @@ namespace UITweens.Systems
                             control.HasKilledCompetitors = true;
 
                             EcsEntity entity = alphaFilter.GetEntity(idx);
-                            if (entity.Has<TweenTargetComponent>())
+                            if (entity.Has<TweenCoreComponent>())
                             {
-                                ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                                 if (target.CanvasGroup != null)
                                 {
                                     float currentAlpha = target.CanvasGroup.alpha;
@@ -166,10 +167,11 @@ namespace UITweens.Systems
             if (positionFilter != null && remainingPosition > 0)
             foreach (int idx in positionFilter)
             {
-                ref TweenClockComponent clock = ref positionFilter.Get1(idx);
+                ref TweenCoreComponent core = ref positionFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenPositionComponent position = ref positionFilter.Get2(idx);
-                ref TweenResultComponent result = ref positionFilter.Get3(idx);
-                ref TweenControlComponent control = ref positionFilter.Get4(idx);
+                ref TweenResultComponent result = ref core.Result;
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingPosition == 0)
@@ -204,9 +206,9 @@ namespace UITweens.Systems
                             control.HasKilledCompetitors = true;
 
                             EcsEntity entity = positionFilter.GetEntity(idx);
-                            if (entity.Has<TweenTargetComponent>())
+                            if (entity.Has<TweenCoreComponent>())
                             {
-                                ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                                 if (target.RectTransform != null)
                                 {
                                     Vector2 currentPos = target.RectTransform.anchoredPosition;
@@ -262,10 +264,11 @@ namespace UITweens.Systems
             if (scaleFilter != null && remainingScale > 0)
             foreach (int idx in scaleFilter)
             {
-                ref TweenClockComponent clock = ref scaleFilter.Get1(idx);
+                ref TweenCoreComponent core = ref scaleFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenScaleComponent scale = ref scaleFilter.Get2(idx);
-                ref TweenResultComponent result = ref scaleFilter.Get3(idx);
-                ref TweenControlComponent control = ref scaleFilter.Get4(idx);
+                ref TweenResultComponent result = ref core.Result;
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingScale == 0)
@@ -301,9 +304,9 @@ namespace UITweens.Systems
 
                             // Update start value from current UI state
                             EcsEntity entity = scaleFilter.GetEntity(idx);
-                            if (entity.Has<TweenTargetComponent>())
+                            if (entity.Has<TweenCoreComponent>())
                             {
-                                ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                                 if (target.RectTransform != null)
                                 {
                                     Vector3 currentScale = target.RectTransform.localScale;
@@ -361,10 +364,11 @@ namespace UITweens.Systems
             if (rotationFilter != null && remainingRotation > 0)
             foreach (int idx in rotationFilter)
             {
-                ref TweenClockComponent clock = ref rotationFilter.Get1(idx);
+                ref TweenCoreComponent core = ref rotationFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenRotationComponent rotation = ref rotationFilter.Get2(idx);
-                ref TweenResultComponent result = ref rotationFilter.Get3(idx);
-                ref TweenControlComponent control = ref rotationFilter.Get4(idx);
+                ref TweenResultComponent result = ref core.Result;
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingRotation == 0)
@@ -400,9 +404,9 @@ namespace UITweens.Systems
 
                             // Update start value from current UI state
                             EcsEntity entity = rotationFilter.GetEntity(idx);
-                            if (entity.Has<TweenTargetComponent>())
+                            if (entity.Has<TweenCoreComponent>())
                             {
-                                ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                                 if (target.RectTransform != null)
                                 {
                                     float currentRotation = target.RectTransform.eulerAngles.z;
@@ -460,10 +464,11 @@ namespace UITweens.Systems
             if (colorFilter != null && remainingColor > 0)
             foreach (int idx in colorFilter)
             {
-                ref TweenClockComponent clock = ref colorFilter.Get1(idx);
+                ref TweenCoreComponent core = ref colorFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenColorComponent color = ref colorFilter.Get2(idx);
-                ref TweenResultComponent result = ref colorFilter.Get3(idx);
-                ref TweenControlComponent control = ref colorFilter.Get4(idx);
+                ref TweenResultComponent result = ref core.Result;
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingColor == 0)
@@ -500,9 +505,9 @@ namespace UITweens.Systems
 
                             // Update start value from current UI state
                             EcsEntity entity = colorFilter.GetEntity(idx);
-                            if (entity.Has<TweenTargetComponent>())
+                            if (entity.Has<TweenCoreComponent>())
                             {
-                                ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                                 if (target.Image != null)
                                 {
                                     Color currentColor = target.Image.color;
@@ -561,10 +566,11 @@ namespace UITweens.Systems
             if (sizeFilter != null && remainingSizeDelta > 0)
             foreach (int idx in sizeFilter)
             {
-                ref TweenClockComponent clock = ref sizeFilter.Get1(idx);
+                ref TweenCoreComponent core = ref sizeFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenSizeDeltaComponent size = ref sizeFilter.Get2(idx);
-                ref TweenResultComponent result = ref sizeFilter.Get3(idx);
-                ref TweenControlComponent control = ref sizeFilter.Get4(idx);
+                ref TweenResultComponent result = ref core.Result;
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingSizeDelta == 0)
@@ -600,9 +606,9 @@ namespace UITweens.Systems
 
                             // Update start value from current UI state
                             EcsEntity entity = sizeFilter.GetEntity(idx);
-                            if (entity.Has<TweenTargetComponent>())
+                            if (entity.Has<TweenCoreComponent>())
                             {
-                                ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                                 if (target.RectTransform != null)
                                 {
                                     Vector2 currentSize = target.RectTransform.sizeDelta;
@@ -660,10 +666,11 @@ namespace UITweens.Systems
             if (pivotFilter != null && remainingPivot > 0)
             foreach (int idx in pivotFilter)
             {
-                ref TweenClockComponent clock = ref pivotFilter.Get1(idx);
+                ref TweenCoreComponent core = ref pivotFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenPivotComponent pivot = ref pivotFilter.Get2(idx);
-                ref TweenResultComponent result = ref pivotFilter.Get3(idx);
-                ref TweenControlComponent control = ref pivotFilter.Get4(idx);
+                ref TweenResultComponent result = ref core.Result;
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingPivot == 0)
@@ -699,9 +706,9 @@ namespace UITweens.Systems
 
                             // Update start value from current UI state
                             EcsEntity entity = pivotFilter.GetEntity(idx);
-                            if (entity.Has<TweenTargetComponent>())
+                            if (entity.Has<TweenCoreComponent>())
                             {
-                                ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+                                ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                                 if (target.RectTransform != null)
                                 {
                                     Vector2 currentPivot = target.RectTransform.pivot;
@@ -759,9 +766,10 @@ namespace UITweens.Systems
             if (customFloatFilter != null && remainingCustomFloat > 0)
             foreach (int idx in customFloatFilter)
             {
-                ref TweenClockComponent clock = ref customFloatFilter.Get1(idx);
+                ref TweenCoreComponent core = ref customFloatFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenCustomFloatComponent custom = ref customFloatFilter.Get2(idx);
-                ref TweenControlComponent control = ref customFloatFilter.Get3(idx);
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingCustomFloat == 0)
@@ -790,9 +798,10 @@ namespace UITweens.Systems
             if (customVectorFilter != null && remainingCustomVector > 0)
             foreach (int idx in customVectorFilter)
             {
-                ref TweenClockComponent clock = ref customVectorFilter.Get1(idx);
+                ref TweenCoreComponent core = ref customVectorFilter.Get1(idx);
+                ref TweenClockComponent clock = ref core.Clock;
                 ref TweenCustomVectorComponent custom = ref customVectorFilter.Get2(idx);
-                ref TweenControlComponent control = ref customVectorFilter.Get3(idx);
+                ref TweenControlComponent control = ref core.Control;
 
                 // Every active tween of this kind has been seen, so the rest are pooled.
                 if (remainingCustomVector == 0)

@@ -23,8 +23,8 @@ namespace UITweens.Services
     public class TweenPoolManager
     {
         private readonly EcsWorld world;
-        // Core components, the delay component and one property component.
-        private const int BASE_COMPONENT_COUNT = 7;
+        // The core component and one property component.
+        private const int BASE_COMPONENT_COUNT = 2;
 
         private readonly Stack<EcsEntity> availableEntities;
         private readonly Stack<EcsEntity>[] entitiesByKind = new Stack<EcsEntity>[10];
@@ -147,7 +147,7 @@ namespace UITweens.Services
             else
                 entity = CreateEntity();
 
-            entity.Get<TweenControlComponent>().Kind = kind;
+            entity.Get<TweenCoreComponent>().Control.Kind = kind;
             AddActive(entity, kind);
             return entity;
         }
@@ -234,19 +234,14 @@ namespace UITweens.Services
             if (!RemoveActive(entity) || !entity.IsAlive())
                 return;
 
-            ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
-            int nextSerial = control.Serial + 1;
-            TweenPoolKind kind = control.Kind;
+            ref TweenCoreComponent core = ref entity.Get<TweenCoreComponent>();
+            int nextSerial = core.Control.Serial + 1;
+            TweenPoolKind kind = core.Control.Kind;
 
-            control = default;
-            control.Serial = nextSerial;
-            control.Kind = kind;
-            control.State = TweenControlComponent.ControlState.Pooled;
-
-            entity.Get<TweenClockComponent>() = default;
-            entity.Get<TweenResultComponent>() = default;
-            entity.Get<TweenTargetComponent>() = default;
-            entity.Get<TweenApplyFlagsComponent>() = default;
+            core = default;
+            core.Control.Serial = nextSerial;
+            core.Control.Kind = kind;
+            core.Control.State = TweenControlComponent.ControlState.Pooled;
 
             if (kind == TweenPoolKind.None)
             {
@@ -334,7 +329,7 @@ namespace UITweens.Services
             activeSlotByEntityId[last.GetInternalId()] = index + 1;
             activeSlotByEntityId[entityId] = 0;
             activeEntities.RemoveAt(lastIndex);
-            Filters.OnDeactivated(entity.Get<TweenControlComponent>().Kind);
+            Filters.OnDeactivated(entity.Get<TweenCoreComponent>().Control.Kind);
             return true;
         }
 
@@ -358,22 +353,9 @@ namespace UITweens.Services
         // This reduces 10 Gets per entity to 5 Gets, cutting pre-allocation overhead by 50%
         private void PreInitializeEntity(EcsEntity entity)
         {
-            // CORE components - always needed
-            entity.Get<TweenClockComponent>();           // Timer tracking
-            entity.Get<TweenControlComponent>().State = TweenControlComponent.ControlState.Pooled;
-            entity.Get<TweenResultComponent>();           // Computed animation values
-            entity.Get<TweenTargetComponent>();           // Unity references (RectTransform, CanvasGroup, Image)
-            entity.Get<TweenApplyFlagsComponent>();       // Which properties to apply
-            entity.Get<TweenDelayComponent>();            // Stays through reuse, because every tween has one
-
-            // OPTIONAL components - allocated on-demand when needed:
-            // - TweenCallbackComponent: Only if OnComplete callback used
-            // - TweenLoopComponent: Only if Loop() called
-            // - TweenDelayComponent: Only if Delay() called
-            // - TweenAdvancedCallbackComponent: Only if OnStart/OnUpdate callbacks used
-            // - TweenSequenceLinkComponent: Only if Then() chaining used
-            // - Color/Size/Pivot/CustomFloat/CustomVector: Only for those specific tween types
-
+            // One component holds everything every tween needs. Each component type costs extra
+            // the first time it's used, so fewer types make startup and the first tween cheaper.
+            entity.Get<TweenCoreComponent>().Control.State = TweenControlComponent.ControlState.Pooled;
         }
     }
 }

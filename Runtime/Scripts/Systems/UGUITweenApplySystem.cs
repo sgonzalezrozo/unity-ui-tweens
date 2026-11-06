@@ -47,7 +47,7 @@ namespace UITweens.Systems
             if (!entity.IsAlive())
                 return;
 
-            TweenControlComponent.ControlState state = entity.Get<TweenControlComponent>().State;
+            TweenControlComponent.ControlState state = entity.Get<TweenCoreComponent>().Control.State;
 
             if (state == TweenControlComponent.ControlState.Cancelled)
             {
@@ -58,7 +58,7 @@ namespace UITweens.Systems
             if (state != TweenControlComponent.ControlState.Playing)
                 return;
 
-            ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
             if (target.RectTransform == null)
             {
                 TweenControlOperations.Cancel(entity);
@@ -73,8 +73,8 @@ namespace UITweens.Systems
                 InvokeUpdateCallbacks(entity);
 
             // Only a callback can change the state after the check above.
-            if (entity.Get<TweenClockComponent>().IsFinished
-                && (!hasCallbacks || entity.Get<TweenControlComponent>().State == TweenControlComponent.ControlState.Playing))
+            if (entity.Get<TweenCoreComponent>().Clock.IsFinished
+                && (!hasCallbacks || entity.Get<TweenCoreComponent>().Control.State == TweenControlComponent.ControlState.Playing))
             {
                 finishedEntities.Add(entity);
             }
@@ -82,8 +82,8 @@ namespace UITweens.Systems
 
         private static void ApplyValues(EcsEntity entity, ref TweenTargetComponent target)
         {
-            ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
-            ref TweenApplyFlagsComponent flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
+            ref TweenApplyFlagsComponent flags = ref entity.Get<TweenCoreComponent>().Flags;
 
             if (flags.ApplyPosition)
                 target.RectTransform.anchoredPosition = result.PositionResult;

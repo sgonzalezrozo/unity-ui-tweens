@@ -21,15 +21,14 @@ namespace UITweens.Services
 
         private readonly Dictionary<long, TweenHandle> componentPropertyTweenHandles;
         private readonly Dictionary<long, TweenHandle> pendingCancellations;
-        private readonly Dictionary<int, UnityEngine.Object> registeredTargets;
-        private readonly List<int> destroyedTargetIds;
+        // Keys to remove after a cleanup pass. An array costs less to set up than another List type.
+        private long[] staleKeys = new long[16];
+        private int staleKeyCount;
 
 #if UITWEENS_BENCHMARK
         // Times each part of the constructor, to find what makes the first tracker slow.
         public static double TrackedDictionaryMilliseconds { get; private set; }
         public static double PendingDictionaryMilliseconds { get; private set; }
-        public static double TargetDictionaryMilliseconds { get; private set; }
-        public static double ListMilliseconds { get; private set; }
 
         private static double Since(ref long timestamp)
         {
@@ -52,14 +51,6 @@ namespace UITweens.Services
             pendingCancellations = new Dictionary<long, TweenHandle>(16);
 #if UITWEENS_BENCHMARK
             PendingDictionaryMilliseconds = Since(ref timestamp);
-#endif
-            registeredTargets = new Dictionary<int, UnityEngine.Object>();
-#if UITWEENS_BENCHMARK
-            TargetDictionaryMilliseconds = Since(ref timestamp);
-#endif
-            destroyedTargetIds = new List<int>();
-#if UITWEENS_BENCHMARK
-            ListMilliseconds = Since(ref timestamp);
 #endif
         }
 
@@ -149,7 +140,7 @@ namespace UITweens.Services
                 if (!handle.IsValid || !handle.IsAlive)
                     continue;
 
-                if (handle.Entity.Get<TweenControlComponent>().State != TweenControlComponent.ControlState.Delayed)
+                if (handle.Entity.Get<TweenCoreComponent>().Control.State != TweenControlComponent.ControlState.Delayed)
                     TweenControlOperations.Cancel(handle);
             }
 
@@ -212,28 +203,43 @@ namespace UITweens.Services
             }
         }
 
-        public void RegisterTarget(UnityEngine.Object target)
-        {
-            if (target != null)
-                registeredTargets[target.GetInstanceID()] = target;
-        }
-
-        /// <summary>Cancels tweens on destroyed objects.</summary>
+        /// <summary>
+        /// Cancels tweens on destroyed objects, and forgets tweens that have ended. Each tween
+        /// already knows its target, so there's no separate list of objects to check.
+        /// </summary>
         public void CleanupDestroyedTargets()
         {
-            destroyedTargetIds.Clear();
+            staleKeyCount = 0;
 
-            foreach (KeyValuePair<int, UnityEngine.Object> kvp in registeredTargets)
+            foreach (KeyValuePair<long, TweenHandle> kvp in componentPropertyTweenHandles)
             {
-                if (kvp.Value == null)
-                    destroyedTargetIds.Add(kvp.Key);
+                TweenHandle handle = kvp.Value;
+                if (handle.IsAlive)
+                {
+                    ref TweenTargetComponent target = ref handle.Entity.Get<TweenCoreComponent>().Target;
+                    if (!IsDestroyed(target.RectTransform) && !IsDestroyed(target.CanvasGroup) && !IsDestroyed(target.Image))
+                        continue;
+
+                    TweenControlOperations.Cancel(handle);
+                }
+
+                AddStaleKey(kvp.Key);
             }
 
-            for (int i = 0; i < destroyedTargetIds.Count; i++)
-            {
-                CancelAllTweensForComponent(destroyedTargetIds[i]);
-                registeredTargets.Remove(destroyedTargetIds[i]);
-            }
+            for (int i = 0; i < staleKeyCount; i++)
+                componentPropertyTweenHandles.Remove(staleKeys[i]);
+        }
+
+        // True for an object that was set and has since been destroyed. Unity's == null covers both.
+        private static bool IsDestroyed(UnityEngine.Object target)
+            => !ReferenceEquals(target, null) && target == null;
+
+        private void AddStaleKey(long key)
+        {
+            if (staleKeyCount == staleKeys.Length)
+                System.Array.Resize(ref staleKeys, staleKeys.Length * 2);
+
+            staleKeys[staleKeyCount++] = key;
         }
 
         public void PauseAllTweensForComponent(int componentId)
@@ -303,7 +309,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
             if (target.RectTransform == null)
                 return;
 

@@ -24,7 +24,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return 0f;
 
-            ref var clock = ref entity.Get<TweenClockComponent>();
+            ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
             float normalizedTime = clock.Duration > 0f ? clock.ElapsedTime / clock.Duration : 1f;
 
             return easing.Evaluate(normalizedTime, clock.Ease, clock.EaseParameter);
@@ -38,7 +38,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return true;
 
-            ref var clock = ref entity.Get<TweenClockComponent>();
+            ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
             return clock.ElapsedTime >= clock.Duration;
         }
 
@@ -50,8 +50,8 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref var clock = ref entity.Get<TweenClockComponent>();
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
 
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
@@ -67,7 +67,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return 0f;
 
-            ref var clock = ref entity.Get<TweenClockComponent>();
+            ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
             return clock.Duration > 0f ? clock.ElapsedTime / clock.Duration : 1f;
         }
 
@@ -79,10 +79,10 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref var clock = ref entity.Get<TweenClockComponent>();
+            ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
             clock.ElapsedTime = 0f;
 
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
             control.State = TweenControlComponent.ControlState.Playing;
             control.PausedElapsedTime = 0f;
         }

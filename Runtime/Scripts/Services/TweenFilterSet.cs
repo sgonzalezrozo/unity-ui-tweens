@@ -13,16 +13,16 @@ namespace UITweens.Services
     {
         private readonly EcsWorld world;
 
-        public EcsFilter<TweenTargetComponent, TweenClockComponent, TweenControlComponent> Delayed;
-        public EcsFilter<TweenClockComponent, TweenAlphaComponent, TweenResultComponent, TweenControlComponent> Alpha;
-        public EcsFilter<TweenClockComponent, TweenPositionComponent, TweenResultComponent, TweenControlComponent> Position;
-        public EcsFilter<TweenClockComponent, TweenScaleComponent, TweenResultComponent, TweenControlComponent> Scale;
-        public EcsFilter<TweenClockComponent, TweenRotationComponent, TweenResultComponent, TweenControlComponent> Rotation;
-        public EcsFilter<TweenClockComponent, TweenColorComponent, TweenResultComponent, TweenControlComponent> Color;
-        public EcsFilter<TweenClockComponent, TweenSizeDeltaComponent, TweenResultComponent, TweenControlComponent> SizeDelta;
-        public EcsFilter<TweenClockComponent, TweenPivotComponent, TweenResultComponent, TweenControlComponent> Pivot;
-        public EcsFilter<TweenClockComponent, TweenCustomFloatComponent, TweenControlComponent> CustomFloat;
-        public EcsFilter<TweenClockComponent, TweenCustomVectorComponent, TweenControlComponent> CustomVector;
+        public EcsFilter<TweenCoreComponent> Delayed;
+        public EcsFilter<TweenCoreComponent, TweenAlphaComponent> Alpha;
+        public EcsFilter<TweenCoreComponent, TweenPositionComponent> Position;
+        public EcsFilter<TweenCoreComponent, TweenScaleComponent> Scale;
+        public EcsFilter<TweenCoreComponent, TweenRotationComponent> Rotation;
+        public EcsFilter<TweenCoreComponent, TweenColorComponent> Color;
+        public EcsFilter<TweenCoreComponent, TweenSizeDeltaComponent> SizeDelta;
+        public EcsFilter<TweenCoreComponent, TweenPivotComponent> Pivot;
+        public EcsFilter<TweenCoreComponent, TweenCustomFloatComponent> CustomFloat;
+        public EcsFilter<TweenCoreComponent, TweenCustomVectorComponent> CustomVector;
 
         // Active tweens of each kind. Systems stop scanning a filter once they've seen them all,
         // so pooled entities in the filters cost almost nothing.

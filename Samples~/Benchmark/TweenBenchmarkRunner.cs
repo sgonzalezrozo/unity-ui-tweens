@@ -536,8 +536,6 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         AddSingleMetric(result, "startup-tracker", TweenManager.StartupTrackerMilliseconds, "ms");
         AddSingleMetric(result, "startup-tracker-handles", TweenTracker.TrackedDictionaryMilliseconds, "ms");
         AddSingleMetric(result, "startup-tracker-pending", TweenTracker.PendingDictionaryMilliseconds, "ms");
-        AddSingleMetric(result, "startup-tracker-targets", TweenTracker.TargetDictionaryMilliseconds, "ms");
-        AddSingleMetric(result, "startup-tracker-list", TweenTracker.ListMilliseconds, "ms");
         AddSingleMetric(result, "pool-prealloc-time", TweenPoolManager.PreAllocationMilliseconds, "ms");
         AddSingleMetric(result, "pool-prealloc-max-slice", TweenPoolManager.PreAllocationMaxSliceMilliseconds, "ms");
         AddSingleMetric(result, "pool-prealloc-gc", TweenPoolManager.PreAllocationBytes, "bytes");

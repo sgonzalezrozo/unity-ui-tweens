@@ -14,11 +14,11 @@ namespace UITweens.Services
                 return;
             }
 
-            ref TweenControlComponent control = ref handle.Entity.Get<TweenControlComponent>();
+            ref TweenControlComponent control = ref handle.Entity.Get<TweenCoreComponent>().Control;
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
-            ref TweenClockComponent clock = ref handle.Entity.Get<TweenClockComponent>();
+            ref TweenClockComponent clock = ref handle.Entity.Get<TweenCoreComponent>().Clock;
             control.PausedElapsedTime = clock.ElapsedTime;
             control.State = TweenControlComponent.ControlState.Paused;
         }
@@ -31,7 +31,7 @@ namespace UITweens.Services
                 return;
             }
 
-            ref TweenControlComponent control = ref handle.Entity.Get<TweenControlComponent>();
+            ref TweenControlComponent control = ref handle.Entity.Get<TweenCoreComponent>().Control;
             if (control.State == TweenControlComponent.ControlState.Paused)
                 control.State = TweenControlComponent.ControlState.Playing;
         }
@@ -41,7 +41,7 @@ namespace UITweens.Services
             if (!handle.IsValid || !handle.IsAlive)
                 return;
 
-            ref TweenControlComponent control = ref handle.Entity.Get<TweenControlComponent>();
+            ref TweenControlComponent control = ref handle.Entity.Get<TweenCoreComponent>().Control;
             if (control.State != TweenControlComponent.ControlState.Cancelled)
                 control.State = TweenControlComponent.ControlState.Cancelled;
         }
@@ -51,7 +51,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
+            ref TweenControlComponent control = ref entity.Get<TweenCoreComponent>().Control;
             if (control.State != TweenControlComponent.ControlState.Cancelled)
                 control.State = TweenControlComponent.ControlState.Cancelled;
         }
@@ -64,7 +64,7 @@ namespace UITweens.Services
                 return;
             }
 
-            ref TweenControlComponent control = ref handle.Entity.Get<TweenControlComponent>();
+            ref TweenControlComponent control = ref handle.Entity.Get<TweenCoreComponent>().Control;
             if (control.State == TweenControlComponent.ControlState.Playing)
                 Pause(handle);
             else if (control.State == TweenControlComponent.ControlState.Paused)

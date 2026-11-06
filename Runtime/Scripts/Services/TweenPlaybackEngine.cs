@@ -25,9 +25,9 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref var target = ref entity.Get<TweenTargetComponent>();
-            ref var result = ref entity.Get<TweenResultComponent>();
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var target = ref entity.Get<TweenCoreComponent>().Target;
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
 
             if (target.RectTransform == null)
                 return;
@@ -69,7 +69,7 @@ namespace UITweens.Services
             // Update timing
             progressTracker.UpdateElapsedTime(entity, deltaTime);
 
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
@@ -139,10 +139,10 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
             if (control.State == TweenControlComponent.ControlState.Playing)
             {
-                ref var clock = ref entity.Get<TweenClockComponent>();
+                ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
                 control.PausedElapsedTime = clock.ElapsedTime;
                 control.State = TweenControlComponent.ControlState.Paused;
             }
@@ -156,7 +156,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
             if (control.State == TweenControlComponent.ControlState.Paused)
             {
                 control.State = TweenControlComponent.ControlState.Playing;
@@ -171,13 +171,13 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
             control.State = TweenControlComponent.ControlState.Cancelled;
         }
 
         private void HandleDelay(EcsEntity entity)
         {
-            ref var delay = ref entity.Get<TweenDelayComponent>();
+            ref var delay = ref entity.Get<TweenCoreComponent>().Delay;
             if (delay.ElapsedDelay < delay.DelayTime)
             {
                 delay.ElapsedDelay += Time.deltaTime;

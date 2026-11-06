@@ -32,9 +32,7 @@ namespace UITweens.Services
             CanvasGroup canvasGroup = null,
             Image image = null)
         {
-            RegisterWithTweenManager(element, canvasGroup, image);
-
-            ref var clock = ref entity.Get<TweenClockComponent>();
+            ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
             clock.ElapsedTime = 0f;
             clock.Duration = duration;
             clock.Ease = ease;
@@ -43,12 +41,12 @@ namespace UITweens.Services
             clock.DelayDuration = 0f;
             clock.HasCapturedStartValues = false;
 
-            ref var target = ref entity.Get<TweenTargetComponent>();
+            ref var target = ref entity.Get<TweenCoreComponent>().Target;
             target.RectTransform = element;
             target.CanvasGroup = canvasGroup;
             target.Image = image;
 
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.AlphaResult = 0f;
             result.PositionResult = Vector2.zero;
             result.ScaleResult = Vector3.one;
@@ -57,14 +55,14 @@ namespace UITweens.Services
             result.SizeDeltaResult = Vector2.zero;
             result.PivotResult = Vector2.zero;
 
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
             control.State = TweenControlComponent.ControlState.NotStarted;
             control.PausedElapsedTime = 0f;
             control.HasKilledCompetitors = false;
             control.PredecessorHandle = default;
             control.HasTrackingKey = false;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplyAlpha = false;
             flags.ApplyPosition = false;
             flags.ApplyScale = false;
@@ -88,10 +86,10 @@ namespace UITweens.Services
             alphaComp.EndValue = endAlpha;
 
             // Initialize result with start alpha to avoid unwanted initial value during delay
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.AlphaResult = startAlpha;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplyAlpha = true;
         }
 
@@ -107,10 +105,10 @@ namespace UITweens.Services
             posComp.EndValue = endPosition;
 
             // Initialize result with start value to avoid unwanted initial value during delay
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.PositionResult = startPosition;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplyPosition = true;
         }
 
@@ -126,10 +124,10 @@ namespace UITweens.Services
             scaleComp.EndValue = endScale;
 
             // Initialize result with start value to avoid unwanted initial value during delay
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.ScaleResult = startScale;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplyScale = true;
         }
 
@@ -145,10 +143,10 @@ namespace UITweens.Services
             rotComp.EndValue = endRotation;
 
             // Initialize result with start value to avoid unwanted initial value during delay
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.RotationResult = startRotation;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplyRotation = true;
         }
 
@@ -164,10 +162,10 @@ namespace UITweens.Services
             colorComp.EndValue = endColor;
 
             // Initialize result with start color to avoid white flash during delay
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.ColorResult = startColor;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplyColor = true;
         }
 
@@ -183,10 +181,10 @@ namespace UITweens.Services
             sizeComp.EndValue = endSize;
 
             // Initialize result with start value to avoid unwanted initial value during delay
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.SizeDeltaResult = startSize;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplySizeDelta = true;
         }
 
@@ -202,10 +200,10 @@ namespace UITweens.Services
             pivotComp.EndValue = endPivot;
 
             // Initialize result with start value to avoid unwanted initial value during delay
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.PivotResult = startPivot;
 
-            ref var flags = ref entity.Get<TweenApplyFlagsComponent>();
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplyPivot = true;
         }
 
@@ -246,18 +244,18 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref var clock = ref entity.Get<TweenClockComponent>();
+            ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
             clock.DelayDuration = delaySeconds;
             clock.ElapsedDelay = 0f;
             clock.HasCapturedStartValues = false;
 
             // CRITICAL FIX: Also update the old TweenDelayComponent for backward compatibility
             // This ensures the apply system sees the delay duration
-            ref var delayComp = ref entity.Get<TweenDelayComponent>();
+            ref var delayComp = ref entity.Get<TweenCoreComponent>().Delay;
             delayComp.DelayTime = delaySeconds;
             delayComp.ElapsedDelay = 0f;
 
-            ref var control = ref entity.Get<TweenControlComponent>();
+            ref var control = ref entity.Get<TweenCoreComponent>().Control;
             if (control.State == TweenControlComponent.ControlState.NotStarted)
             {
                 control.State = TweenControlComponent.ControlState.Delayed;
@@ -267,7 +265,7 @@ namespace UITweens.Services
 
         private void InitializeOptionalComponents(EcsEntity entity)
         {
-            ref var delayComp = ref entity.Get<TweenDelayComponent>();
+            ref var delayComp = ref entity.Get<TweenCoreComponent>().Delay;
             delayComp.DelayTime = 0f;
             delayComp.ElapsedDelay = 0f;
             delayComp.DelayNotified = false; // Explicitly initialize
@@ -292,15 +290,6 @@ namespace UITweens.Services
 
             ref TweenAdvancedCallbackComponent callbacks = ref entity.Get<TweenAdvancedCallbackComponent>();
             callbacks = default;
-        }
-
-        private void RegisterWithTweenManager(RectTransform element, CanvasGroup canvasGroup, Image image)
-        {
-            TweenManager.Instance?.RegisterTransform(element);
-            if (canvasGroup != null)
-                TweenManager.Instance?.RegisterCanvasGroup(canvasGroup);
-            if (image != null)
-                TweenManager.Instance?.RegisterImage(image);
         }
     }
 }

@@ -125,7 +125,7 @@ namespace UITweens.Services
 
         public void Update(EcsEntity entity, float easedProgress)
         {
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.PositionResult = Vector2.Lerp(startPos, endPos, easedProgress);
         }
 
@@ -150,7 +150,7 @@ namespace UITweens.Services
 
         public void Update(EcsEntity entity, float easedProgress)
         {
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.AlphaResult = Mathf.Lerp(startAlpha, endAlpha, easedProgress);
         }
 
@@ -175,7 +175,7 @@ namespace UITweens.Services
 
         public void Update(EcsEntity entity, float easedProgress)
         {
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.ScaleResult = Vector3.Lerp(startScale, endScale, easedProgress);
         }
 
@@ -200,7 +200,7 @@ namespace UITweens.Services
 
         public void Update(EcsEntity entity, float easedProgress)
         {
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.RotationResult = Mathf.Lerp(startRotation, endRotation, easedProgress);
         }
 
@@ -225,7 +225,7 @@ namespace UITweens.Services
 
         public void Update(EcsEntity entity, float easedProgress)
         {
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.ColorResult = Color.Lerp(startColor, endColor, easedProgress);
         }
 
@@ -250,7 +250,7 @@ namespace UITweens.Services
 
         public void Update(EcsEntity entity, float easedProgress)
         {
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.SizeDeltaResult = Vector2.Lerp(startSize, endSize, easedProgress);
         }
 
@@ -275,7 +275,7 @@ namespace UITweens.Services
 
         public void Update(EcsEntity entity, float easedProgress)
         {
-            ref var result = ref entity.Get<TweenResultComponent>();
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.PivotResult = Vector2.Lerp(startPivot, endPivot, easedProgress);
         }
 

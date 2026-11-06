@@ -15,7 +15,7 @@ namespace UITweens.Services
 
         /// <summary>True while this handle's tween still exists.</summary>
         internal bool IsAlive
-            => IsValid && Entity.IsAlive() && Entity.Get<TweenControlComponent>().Serial == serial;
+            => IsValid && Entity.IsAlive() && Entity.Get<TweenCoreComponent>().Control.Serial == serial;
 
         /// <summary>True while the tween is playing.</summary>
         public bool IsPlaying
@@ -25,7 +25,7 @@ namespace UITweens.Services
                 if (!IsAlive)
                     return false;
 
-                ref var control = ref Entity.Get<TweenControlComponent>();
+                ref var control = ref Entity.Get<TweenCoreComponent>().Control;
                 return control.State == TweenControlComponent.ControlState.Playing;
             }
         }
@@ -38,7 +38,7 @@ namespace UITweens.Services
                 if (!IsAlive)
                     return false;
 
-                ref var control = ref Entity.Get<TweenControlComponent>();
+                ref var control = ref Entity.Get<TweenCoreComponent>().Control;
                 return control.State == TweenControlComponent.ControlState.Paused;
             }
         }
@@ -51,7 +51,7 @@ namespace UITweens.Services
                 if (!IsAlive)
                     return false;
 
-                ref var control = ref Entity.Get<TweenControlComponent>();
+                ref var control = ref Entity.Get<TweenCoreComponent>().Control;
                 return control.State == TweenControlComponent.ControlState.Cancelled;
             }
         }
@@ -64,7 +64,7 @@ namespace UITweens.Services
                 if (!IsAlive)
                     return false;
 
-                ref var clock = ref Entity.Get<TweenClockComponent>();
+                ref var clock = ref Entity.Get<TweenCoreComponent>().Clock;
                 return clock.IsFinished;
             }
         }
@@ -97,7 +97,7 @@ namespace UITweens.Services
         {
             Entity = entity;
             IsValid = true;
-            serial = entity.Get<TweenControlComponent>().Serial;
+            serial = entity.Get<TweenCoreComponent>().Control.Serial;
         }
     }
 }

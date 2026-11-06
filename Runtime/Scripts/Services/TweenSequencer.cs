@@ -16,7 +16,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return false;
 
-            ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
+            ref TweenControlComponent control = ref entity.Get<TweenCoreComponent>().Control;
 
             switch (control.State)
             {
@@ -51,7 +51,7 @@ namespace UITweens.Services
             if (!entity.IsAlive())
                 return;
 
-            ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
+            ref TweenControlComponent control = ref entity.Get<TweenCoreComponent>().Control;
             if (control.State != TweenControlComponent.ControlState.Waiting)
                 return;
 
@@ -113,12 +113,12 @@ namespace UITweens.Services
 
         private static void CaptureStartValues(EcsEntity entity)
         {
-            ref TweenClockComponent clock = ref entity.Get<TweenClockComponent>();
+            ref TweenClockComponent clock = ref entity.Get<TweenCoreComponent>().Clock;
             if (!clock.StartFromCurrent)
                 return;
 
             byte mask = clock.AxisMask;
-            ref TweenTargetComponent target = ref entity.Get<TweenTargetComponent>();
+            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
             if (target.RectTransform == null)
                 return;
 

@@ -296,15 +296,6 @@ namespace UITweens
             tracker?.CleanupDestroyedTargets();
         }
 
-        public void RegisterTransform(RectTransform rectTransform)
-            => tracker.RegisterTarget(rectTransform);
-
-        public void RegisterCanvasGroup(CanvasGroup canvasGroup)
-            => tracker.RegisterTarget(canvasGroup);
-
-        public void RegisterImage(UnityEngine.UI.Image image)
-            => tracker.RegisterTarget(image);
-
         internal static void TrackTweenForComponent(UnityEngine.Object component, TweenHandle handle)
             => instance?.tracker?.TrackTween(component, handle);
 

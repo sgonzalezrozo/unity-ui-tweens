@@ -7,6 +7,20 @@ using UnityEngine;
 namespace UITweens.Components
 {
     /// <summary>
+    /// Everything every tween needs, in one ECS component. The structs inside it used to be
+    /// separate components, and each component type adds startup cost the first time it's used.
+    /// </summary>
+    public struct TweenCoreComponent
+    {
+        public TweenClockComponent Clock;
+        public TweenControlComponent Control;
+        public TweenResultComponent Result;
+        public TweenTargetComponent Target;
+        public TweenApplyFlagsComponent Flags;
+        public TweenDelayComponent Delay;
+    }
+
+    /// <summary>
     /// Core clock component that tracks time for any tween.
     /// Add this to any entity that needs animation. Timing is shared across all
     /// animation types on the same entity (position + alpha + scale can share one clock).

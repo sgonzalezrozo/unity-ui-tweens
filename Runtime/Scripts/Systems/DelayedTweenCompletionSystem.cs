@@ -28,9 +28,10 @@ namespace UITweens.Systems
 
             foreach (int idx in delayedTweensFilter)
             {
-                ref var clock = ref delayedTweensFilter.Get2(idx);
-                ref var control = ref delayedTweensFilter.Get3(idx);
-                ref var target = ref delayedTweensFilter.Get1(idx);
+                ref TweenCoreComponent core = ref delayedTweensFilter.Get1(idx);
+                ref var clock = ref core.Clock;
+                ref var control = ref core.Control;
+                ref var target = ref core.Target;
 
                 EcsEntity entity = delayedTweensFilter.GetEntity(idx);
 
@@ -54,14 +55,14 @@ namespace UITweens.Systems
 
                 UpdateStartValuesFromUI(entity, target);
 
-                ref TweenClockComponent clockComp = ref entity.Get<TweenClockComponent>();
+                ref TweenClockComponent clockComp = ref entity.Get<TweenCoreComponent>().Clock;
                 clockComp.HasCapturedStartValues = true;
 
                 if (control.PredecessorHandle.IsValid)
                 {
                     TweenManager.Cancel(control.PredecessorHandle);
 
-                    ref TweenTargetComponent targetComp = ref entity.Get<TweenTargetComponent>();
+                    ref TweenTargetComponent targetComp = ref entity.Get<TweenCoreComponent>().Target;
                     if (targetComp.RectTransform != null)
                     {
                         TweenPropertyType propType = TweenManager.DetectTweenPropertyType(entity);
@@ -94,7 +95,7 @@ namespace UITweens.Systems
                 return;
 
             // A tween with an explicit start value, such as DOColorFromTo, keeps it.
-            if (!entity.Get<TweenClockComponent>().StartFromCurrent)
+            if (!entity.Get<TweenCoreComponent>().Clock.StartFromCurrent)
                 return;
 
             // Check which property is being animated and update its start value
@@ -104,7 +105,7 @@ namespace UITweens.Systems
                 ref TweenAlphaComponent alphaComp = ref entity.Get<TweenAlphaComponent>();
                 alphaComp.StartValue = currentAlpha;
 
-                ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.AlphaResult = currentAlpha;
             }
             else if (entity.Has<TweenColorComponent>() && target.Image != null)
@@ -113,7 +114,7 @@ namespace UITweens.Systems
                 ref TweenColorComponent colorComp = ref entity.Get<TweenColorComponent>();
                 colorComp.StartValue = currentColor;
 
-                ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.ColorResult = currentColor;
             }
             else if (entity.Has<TweenPositionComponent>())
@@ -122,7 +123,7 @@ namespace UITweens.Systems
                 ref TweenPositionComponent posComp = ref entity.Get<TweenPositionComponent>();
                 posComp.StartValue = currentPos;
 
-                ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.PositionResult = currentPos;
             }
             else if (entity.Has<TweenScaleComponent>())
@@ -131,7 +132,7 @@ namespace UITweens.Systems
                 ref TweenScaleComponent scaleComp = ref entity.Get<TweenScaleComponent>();
                 scaleComp.StartValue = currentScale;
 
-                ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.ScaleResult = currentScale;
             }
             else if (entity.Has<TweenRotationComponent>())
@@ -140,7 +141,7 @@ namespace UITweens.Systems
                 ref TweenRotationComponent rotComp = ref entity.Get<TweenRotationComponent>();
                 rotComp.StartValue = currentRotation;
 
-                ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.RotationResult = currentRotation;
             }
             else if (entity.Has<TweenSizeDeltaComponent>())
@@ -149,7 +150,7 @@ namespace UITweens.Systems
                 ref TweenSizeDeltaComponent sizeComp = ref entity.Get<TweenSizeDeltaComponent>();
                 sizeComp.StartValue = currentSize;
 
-                ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.SizeDeltaResult = currentSize;
             }
             else if (entity.Has<TweenPivotComponent>())
@@ -158,7 +159,7 @@ namespace UITweens.Systems
                 ref TweenPivotComponent pivotComp = ref entity.Get<TweenPivotComponent>();
                 pivotComp.StartValue = currentPivot;
 
-                ref TweenResultComponent result = ref entity.Get<TweenResultComponent>();
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.PivotResult = currentPivot;
             }
         }

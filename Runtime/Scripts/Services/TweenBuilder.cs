@@ -48,7 +48,7 @@ namespace UITweens.Services
             if (!lastHandle.IsValid || !lastHandle.IsAlive)
                 return this;
 
-            ref TweenClockComponent clock = ref lastHandle.Entity.Get<TweenClockComponent>();
+            ref TweenClockComponent clock = ref lastHandle.Entity.Get<TweenCoreComponent>().Clock;
             clock.StartFromCurrent = true;
             clock.AxisMask = axisMask;
             return this;
@@ -78,7 +78,7 @@ namespace UITweens.Services
 
                     if (predecessorHandle.IsValid)
                     {
-                        ref var control = ref lastHandle.Entity.Get<TweenControlComponent>();
+                        ref var control = ref lastHandle.Entity.Get<TweenCoreComponent>().Control;
                         control.PredecessorHandle = predecessorHandle;
                     }
                 }
