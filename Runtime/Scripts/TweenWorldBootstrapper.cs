@@ -10,6 +10,7 @@ namespace UITweens
         private EcsWorld world;
         private EcsSystems systems;
         private TweenPoolManager poolManager;
+        private UITweenPoolConfig poolConfig;
 
         public EcsWorld World => world;
         public TweenPoolManager PoolManager => poolManager;
@@ -23,7 +24,7 @@ namespace UITweens
             => (System.Diagnostics.Stopwatch.GetTimestamp() - startTimestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
 #endif
 
-        public void Initialize()
+        public void InitializeWorld()
         {
 #if UITWEENS_BENCHMARK
             long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -36,22 +37,28 @@ namespace UITweens
             startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
-            UITweenPoolConfig poolConfig = Resources.Load<UITweenPoolConfig>("UITweenPoolConfig");
+            poolConfig = Resources.Load<UITweenPoolConfig>("UITweenPoolConfig");
             if (poolConfig == null)
                 poolConfig = ScriptableObject.CreateInstance<UITweenPoolConfig>();
 
 #if UITWEENS_BENCHMARK
             ConfigLoadMilliseconds = ElapsedMilliseconds(startTimestamp);
 #endif
+        }
 
+        public void InitializePool()
+        {
             poolManager = new TweenPoolManager(
                 world,
                 poolConfig.InitialPoolSize,
                 poolConfig.RefillThreshold,
                 poolConfig.GrowthBatchSize);
+        }
 
+        public void InitializeSystems()
+        {
 #if UITWEENS_BENCHMARK
-            startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+            long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
 #endif
 
             systems = new EcsSystems(world);

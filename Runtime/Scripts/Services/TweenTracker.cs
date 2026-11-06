@@ -20,8 +20,8 @@ namespace UITweens.Services
         };
 
         // OPTIMIZATION: Pre-size collections to avoid resizing overhead (5-10ms gain)
-        private Dictionary<(int, TweenPropertyType), TweenHandle> componentPropertyTweenHandles = new(256, TrackingKeyComparer.Instance);
-        private Dictionary<(int, TweenPropertyType), TweenHandle> pendingCancellations = new(64, TrackingKeyComparer.Instance);
+        private Dictionary<(int, TweenPropertyType), TweenHandle> componentPropertyTweenHandles = new(32, TrackingKeyComparer.Instance);
+        private Dictionary<(int, TweenPropertyType), TweenHandle> pendingCancellations = new(16, TrackingKeyComparer.Instance);
 
         private sealed class TrackingKeyComparer : IEqualityComparer<(int, TweenPropertyType)>
         {

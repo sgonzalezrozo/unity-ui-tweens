@@ -312,6 +312,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             unit = "bytes",
             aggregation = "single"
         });
+        AddSingleMetric(result, "startup-worst-stage", TweenManager.StartupWorstStageMilliseconds, "ms");
         AddSingleMetric(result, "startup-prefab", TweenManager.StartupPrefabMilliseconds, "ms");
         AddSingleMetric(result, "startup-world", TweenManager.StartupWorldMilliseconds, "ms");
         AddSingleMetric(result, "startup-services", TweenManager.StartupServicesMilliseconds, "ms");
@@ -593,13 +594,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
     private IEnumerator WaitForTweenManager()
     {
-        while (TweenManager.Instance == null || TweenManager.World == null)
-            yield return null;
-
-        yield return null;
-        yield return null;
-
-        while (TweenManager.GetSpawner() == null)
+        while (!TweenManager.IsReady)
             yield return null;
     }
 

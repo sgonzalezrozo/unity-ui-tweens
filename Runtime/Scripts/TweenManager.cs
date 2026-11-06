@@ -10,6 +10,7 @@ namespace UITweens
     public class TweenManager : MonoBehaviour
     {
         private const int CLEANUP_INTERVAL_FRAMES = 60;
+        private const int INIT_STAGE_COUNT = 5;
         private static readonly ProfilerMarker UpdateLoopMarker = new("UITweens.UpdateLoop");
 
 #if UITWEENS_BENCHMARK
@@ -42,11 +43,15 @@ namespace UITweens
         /// <summary>Time spent creating the tracker and other services.</summary>
         public static double StartupServicesMilliseconds { get; private set; }
 
+        /// <summary>Longest single startup stage, which is the largest startup cost on one frame.</summary>
+        public static double StartupWorstStageMilliseconds { get; private set; }
+
         internal static double EndInitializationSample(long startTimestamp, long startBytes)
         {
             long endTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
             double milliseconds = (endTimestamp - startTimestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
             InitializationMilliseconds += milliseconds;
+            StartupWorstStageMilliseconds = System.Math.Max(StartupWorstStageMilliseconds, milliseconds);
             InitializationBytes += System.Math.Max(0L, System.GC.GetTotalMemory(false) - startBytes);
             return milliseconds;
         }
@@ -54,6 +59,10 @@ namespace UITweens
 
         public static TweenManager Instance
             => instance;
+
+        /// <summary>True once startup has finished. Tweens can still start before this.</summary>
+        public static bool IsReady
+            => instance != null && instance.initStage >= INIT_STAGE_COUNT;
 
         public static EcsWorld World
             => instance?.world;
@@ -107,6 +116,7 @@ namespace UITweens
         private TweenCleaner cleaner;
         private TweenDelayedSpawner delayedSpawner;
         private int lastCleanupFrame;
+        private int initStage;
 
         private void Awake()
         {
@@ -130,15 +140,14 @@ namespace UITweens
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
+        // Each stage runs on its own frame, so startup work never lands on one frame at once.
         private IEnumerator InitializeAsync()
         {
-            yield return null;
-            InitializeEcsWorld();
-
-            yield return null;
-            InitializeServices();
-
-            yield return null;
+            while (initStage < INIT_STAGE_COUNT)
+            {
+                yield return null;
+                RunNextInitStage();
+            }
         }
 
         private void Update()
@@ -182,48 +191,61 @@ namespace UITweens
 
         private void EnsureInitialized()
         {
-            InitializeEcsWorld();
-            InitializeServices();
+            while (initStage < INIT_STAGE_COUNT)
+                RunNextInitStage();
         }
 
-        private void InitializeEcsWorld()
+        private void RunNextInitStage()
         {
-            if (tweenBootstrapper != null)
+            if (initStage >= INIT_STAGE_COUNT)
                 return;
 
 #if UITWEENS_BENCHMARK
             BeginInitializationSample(out long startTimestamp, out long startBytes);
 #endif
 
-            tweenBootstrapper = new TweenWorldBootstrapper();
-            tweenBootstrapper.Initialize();
-            world = tweenBootstrapper.World;
+            switch (initStage)
+            {
+                case 0:
+                    tweenBootstrapper = new TweenWorldBootstrapper();
+                    tweenBootstrapper.InitializeWorld();
+                    world = tweenBootstrapper.World;
+                    break;
+
+                case 1:
+                    tweenBootstrapper.InitializePool();
+                    break;
+
+                case 2:
+                    tweenBootstrapper.InitializeSystems();
+                    break;
+
+                case 3:
+                    tracker = new TweenTracker();
+                    break;
+
+                case 4:
+                    cleaner = new TweenCleaner();
+                    delayedSpawner = new TweenDelayedSpawner(tracker);
+                    break;
+            }
 
 #if UITWEENS_BENCHMARK
-            StartupWorldMilliseconds = EndInitializationSample(startTimestamp, startBytes);
-#endif
-        }
-
-        private void InitializeServices()
-        {
-            if (tracker != null)
-                return;
-
-#if UITWEENS_BENCHMARK
-            BeginInitializationSample(out long startTimestamp, out long startBytes);
+            double milliseconds = EndInitializationSample(startTimestamp, startBytes);
+            if (initStage <= 2)
+                StartupWorldMilliseconds += milliseconds;
+            else
+                StartupServicesMilliseconds += milliseconds;
 #endif
 
-            tracker = new TweenTracker();
-            cleaner = new TweenCleaner();
-            delayedSpawner = new TweenDelayedSpawner(tracker);
-
-#if UITWEENS_BENCHMARK
-            StartupServicesMilliseconds = EndInitializationSample(startTimestamp, startBytes);
-#endif
+            initStage++;
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-            => cleaner.CleanupOrphanedTweens(tracker);
+        {
+            if (cleaner != null)
+                cleaner.CleanupOrphanedTweens(tracker);
+        }
 
         public void RegisterTransform(RectTransform rectTransform)
             => cleaner.RegisterTransform(rectTransform);
