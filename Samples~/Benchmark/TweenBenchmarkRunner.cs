@@ -19,6 +19,8 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     [SerializeField] private bool runOnStart = true;
     [Tooltip("Measures startup only, saves one file and quits. Run the app many times to see how startup varies.")]
     [SerializeField] private bool startupOnly = false;
+    [Tooltip("With Startup Only: times the first use of each type before setup, to find which ones are slow. This warms them up, so startup looks faster in these runs.")]
+    [SerializeField] private bool probeFirstUse = false;
     [SerializeField] private bool includeCanvasPerTargetMode = true;
     [SerializeField] private int warmupFrames = 120;
     [SerializeField] private int measuredFrames = 600;
@@ -49,6 +51,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     private TweenBenchmarkTargets targets;
     private TweenBenchmarkStatus status;
     private Camera clearCamera;
+    private readonly List<TweenBenchmarkMetric> probeMetrics = new();
     private readonly System.Diagnostics.Stopwatch createStopwatch = new();
     private readonly FrameTiming[] frameTimings = new FrameTiming[1];
     private string validatedCommitHash;
@@ -114,6 +117,10 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             UnityEngine.Random.InitState(seed);
             report = new TweenBenchmarkReport();
             targets = new TweenBenchmarkTargets(transform);
+
+            // Setup starts 30 frames after the first scene, so these run before it.
+            if (startupOnly && probeFirstUse)
+                RunFirstUseProbes();
 
             status.Show("Waiting for TweenManager...");
             yield return WaitForTweenManager();
@@ -430,6 +437,43 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             accumulator.RecordCpuMs(timing.cpuMainThreadFrameTime, timing.cpuRenderThreadFrameTime);
     }
 
+    // Each probe is the first use of one more type. A type used by an earlier probe is already
+    // set up, so the order matters: shared types come first.
+    private void RunFirstUseProbes()
+    {
+        Probe("probe-comparer-long", () => _ = System.Collections.Generic.EqualityComparer<long>.Default.GetHashCode(1L));
+        Probe("probe-dictionary-long", () =>
+        {
+            Dictionary<long, TweenHandle> map = new(32);
+            map[1L] = default;
+            map.TryGetValue(1L, out _);
+        });
+        Probe("probe-dictionary-object", () =>
+        {
+            Dictionary<int, UnityEngine.Object> map = new();
+            map[1] = this;
+        });
+        Probe("probe-list-int", () => new List<int>().Add(1));
+        Probe("probe-stack-entity", () => new Stack<Leopotam.Ecs.EcsEntity>(4).Push(default));
+        Probe("probe-list-entity", () => new List<Leopotam.Ecs.EcsEntity>(4).Add(default));
+        Probe("probe-ecs-world", () => new Leopotam.Ecs.EcsWorld().Destroy());
+        Probe("probe-tracker", () => _ = new TweenTracker());
+    }
+
+    private void Probe(string name, Action action)
+    {
+        createStopwatch.Restart();
+        action();
+        createStopwatch.Stop();
+        probeMetrics.Add(new TweenBenchmarkMetric
+        {
+            name = name,
+            value = createStopwatch.ElapsedTicks * (1000d / System.Diagnostics.Stopwatch.Frequency),
+            unit = "ms",
+            aggregation = "single"
+        });
+    }
+
     private IEnumerator MeasureStartupOnly()
     {
         status.Show("Measuring startup");
@@ -472,6 +516,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         AddStartupMetrics(result);
 #endif
 
+        result.metrics.AddRange(probeMetrics);
         report.Save(result);
         status.Show($"Startup saved to\n{report.Folder}");
     }
