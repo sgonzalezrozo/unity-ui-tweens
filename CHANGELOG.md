@@ -6,6 +6,7 @@ All notable changes to this package are documented in this file.
 
 ### Added
 
+- Added `OnComplete(state, callback)`, which runs a callback with a value and doesn't allocate a closure.
 - Added a benchmark sample under `Samples~/Benchmark`. It covers allocation, capacity and pool growth, and writes one JSON file per scenario run.
 - Added the benchmark result schema, evidence rules and summary script under `Documentation~/benchmarks/`.
 - Added a `UITweens.UpdateLoop` profiler marker around the tween update, including orphan cleanup.
@@ -23,6 +24,8 @@ All notable changes to this package are documented in this file.
 - Startup now runs in five stages on separate frames, so it doesn't land on one frame. Added `TweenManager.IsReady`. A tween that starts earlier finishes the remaining stages at once.
 - **Breaking:** `TweenManager` creates itself in code, so **Tools > UI Tweens > Setup** and the `TweenManager` prefab are no longer needed. You can delete the prefab.
 - LeoECS filters are created the first time a tween type is used, systems run without reflection, and the ECS world starts smaller. This lowers startup time and memory.
+- The update loop reads the active tweens directly instead of copying them each frame, and tween tracking uses a cheaper key.
+- **Breaking:** `DeclareOnly()` returns the `TweenDeclaration` struct, and `TweenWait` is a struct. `Sequential()` no longer allocates with up to four steps.
 - Tweens add loop and advanced callback data only when they use it, and position tweens are tracked once. This lowers the cost of creating and updating tweens.
 - `DoCancel` and other per-component tween lookups no longer scan every tracked tween, and replaced tweens are cancelled with less work.
 - Test logs use PASS and FAIL instead of emojis.

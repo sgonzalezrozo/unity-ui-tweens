@@ -9,12 +9,11 @@ namespace UITweens.Systems
 {
     /// <summary>
     /// Applies computed values to UI components, runs callbacks and ends finished tweens.
-    /// Callbacks can start new tweens, so this system works from a copy of the active entities.
+    /// Callbacks can start new tweens, which join the end of the list and wait for the next update.
     /// </summary>
     public class UGUITweenApplySystem : IEcsRunSystem
     {
         private readonly TweenPoolManager poolManager;
-        private readonly List<EcsEntity> activeSnapshot = new();
         private readonly List<EcsEntity> finishedEntities = new();
         private readonly List<EcsEntity> cancelledEntities = new();
 
@@ -28,12 +27,13 @@ namespace UITweens.Systems
             if (poolManager == null)
                 return;
 
-            poolManager.CopyActiveEntities(activeSnapshot);
             finishedEntities.Clear();
             cancelledEntities.Clear();
 
-            for (int i = 0; i < activeSnapshot.Count; i++)
-                ProcessEntity(activeSnapshot[i]);
+            List<EcsEntity> activeEntities = poolManager.ActiveEntities;
+            int activeCount = activeEntities.Count;
+            for (int i = 0; i < activeCount; i++)
+                ProcessEntity(activeEntities[i]);
 
             for (int i = 0; i < finishedEntities.Count; i++)
                 CompleteEntity(finishedEntities[i]);
@@ -139,8 +139,19 @@ namespace UITweens.Systems
             {
                 ref TweenCallbackComponent callback = ref entity.Get<TweenCallbackComponent>();
                 Action onComplete = callback.OnComplete;
+                Delegate stateCallback = callback.StateCallback;
+                object state = callback.State;
+                Action<Delegate, object> stateInvoker = callback.StateInvoker;
+
                 callback.OnComplete = null;
+                callback.StateCallback = null;
+                callback.State = null;
+                callback.StateInvoker = null;
+
                 Invoke(onComplete);
+
+                if (stateCallback != null)
+                    InvokeWithState(stateInvoker, stateCallback, state);
             }
 
             TweenSequencer.ActivateNext(entity);
@@ -169,6 +180,18 @@ namespace UITweens.Systems
             try
             {
                 callback.Invoke();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        private static void InvokeWithState(Action<Delegate, object> invoker, Delegate callback, object state)
+        {
+            try
+            {
+                invoker.Invoke(callback, state);
             }
             catch (Exception exception)
             {

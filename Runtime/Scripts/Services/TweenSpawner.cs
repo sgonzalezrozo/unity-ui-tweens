@@ -125,7 +125,8 @@ namespace UITweens.Services
         }
 
         /// <summary>
-        /// Execute sequence of tween declarations in order.
+        /// Runs tween declarations in order. The overloads for up to four declarations don't
+        /// allocate. This one allocates an array, so use it for longer sequences.
         /// </summary>
         public TweenBuilder Sequential(params ITweenDeclaration[] declarations)
         {
@@ -135,38 +136,98 @@ namespace UITweens.Services
                 return new TweenBuilder(this);
             }
 
-            TweenBuilder currentBuilder = new TweenBuilder(this);
-            TweenHandle firstHandle = new TweenHandle();
-            TweenHandle previousHandle = new TweenHandle();
+            TweenBuilder builder = new TweenBuilder(this);
+            TweenHandle first = new TweenHandle();
+            TweenHandle previous = new TweenHandle();
 
             for (int i = 0; i < declarations.Length; i++)
             {
-                ITweenDeclaration decl = declarations[i];
-
-                if (decl == null)
+                if (declarations[i] == null)
                 {
                     Debug.LogWarning("[UITweens] Null declaration at index " + i);
                     continue;
                 }
 
-                currentBuilder = decl.Spawn(this);
-                TweenHandle currentHandle = currentBuilder.GetHandle();
-
-                if (!currentHandle.IsValid)
-                    continue;
-
-                if (previousHandle.IsValid)
-                    LinkTweens(previousHandle, currentHandle);
-                else
-                    firstHandle = currentHandle;
-
-                previousHandle = currentHandle;
+                AddStep(declarations[i], ref builder, ref first, ref previous);
             }
 
-            if (firstHandle.IsValid)
-                TweenSequencer.Activate(firstHandle.Entity);
+            return FinishSequence(builder, first);
+        }
 
-            return currentBuilder;
+        /// <summary>Runs two declarations in order without allocating.</summary>
+        public TweenBuilder Sequential<T1, T2>(T1 first, T2 second)
+            where T1 : struct, ITweenDeclaration
+            where T2 : struct, ITweenDeclaration
+        {
+            TweenBuilder builder = new TweenBuilder(this);
+            TweenHandle firstHandle = new TweenHandle();
+            TweenHandle previous = new TweenHandle();
+
+            AddStep(first, ref builder, ref firstHandle, ref previous);
+            AddStep(second, ref builder, ref firstHandle, ref previous);
+
+            return FinishSequence(builder, firstHandle);
+        }
+
+        /// <summary>Runs three declarations in order without allocating.</summary>
+        public TweenBuilder Sequential<T1, T2, T3>(T1 first, T2 second, T3 third)
+            where T1 : struct, ITweenDeclaration
+            where T2 : struct, ITweenDeclaration
+            where T3 : struct, ITweenDeclaration
+        {
+            TweenBuilder builder = new TweenBuilder(this);
+            TweenHandle firstHandle = new TweenHandle();
+            TweenHandle previous = new TweenHandle();
+
+            AddStep(first, ref builder, ref firstHandle, ref previous);
+            AddStep(second, ref builder, ref firstHandle, ref previous);
+            AddStep(third, ref builder, ref firstHandle, ref previous);
+
+            return FinishSequence(builder, firstHandle);
+        }
+
+        /// <summary>Runs four declarations in order without allocating.</summary>
+        public TweenBuilder Sequential<T1, T2, T3, T4>(T1 first, T2 second, T3 third, T4 fourth)
+            where T1 : struct, ITweenDeclaration
+            where T2 : struct, ITweenDeclaration
+            where T3 : struct, ITweenDeclaration
+            where T4 : struct, ITweenDeclaration
+        {
+            TweenBuilder builder = new TweenBuilder(this);
+            TweenHandle firstHandle = new TweenHandle();
+            TweenHandle previous = new TweenHandle();
+
+            AddStep(first, ref builder, ref firstHandle, ref previous);
+            AddStep(second, ref builder, ref firstHandle, ref previous);
+            AddStep(third, ref builder, ref firstHandle, ref previous);
+            AddStep(fourth, ref builder, ref firstHandle, ref previous);
+
+            return FinishSequence(builder, firstHandle);
+        }
+
+        private void AddStep<T>(T declaration, ref TweenBuilder builder, ref TweenHandle first, ref TweenHandle previous)
+            where T : ITweenDeclaration
+        {
+            builder = declaration.Spawn(this);
+            TweenHandle current = builder.GetHandle();
+
+            if (!current.IsValid)
+                return;
+
+            if (previous.IsValid)
+                LinkTweens(previous, current);
+            else
+                first = current;
+
+            previous = current;
+        }
+
+        private static TweenBuilder FinishSequence(TweenBuilder builder, TweenHandle first)
+        {
+            if (first.IsValid)
+                TweenSequencer.Activate(first.Entity);
+
+            return builder;
         }
 
         /// <summary>

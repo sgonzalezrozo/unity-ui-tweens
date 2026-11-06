@@ -161,6 +161,28 @@ namespace UITweens.Services
             {
                 ref TweenCallbackComponent cbComp = ref lastHandle.Entity.Get<TweenCallbackComponent>();
                 cbComp.OnComplete = callback;
+                cbComp.StateCallback = null;
+                cbComp.State = null;
+                cbComp.StateInvoker = null;
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Runs code when the tween finishes, and passes it a value. Unlike a closure, this
+        /// doesn't allocate if the callback doesn't capture anything:
+        /// tween.OnComplete(rect, static target => target.gameObject.SetActive(false));
+        /// </summary>
+        public TweenBuilder OnComplete<TState>(TState state, Action<TState> callback) where TState : class
+        {
+            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            {
+                ref TweenCallbackComponent cbComp = ref lastHandle.Entity.Get<TweenCallbackComponent>();
+                cbComp.OnComplete = null;
+                cbComp.StateCallback = callback;
+                cbComp.State = state;
+                cbComp.StateInvoker = TweenStateInvoker<TState>.Invoke;
             }
 
             return this;
@@ -227,12 +249,19 @@ namespace UITweens.Services
         /// Holds this tween so it doesn't start, and wraps it for TweenSpawner.Sequential().
         /// A declared tween stays held until it's passed to Sequential().
         /// </summary>
-        public ITweenDeclaration DeclareOnly()
+        public TweenDeclaration DeclareOnly()
         {
             if (lastHandle.IsValid)
                 TweenSequencer.Hold(lastHandle.Entity);
 
-            return new DeclarationWrapper(this);
+            return new TweenDeclaration(this);
         }
+    }
+
+    /// <summary>Calls a stored Action&lt;TState&gt; without knowing TState. Created once per type.</summary>
+    internal static class TweenStateInvoker<TState> where TState : class
+    {
+        public static readonly Action<Delegate, object> Invoke =
+            (callback, state) => ((Action<TState>)callback).Invoke((TState)state);
     }
 }

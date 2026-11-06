@@ -9,7 +9,8 @@ namespace UITweens.Services
     {
         private readonly EcsWorld world;
         private readonly Stack<EcsEntity> availableEntities;
-        private readonly HashSet<EcsEntity> activeEntities;
+        private readonly List<EcsEntity> activeEntities;
+        private int[] activeSlotByEntityId;
 
         private const int DEFAULT_POOL_SIZE = 32;
         private const int DEFAULT_REFILL_THRESHOLD = 2;
@@ -75,7 +76,8 @@ namespace UITweens.Services
             this.growthBatchSize = growthBatchSize;
             poolSize = poolSize > 0 ? poolSize : 0;
             availableEntities = new Stack<EcsEntity>(poolSize);
-            activeEntities = new HashSet<EcsEntity>(poolSize);  // OPTIMIZATION: Pre-size HashSet
+            activeEntities = new List<EcsEntity>(poolSize);
+            activeSlotByEntityId = new int[poolSize > 16 ? poolSize : 16];
             totalCreated = 0;
 
 #if UITWEENS_BENCHMARK
@@ -121,7 +123,7 @@ namespace UITweens.Services
                 entity = CreateEntity();
             }
 
-            activeEntities.Add(entity);
+            AddActive(entity);
             return entity;
         }
 
@@ -158,18 +160,46 @@ namespace UITweens.Services
         /// </summary>
         public void ReleaseEntity(EcsEntity entity)
         {
-            activeEntities.Remove(entity);
+            RemoveActive(entity);
 
             if (entity.IsAlive())
                 entity.Destroy();
         }
 
-        /// <summary>Copies the active entities, so callbacks can start new tweens during the update.</summary>
-        public void CopyActiveEntities(List<EcsEntity> destination)
+        /// <summary>
+        /// The active entities, in no set order. New tweens are added at the end, and tweens are
+        /// only removed by ReleaseEntity, so a callback can safely start a tween during a loop.
+        /// </summary>
+        internal List<EcsEntity> ActiveEntities
+            => activeEntities;
+
+        private void AddActive(EcsEntity entity)
         {
-            destination.Clear();
-            foreach (EcsEntity entity in activeEntities)
-                destination.Add(entity);
+            int entityId = entity.GetInternalId();
+            if (entityId >= activeSlotByEntityId.Length)
+                System.Array.Resize(ref activeSlotByEntityId, System.Math.Max(entityId + 1, activeSlotByEntityId.Length * 2));
+
+            activeEntities.Add(entity);
+            activeSlotByEntityId[entityId] = activeEntities.Count;
+        }
+
+        // Slots hold the list index plus one, so 0 means inactive.
+        private void RemoveActive(EcsEntity entity)
+        {
+            int entityId = entity.GetInternalId();
+            if (entityId >= activeSlotByEntityId.Length)
+                return;
+
+            int index = activeSlotByEntityId[entityId] - 1;
+            if (index < 0 || activeEntities[index] != entity)
+                return;
+
+            int lastIndex = activeEntities.Count - 1;
+            EcsEntity last = activeEntities[lastIndex];
+            activeEntities[index] = last;
+            activeSlotByEntityId[last.GetInternalId()] = index + 1;
+            activeSlotByEntityId[entityId] = 0;
+            activeEntities.RemoveAt(lastIndex);
         }
 
         public int GetActiveEntityCount()

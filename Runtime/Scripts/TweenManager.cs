@@ -43,6 +43,9 @@ namespace UITweens
         /// <summary>Time spent creating the tracker and other services.</summary>
         public static double StartupServicesMilliseconds { get; private set; }
 
+        /// <summary>Time spent creating the tracker alone.</summary>
+        public static double StartupTrackerMilliseconds { get; private set; }
+
         /// <summary>Longest single startup stage, which is the largest startup cost on one frame.</summary>
         public static double StartupWorstStageMilliseconds { get; private set; }
 
@@ -219,6 +222,9 @@ namespace UITweens
 
                 case 3:
                     tracker = new TweenTracker();
+#if UITWEENS_BENCHMARK
+                    StartupTrackerMilliseconds = (System.Diagnostics.Stopwatch.GetTimestamp() - startTimestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
+#endif
                     break;
 
                 case 4:

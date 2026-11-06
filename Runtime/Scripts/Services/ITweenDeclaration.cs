@@ -38,12 +38,28 @@ namespace UITweens.Services
     }
 
     /// <summary>
-    /// A wait/delay declaration (no animated properties, just waiting).
+    /// A held tween for Sequential(). It's a struct, so declaring a tween doesn't allocate.
+    /// </summary>
+    public readonly struct TweenDeclaration : ITweenDeclaration
+    {
+        private readonly TweenBuilder builder;
+
+        internal TweenDeclaration(TweenBuilder builder)
+        {
+            this.builder = builder;
+        }
+
+        public TweenBuilder Spawn(TweenSpawner spawner)
+            => builder;
+    }
+
+    /// <summary>
+    /// A wait in a sequence, with no animated properties. It's a struct, so it doesn't allocate.
     /// Usage: spawner.Wait(0.5f)
     /// </summary>
-    public class TweenWait : ITweenDeclaration
+    public readonly struct TweenWait : ITweenDeclaration
     {
-        public float Duration { get; private set; }
+        public float Duration { get; }
 
         public TweenWait(float duration)
         {
@@ -62,4 +78,3 @@ namespace UITweens.Services
         }
     }
 }
-

@@ -188,6 +188,7 @@ Every method ends with the same three parameters: `float duration`, `EaseType ea
 | `OnUpdate(callback)` | Run code on each update |
 | `OnFloatUpdate(callback)`, `OnVectorUpdate(callback)` | Receive the current value of a custom tween |
 | `OnComplete(callback)` | Run code when the tween finishes |
+| `OnComplete(state, callback)` | Same, and passes `state` to the callback. It doesn't allocate if the callback captures nothing |
 | `GetHandle()` | Get a `TweenHandle` for later control |
 | `DeclareOnly()` | Hold a tween so it can be passed to `Sequential()` |
 
@@ -355,7 +356,13 @@ flowchart LR
 Benchmarks aren't published yet, so measure your own project.
 When benchmarks are published, each claim will link to raw JSON evidence under `Documentation~/benchmarks/`, validated against `Documentation~/benchmarks/benchmark-result.schema.json`.
 
-UI Tweens pools tween entities to reduce allocations. Your own code can still allocate: a callback that captures variables creates a closure. `DeclareOnly()` and `Wait()` also allocate a small object each.
+UI Tweens pools tween entities to reduce allocations. Your own code can still allocate: a callback that captures variables creates a closure. To avoid that, pass the value as state and use a `static` lambda:
+
+```csharp
+panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetActive(false));
+```
+
+`Sequential()` doesn't allocate with up to four `DeclareOnly()` or `Wait()` steps. Longer sequences allocate one array, and so do declarations stored as `ITweenDeclaration`.
 
 ## How it compares
 

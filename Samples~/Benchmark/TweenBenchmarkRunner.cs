@@ -214,6 +214,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             new Scenario("then-chaining", AllocationTargetCount, OnThenChaining),
             new Scenario("callback-no-capture", AllocationTargetCount, OnCallbackNoCapture),
             new Scenario("callback-with-capture", AllocationTargetCount, OnCallbackWithCapture),
+            new Scenario("callback-with-state", AllocationTargetCount, OnCallbackWithState),
             new Scenario("declare-only-and-wait", AllocationTargetCount, OnDeclareOnlyAndWait)
         };
 
@@ -321,6 +322,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
             aggregation = "single"
         });
         AddSingleMetric(result, "startup-worst-stage", TweenManager.StartupWorstStageMilliseconds, "ms");
+        AddSingleMetric(result, "startup-tracker", TweenManager.StartupTrackerMilliseconds, "ms");
         AddSingleMetric(result, "startup-prefab", TweenManager.StartupPrefabMilliseconds, "ms");
         AddSingleMetric(result, "startup-world", TweenManager.StartupWorldMilliseconds, "ms");
         AddSingleMetric(result, "startup-services", TweenManager.StartupServicesMilliseconds, "ms");
@@ -513,6 +515,20 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
         rect.DOAnchorPosX(captured * 0.001f, 0.09f, EaseType.QuadInOut)
             .OnComplete(() => Consume(captured));
+    }
+
+    private static void OnCallbackWithState(int frame, TweenSpawner spawner, TweenBenchmarkTargets benchmarkTargets)
+    {
+        int index = frame % benchmarkTargets.Count;
+        RectTransform rect = benchmarkTargets.GetRect(index);
+
+        rect.DOAnchorPosX(frame * 0.001f, 0.09f, EaseType.QuadInOut)
+            .OnComplete(rect, static target => ConsumeTarget(target));
+    }
+
+    private static void ConsumeTarget(RectTransform target)
+    {
+        _ = target;
     }
 
     private static void OnDeclareOnlyAndWait(int frame, TweenSpawner spawner, TweenBenchmarkTargets benchmarkTargets)

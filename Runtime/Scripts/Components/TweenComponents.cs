@@ -249,9 +249,12 @@ namespace UITweens.Components
     /// </summary>
     public struct TweenCallbackComponent
     {
-        public Action OnComplete; // Parameterless Action only (no data passing)
+        public Action OnComplete;
+        public Delegate StateCallback;
+        public object State;
+        public Action<Delegate, object> StateInvoker;
 
-        public bool HasCallback => OnComplete != null;
+        public bool HasCallback => OnComplete != null || StateCallback != null;
     }
 
     /// <summary>

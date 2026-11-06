@@ -20,19 +20,12 @@ namespace UITweens.Services
         };
 
         // OPTIMIZATION: Pre-size collections to avoid resizing overhead (5-10ms gain)
-        private Dictionary<(int, TweenPropertyType), TweenHandle> componentPropertyTweenHandles = new(32, TrackingKeyComparer.Instance);
-        private Dictionary<(int, TweenPropertyType), TweenHandle> pendingCancellations = new(16, TrackingKeyComparer.Instance);
+        private Dictionary<long, TweenHandle> componentPropertyTweenHandles = new(32);
+        private Dictionary<long, TweenHandle> pendingCancellations = new(16);
 
-        private sealed class TrackingKeyComparer : IEqualityComparer<(int, TweenPropertyType)>
-        {
-            public static readonly TrackingKeyComparer Instance = new();
-
-            public bool Equals((int, TweenPropertyType) x, (int, TweenPropertyType) y)
-                => x.Item1 == y.Item1 && x.Item2 == y.Item2;
-
-            public int GetHashCode((int, TweenPropertyType) key)
-                => (key.Item1 * 397) ^ (int)key.Item2;
-        }
+        // Packs a component and property into one key, which is cheaper than a tuple key.
+        private static long MakeKey(int componentId, TweenPropertyType propertyType)
+            => ((long)componentId << 32) | (uint)(int)propertyType;
 
         public int TrackedTweenCount
             => componentPropertyTweenHandles.Count;
@@ -54,10 +47,10 @@ namespace UITweens.Services
             componentId = 0;
             propertyType = TweenPropertyType.Unknown;
 
-            (int, TweenPropertyType) trackedKey = default;
+            long trackedKey = 0L;
             bool found = false;
 
-            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in componentPropertyTweenHandles)
+            foreach (KeyValuePair<long, TweenHandle> kvp in componentPropertyTweenHandles)
             {
                 if (kvp.Value.Entity != entity)
                     continue;
@@ -70,8 +63,8 @@ namespace UITweens.Services
             if (!found)
                 return false;
 
-            componentId = trackedKey.Item1;
-            propertyType = trackedKey.Item2;
+            componentId = (int)(trackedKey >> 32);
+            propertyType = (TweenPropertyType)(int)(trackedKey & 0xFFFFFFFFL);
 
             if (pendingCancellations.TryGetValue(trackedKey, out TweenHandle pending))
             {
@@ -89,7 +82,7 @@ namespace UITweens.Services
 
         public void TrackTween(int componentId, TweenPropertyType propertyType, TweenHandle handle)
         {
-            (int, TweenPropertyType) key = (componentId, propertyType);
+            long key = MakeKey(componentId, propertyType);
 
             bool hasPrevious = componentPropertyTweenHandles.TryGetValue(key, out TweenHandle previousHandle);
             bool isDifferentTween = !hasPrevious || previousHandle.Entity != handle.Entity;
@@ -109,7 +102,7 @@ namespace UITweens.Services
             if (pendingCancellations.Count == 0)
                 return;
 
-            foreach (KeyValuePair<(int, TweenPropertyType), TweenHandle> kvp in pendingCancellations)
+            foreach (KeyValuePair<long, TweenHandle> kvp in pendingCancellations)
             {
                 TweenHandle handle = kvp.Value;
                 if (!handle.IsValid || !handle.Entity.IsAlive())
@@ -128,7 +121,7 @@ namespace UITweens.Services
             if (component == null)
                 return false;
 
-            return componentPropertyTweenHandles.TryGetValue((component.GetInstanceID(), propertyType), out handle);
+            return componentPropertyTweenHandles.TryGetValue(MakeKey(component.GetInstanceID(), propertyType), out handle);
         }
 
         public bool TryGetAnyTween(UnityEngine.Object component, out TweenHandle handle)
@@ -140,7 +133,7 @@ namespace UITweens.Services
             int componentId = component.GetInstanceID();
             for (int i = 0; i < AllPropertyTypes.Length; i++)
             {
-                if (componentPropertyTweenHandles.TryGetValue((componentId, AllPropertyTypes[i]), out handle))
+                if (componentPropertyTweenHandles.TryGetValue(MakeKey(componentId, AllPropertyTypes[i]), out handle))
                     return true;
             }
 
@@ -152,7 +145,7 @@ namespace UITweens.Services
             if (component == null)
                 return;
 
-            componentPropertyTweenHandles.Remove((component.GetInstanceID(), propertyType));
+            componentPropertyTweenHandles.Remove(MakeKey(component.GetInstanceID(), propertyType));
         }
 
         public void ClearAllTweensForComponent(UnityEngine.Object component)
@@ -162,14 +155,14 @@ namespace UITweens.Services
 
             int componentId = component.GetInstanceID();
             for (int i = 0; i < AllPropertyTypes.Length; i++)
-                componentPropertyTweenHandles.Remove((componentId, AllPropertyTypes[i]));
+                componentPropertyTweenHandles.Remove(MakeKey(componentId, AllPropertyTypes[i]));
         }
 
         public void CancelAllTweensForComponent(int componentId)
         {
             for (int i = 0; i < AllPropertyTypes.Length; i++)
             {
-                (int, TweenPropertyType) key = (componentId, AllPropertyTypes[i]);
+                long key = MakeKey(componentId, AllPropertyTypes[i]);
                 if (!componentPropertyTweenHandles.TryGetValue(key, out TweenHandle handle) || !handle.IsValid)
                     continue;
 
@@ -212,7 +205,7 @@ namespace UITweens.Services
         }
 
         private bool TryGetLiveTween(int componentId, TweenPropertyType propertyType, out TweenHandle handle)
-            => componentPropertyTweenHandles.TryGetValue((componentId, propertyType), out handle)
+            => componentPropertyTweenHandles.TryGetValue(MakeKey(componentId, propertyType), out handle)
                && handle.IsValid
                && handle.Entity.IsAlive();
 
@@ -221,7 +214,7 @@ namespace UITweens.Services
             if (component == null)
                 return;
 
-            pendingCancellations.Remove((component.GetInstanceID(), propertyType));
+            pendingCancellations.Remove(MakeKey(component.GetInstanceID(), propertyType));
         }
 
         public TweenHandle GetAndRemovePredecessor(UnityEngine.Object component, TweenPropertyType propertyType)
@@ -229,7 +222,7 @@ namespace UITweens.Services
             if (component == null)
                 return new TweenHandle();
 
-            (int, TweenPropertyType) key = (component.GetInstanceID(), propertyType);
+            long key = MakeKey(component.GetInstanceID(), propertyType);
 
             if (pendingCancellations.TryGetValue(key, out TweenHandle predecessorHandle))
             {
@@ -254,7 +247,7 @@ namespace UITweens.Services
                 return;
 
             int componentId = target.RectTransform.GetInstanceID();
-            (int, TweenPropertyType) key = (componentId, propertyType);
+            long key = MakeKey(componentId, propertyType);
 
             if (componentPropertyTweenHandles.TryGetValue(key, out TweenHandle competitor)
                 && competitor.Entity != entity
@@ -265,7 +258,7 @@ namespace UITweens.Services
             }
         }
 
-        public Dictionary<(int, TweenPropertyType), TweenHandle> GetAllTrackedTweens()
+        public Dictionary<long, TweenHandle> GetAllTrackedTweens()
             => componentPropertyTweenHandles;
 
         public void Cleanup()
