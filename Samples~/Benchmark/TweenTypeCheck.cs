@@ -26,6 +26,9 @@ public sealed class TweenTypeCheck : MonoBehaviour
     {
         CreateTarget();
 
+        TweenManager.Prewarm(8);
+        Report("Prewarm", TweenManager.IsReady);
+
         yield return Check("Position", () => rect.DOAnchorPos(new Vector2(40f, 20f), Duration),
             () => Near(rect.anchoredPosition, new Vector2(40f, 20f)));
         yield return Check("Position X", () => rect.DOAnchorPosX(90f, Duration),

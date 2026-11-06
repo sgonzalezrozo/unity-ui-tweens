@@ -44,7 +44,7 @@ I built and refined it on my own time in personal projects. It isn't used in pro
 - Per-component pause, resume, toggle and cancel controls
 - Custom float and vector tweens
 - Automatic cleanup when targets are destroyed
-- Configurable pool sizes with `UITweenPoolConfig`
+- Configurable startup and pool settings with `TweenManager.Configure`
 
 ## Compatibility
 
@@ -278,38 +278,35 @@ TweenManager.GetSpawner()
 
 You can also read the current value with `TweenHandle.FloatValue` or `TweenHandle.VectorValue`.
 
-## Pool sizes
+## Startup and the tween pool
 
-UI Tweens creates a small pool of tween entities at startup, then adds more as it needs them.
+`TweenManager` waits for the first scene to settle, then spreads its setup across a few frames. A tween that starts earlier finishes that setup at once, so it can start from `Start()` onward.
 
-| Field | Default |
-|---|---|
-| `InitialPoolSize` | 32. Entities created at startup. |
-| `RefillThreshold` | 2. The pool refills on the next update when this many entities or fewer are left. |
-| `GrowthBatchSize` | 12. Entities added by each refill. Set it to 0 to turn refills off. |
-| `LogPoolAllocations` | Off. Logs the pool size at startup. |
-
-To change them, create a `UITweenPoolConfig` asset at `Assets/Resources/UITweenPoolConfig.asset`. There's no menu item yet, so run this once from an Editor script:
+Tween entities are prepared in small batches after setup, so none of that work lands on your first frame. Call `Configure` before the first scene loads to change the defaults:
 
 ```csharp
-using UITweens;
-using UnityEditor;
-using UnityEngine;
-
-public static class CreateTweenPoolConfig
+[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+private static void ConfigureTweens()
 {
-    [MenuItem("Tools/UI Tweens/Create Pool Config")]
-    private static void Create()
-    {
-        AssetDatabase.CreateAsset(
-            ScriptableObject.CreateInstance<UITweenPoolConfig>(),
-            "Assets/Resources/UITweenPoolConfig.asset");
-    }
+    TweenManager.Configure(initialPoolSize: 100, startupDelayFrames: 60);
 }
 ```
 
+| Setting | Default |
+|---|---|
+| `initialPoolSize` | 50. Entities prepared after setup. |
+| `refillThreshold` | 2. The pool refills on the next update when this many entities or fewer are left. |
+| `growthBatchSize` | 12. Entities added per update while filling or refilling. Set it to 0 to turn refills off. |
+| `startupDelayFrames` | 30. Frames to wait after the first scene loads. |
+
+To do all of this during a loading screen, call `Prewarm`. It finishes setup at once, and prepares entities and the position, alpha and scale tween types:
+
+```csharp
+TweenManager.Prewarm(100);
+```
+
 - **After a tween ends:** LeoECS recycles its entity for the next tween.
-- **When more tweens start at once than the pool holds:** new entities are created, which can allocate memory, and tweens keep working. Raise `InitialPoolSize` to your peak if startup cost matters less to you than the first burst.
+- **When more tweens start at once than the pool holds:** new entities are created, which can allocate memory, and tweens keep working.
 
 ## Easing
 

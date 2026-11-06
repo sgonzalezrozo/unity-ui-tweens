@@ -328,9 +328,9 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         AddSingleMetric(result, "startup-world", TweenManager.StartupWorldMilliseconds, "ms");
         AddSingleMetric(result, "startup-services", TweenManager.StartupServicesMilliseconds, "ms");
         AddSingleMetric(result, "startup-world-ecs", UITweens.TweenWorldBootstrapper.EcsWorldMilliseconds, "ms");
-        AddSingleMetric(result, "startup-world-config", UITweens.TweenWorldBootstrapper.ConfigLoadMilliseconds, "ms");
         AddSingleMetric(result, "startup-world-systems", UITweens.TweenWorldBootstrapper.SystemsMilliseconds, "ms");
         AddSingleMetric(result, "pool-prealloc-time", TweenPoolManager.PreAllocationMilliseconds, "ms");
+        AddSingleMetric(result, "pool-prealloc-max-slice", TweenPoolManager.PreAllocationMaxSliceMilliseconds, "ms");
         AddSingleMetric(result, "pool-prealloc-gc", TweenPoolManager.PreAllocationBytes, "bytes");
         AddSingleMetric(result, "pool-growth-entities", TweenPoolManager.GrowthEntities, "count");
         AddSingleMetric(result, "pool-growth-allocations", TweenPoolManager.GrowthAllocations, "count");
@@ -626,6 +626,10 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     private IEnumerator WaitForTweenManager()
     {
         while (!TweenManager.IsReady)
+            yield return null;
+
+        // Lets the pool finish filling, so the first measurements start from the normal state.
+        for (int i = 0; i < 10; i++)
             yield return null;
     }
 

@@ -23,6 +23,9 @@ namespace UITweens.Services
         private Dictionary<long, TweenHandle> componentPropertyTweenHandles = new(32);
         private Dictionary<long, TweenHandle> pendingCancellations = new(16);
 
+        private readonly Dictionary<int, UnityEngine.Object> registeredTargets = new();
+        private readonly List<int> destroyedTargetIds = new();
+
         // Packs a component and property into one key, which is cheaper than a tuple key.
         private static long MakeKey(int componentId, TweenPropertyType propertyType)
             => ((long)componentId << 32) | (uint)(int)propertyType;
@@ -168,6 +171,30 @@ namespace UITweens.Services
 
                 TweenControlOperations.Cancel(handle);
                 componentPropertyTweenHandles.Remove(key);
+            }
+        }
+
+        public void RegisterTarget(UnityEngine.Object target)
+        {
+            if (target != null)
+                registeredTargets[target.GetInstanceID()] = target;
+        }
+
+        /// <summary>Cancels tweens on destroyed objects.</summary>
+        public void CleanupDestroyedTargets()
+        {
+            destroyedTargetIds.Clear();
+
+            foreach (KeyValuePair<int, UnityEngine.Object> kvp in registeredTargets)
+            {
+                if (kvp.Value == null)
+                    destroyedTargetIds.Add(kvp.Key);
+            }
+
+            for (int i = 0; i < destroyedTargetIds.Count; i++)
+            {
+                CancelAllTweensForComponent(destroyedTargetIds[i]);
+                registeredTargets.Remove(destroyedTargetIds[i]);
             }
         }
 

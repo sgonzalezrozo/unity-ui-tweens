@@ -12,7 +12,7 @@ namespace UITweens.Services
         private readonly List<EcsEntity> activeEntities;
         private int[] activeSlotByEntityId;
 
-        private const int DEFAULT_POOL_SIZE = 32;
+        private const int DEFAULT_POOL_SIZE = 50;
         private const int DEFAULT_REFILL_THRESHOLD = 2;
         private const int DEFAULT_GROWTH_BATCH_SIZE = 12;
 
@@ -21,12 +21,14 @@ namespace UITweens.Services
         private readonly int refillThreshold;
         private readonly int growthBatchSize;
         private int totalCreated;
+        private int entitiesToWarmUp;
 
 #if UITWEENS_BENCHMARK
         /// <summary>Times entity creation when the pool is empty. Off by default because it adds work.</summary>
         public static bool TrackGrowth { get; set; }
 
         public static double PreAllocationMilliseconds { get; private set; }
+        public static double PreAllocationMaxSliceMilliseconds { get; private set; }
         public static long PreAllocationBytes { get; private set; }
         public static int GrowthEntities { get; private set; }
         public static int GrowthAllocations { get; private set; }
@@ -77,7 +79,7 @@ namespace UITweens.Services
         }
 #endif
 
-        // OPTIMIZATION: Accept pool size parameter for configurable pre-allocation (50-100ms gain)
+        // OPTIMIZATION: Accept pool size parameter for configurable pre-allocation 
         public TweenPoolManager(
             EcsWorld world,
             int poolSize = DEFAULT_POOL_SIZE,
@@ -85,7 +87,6 @@ namespace UITweens.Services
             int growthBatchSize = DEFAULT_GROWTH_BATCH_SIZE)
         {
             this.world = world;
-            // Ensure minimum of 64, use provided size otherwise
             Filters = new TweenFilterSet(world);
             this.refillThreshold = refillThreshold;
             this.growthBatchSize = growthBatchSize;
@@ -106,27 +107,13 @@ namespace UITweens.Services
             WorstGrowthFrame = 0;
             WorstGrowthCollections = 0;
 
-            long startBytes = System.GC.GetTotalMemory(false);
-            long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+            PreAllocationMilliseconds = 0d;
+            PreAllocationMaxSliceMilliseconds = 0d;
+            PreAllocationBytes = 0L;
 #endif
 
-            PreAllocatePool(poolSize);
-
-#if UITWEENS_BENCHMARK
-            PreAllocationMilliseconds = TimestampToMilliseconds(System.Diagnostics.Stopwatch.GetTimestamp() - startTimestamp);
-            PreAllocationBytes = System.Math.Max(0L, System.GC.GetTotalMemory(false) - startBytes);
-#endif
-        }
-
-        private void PreAllocatePool(int poolSize)
-        {
-            for (int i = 0; i < poolSize; i++)
-            {
-                EcsEntity entity = world.NewEntity();
-                PreInitializeEntity(entity);
-                availableEntities.Push(entity);
-                totalCreated++;
-            }
+            // Nothing is created during startup. The update fills the pool in small batches.
+            entitiesToWarmUp = poolSize;
         }
 
         public EcsEntity AcquireEntity()
@@ -152,11 +139,57 @@ namespace UITweens.Services
         /// </summary>
         public void RefillIfLow()
         {
+            if (entitiesToWarmUp > 0)
+            {
+                WarmUpBatch();
+                return;
+            }
+
             if (availableEntities.Count > refillThreshold)
                 return;
 
             for (int i = 0; i < growthBatchSize; i++)
                 availableEntities.Push(CreateEntity());
+        }
+
+        /// <summary>Creates entities now, and the filters for the most common tween types.</summary>
+        public void Prewarm(int entityCount)
+        {
+            Filters.RequirePosition();
+            Filters.RequireAlpha();
+            Filters.RequireScale();
+
+            entitiesToWarmUp = 0;
+            while (availableEntities.Count < entityCount)
+                availableEntities.Push(CreateEntity());
+        }
+
+        private void WarmUpBatch()
+        {
+#if UITWEENS_BENCHMARK
+            long startBytes = System.GC.GetTotalMemory(false);
+            long startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
+#endif
+
+            int count = growthBatchSize < entitiesToWarmUp ? growthBatchSize : entitiesToWarmUp;
+            for (int i = 0; i < count; i++)
+                availableEntities.Push(CreateEntity());
+
+            // A growth size of 0 turns refills off, but the initial pool still fills.
+            if (count == 0)
+            {
+                availableEntities.Push(CreateEntity());
+                count = 1;
+            }
+
+            entitiesToWarmUp -= count;
+
+#if UITWEENS_BENCHMARK
+            double milliseconds = TimestampToMilliseconds(System.Diagnostics.Stopwatch.GetTimestamp() - startTimestamp);
+            PreAllocationMilliseconds += milliseconds;
+            PreAllocationMaxSliceMilliseconds = System.Math.Max(PreAllocationMaxSliceMilliseconds, milliseconds);
+            PreAllocationBytes += System.Math.Max(0L, System.GC.GetTotalMemory(false) - startBytes);
+#endif
         }
 
         private EcsEntity CreateEntity()

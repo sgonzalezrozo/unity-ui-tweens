@@ -12,14 +12,12 @@ namespace UITweens
         private TweenMathSystem mathSystem;
         private UGUITweenApplySystem applySystem;
         private TweenPoolManager poolManager;
-        private UITweenPoolConfig poolConfig;
 
         public EcsWorld World => world;
         public TweenPoolManager PoolManager => poolManager;
 
 #if UITWEENS_BENCHMARK
         public static double EcsWorldMilliseconds { get; private set; }
-        public static double ConfigLoadMilliseconds { get; private set; }
         public static double SystemsMilliseconds { get; private set; }
 
         private static double ElapsedMilliseconds(long startTimestamp)
@@ -46,25 +44,12 @@ namespace UITweens
 
 #if UITWEENS_BENCHMARK
             EcsWorldMilliseconds = ElapsedMilliseconds(startTimestamp);
-            startTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
-#endif
-
-            poolConfig = Resources.Load<UITweenPoolConfig>("UITweenPoolConfig");
-            if (poolConfig == null)
-                poolConfig = ScriptableObject.CreateInstance<UITweenPoolConfig>();
-
-#if UITWEENS_BENCHMARK
-            ConfigLoadMilliseconds = ElapsedMilliseconds(startTimestamp);
 #endif
         }
 
-        public void InitializePool()
+        public void InitializePool(int initialPoolSize, int refillThreshold, int growthBatchSize)
         {
-            poolManager = new TweenPoolManager(
-                world,
-                poolConfig.InitialPoolSize,
-                poolConfig.RefillThreshold,
-                poolConfig.GrowthBatchSize);
+            poolManager = new TweenPoolManager(world, initialPoolSize, refillThreshold, growthBatchSize);
         }
 
         public void InitializeSystems()
@@ -81,9 +66,6 @@ namespace UITweens
 #if UITWEENS_BENCHMARK
             SystemsMilliseconds = ElapsedMilliseconds(startTimestamp);
 #endif
-
-            if (poolConfig.LogPoolAllocations)
-                Debug.Log($"[UITweens] World initialized. Pool size: {poolConfig.InitialPoolSize} entities, refill {poolConfig.GrowthBatchSize} at {poolConfig.RefillThreshold}");
         }
 
         public void Update()

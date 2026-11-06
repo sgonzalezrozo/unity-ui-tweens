@@ -10,7 +10,7 @@ namespace UITweens
     public class TweenManager : MonoBehaviour
     {
         private const int CLEANUP_INTERVAL_FRAMES = 60;
-        private const int INIT_STAGE_COUNT = 5;
+        private const int INIT_STAGE_COUNT = 4;
         private static readonly ProfilerMarker UpdateLoopMarker = new("UITweens.UpdateLoop");
 
 #if UITWEENS_BENCHMARK
@@ -62,6 +62,50 @@ namespace UITweens
 
         public static TweenManager Instance
             => instance;
+
+        private static int initialPoolSize = 50;
+        private static int refillThreshold = 2;
+        private static int growthBatchSize = 12;
+        private static int startupDelayFrames = 30;
+
+        /// <summary>
+        /// Changes the startup settings. Call it before the first scene loads, for example from a
+        /// [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] method.
+        /// </summary>
+        /// <param name="initialPoolSize">Entities prepared in small batches after startup.</param>
+        /// <param name="refillThreshold">The pool refills when this many entities or fewer are left.</param>
+        /// <param name="growthBatchSize">Entities added per update while filling or refilling.</param>
+        /// <param name="startupDelayFrames">Frames to wait after the first scene before starting setup.</param>
+        public static void Configure(
+            int initialPoolSize = 50,
+            int refillThreshold = 2,
+            int growthBatchSize = 12,
+            int startupDelayFrames = 30)
+        {
+            if (instance != null && instance.initStage > 0)
+                Debug.LogWarning("[UITweens] Configure() was called after startup began, so the pool settings won't change.");
+
+            TweenManager.initialPoolSize = Mathf.Max(0, initialPoolSize);
+            TweenManager.refillThreshold = Mathf.Max(0, refillThreshold);
+            TweenManager.growthBatchSize = Mathf.Max(0, growthBatchSize);
+            TweenManager.startupDelayFrames = Mathf.Max(0, startupDelayFrames);
+        }
+
+        /// <summary>
+        /// Finishes startup and prepares entities now, along with position, alpha and scale tweens.
+        /// Call it during a loading screen so that the first tweens don't pay for this work.
+        /// </summary>
+        public static void Prewarm(int entityCount)
+        {
+            if (instance == null)
+            {
+                Debug.LogError("[UITweens] TweenManager isn't created yet. Call Prewarm() from Start() or later.");
+                return;
+            }
+
+            instance.EnsureInitialized();
+            instance.tweenBootstrapper.PoolManager.Prewarm(entityCount);
+        }
 
         /// <summary>True once startup has finished. Tweens can still start before this.</summary>
         public static bool IsReady
@@ -116,7 +160,6 @@ namespace UITweens
         private TweenWorldBootstrapper tweenBootstrapper;
         private EcsWorld world;
         private TweenTracker tracker;
-        private TweenCleaner cleaner;
         private int lastCleanupFrame;
         private int initStage;
 
@@ -145,6 +188,9 @@ namespace UITweens
         // Each stage runs on its own frame, so startup work never lands on one frame at once.
         private IEnumerator InitializeAsync()
         {
+            for (int i = 0; i < startupDelayFrames; i++)
+                yield return null;
+
             while (initStage < INIT_STAGE_COUNT)
             {
                 yield return null;
@@ -154,7 +200,7 @@ namespace UITweens
 
         private void Update()
         {
-            if (tracker == null || cleaner == null || tweenBootstrapper == null)
+            if (tracker == null || tweenBootstrapper == null)
                 return;
 
 #if UITWEENS_BENCHMARK
@@ -168,7 +214,7 @@ namespace UITweens
 
                 if (Time.frameCount - lastCleanupFrame >= CLEANUP_INTERVAL_FRAMES)
                 {
-                    cleaner.CleanupOrphanedTweens(tracker);
+                    tracker.CleanupDestroyedTargets();
                     lastCleanupFrame = Time.frameCount;
                 }
 
@@ -213,7 +259,7 @@ namespace UITweens
                     break;
 
                 case 1:
-                    tweenBootstrapper.InitializePool();
+                    tweenBootstrapper.InitializePool(initialPoolSize, refillThreshold, growthBatchSize);
                     break;
 
                 case 2:
@@ -225,10 +271,6 @@ namespace UITweens
 #if UITWEENS_BENCHMARK
                     StartupTrackerMilliseconds = (System.Diagnostics.Stopwatch.GetTimestamp() - startTimestamp) * (1000d / System.Diagnostics.Stopwatch.Frequency);
 #endif
-                    break;
-
-                case 4:
-                    cleaner = new TweenCleaner();
                     break;
             }
 
@@ -245,18 +287,17 @@ namespace UITweens
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (cleaner != null)
-                cleaner.CleanupOrphanedTweens(tracker);
+            tracker?.CleanupDestroyedTargets();
         }
 
         public void RegisterTransform(RectTransform rectTransform)
-            => cleaner.RegisterTransform(rectTransform);
+            => tracker.RegisterTarget(rectTransform);
 
         public void RegisterCanvasGroup(CanvasGroup canvasGroup)
-            => cleaner.RegisterCanvasGroup(canvasGroup);
+            => tracker.RegisterTarget(canvasGroup);
 
         public void RegisterImage(UnityEngine.UI.Image image)
-            => cleaner.RegisterImage(image);
+            => tracker.RegisterTarget(image);
 
         internal static void TrackTweenForComponent(UnityEngine.Object component, TweenHandle handle)
             => instance?.tracker?.TrackTween(component, handle);
