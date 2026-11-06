@@ -8,7 +8,7 @@ namespace UITweens.Services
     {
         public static void Pause(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.Entity.IsAlive())
+            if (!handle.IsValid || !handle.IsAlive)
             {
                 Debug.LogWarning("[UITweens] Cannot pause invalid or dead tween handle");
                 return;
@@ -25,7 +25,7 @@ namespace UITweens.Services
 
         public static void Resume(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.Entity.IsAlive())
+            if (!handle.IsValid || !handle.IsAlive)
             {
                 Debug.LogWarning("[UITweens] Cannot resume invalid or dead tween handle");
                 return;
@@ -38,7 +38,7 @@ namespace UITweens.Services
 
         public static void Cancel(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.Entity.IsAlive())
+            if (!handle.IsValid || !handle.IsAlive)
                 return;
 
             ref TweenControlComponent control = ref handle.Entity.Get<TweenControlComponent>();
@@ -58,7 +58,7 @@ namespace UITweens.Services
 
         public static void TogglePause(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.Entity.IsAlive())
+            if (!handle.IsValid || !handle.IsAlive)
             {
                 Debug.LogWarning("[UITweens] Cannot toggle pause on invalid or dead tween handle");
                 return;

@@ -207,15 +207,48 @@ namespace UITweens.Services
         }
 
         /// <summary>
-        /// Removes a finished tween. Destroying its entity invalidates old handles, and LeoECS
-        /// recycles the entity and its components for the next tween.
+        /// Returns a finished tween to the pool for reuse. Its serial changes, so old handles stop
+        /// working, and it's left as a new entity would be, apart from its core components.
         /// </summary>
         public void ReleaseEntity(EcsEntity entity)
         {
-            RemoveActive(entity);
+            if (!RemoveActive(entity) || !entity.IsAlive())
+                return;
 
-            if (entity.IsAlive())
-                entity.Destroy();
+            ref TweenControlComponent control = ref entity.Get<TweenControlComponent>();
+            int nextSerial = control.Serial + 1;
+            control = default;
+            control.Serial = nextSerial;
+
+            entity.Get<TweenClockComponent>() = default;
+            entity.Get<TweenResultComponent>() = default;
+            entity.Get<TweenTargetComponent>() = default;
+            entity.Get<TweenApplyFlagsComponent>() = default;
+
+            RemoveOptional<TweenActiveMarkerComponent>(entity);
+            RemoveOptional<TweenPositionComponent>(entity);
+            RemoveOptional<TweenAlphaComponent>(entity);
+            RemoveOptional<TweenScaleComponent>(entity);
+            RemoveOptional<TweenRotationComponent>(entity);
+            RemoveOptional<TweenColorComponent>(entity);
+            RemoveOptional<TweenSizeDeltaComponent>(entity);
+            RemoveOptional<TweenPivotComponent>(entity);
+            RemoveOptional<TweenCustomFloatComponent>(entity);
+            RemoveOptional<TweenCustomVectorComponent>(entity);
+            RemoveOptional<TweenDelayComponent>(entity);
+            RemoveOptional<TweenLoopComponent>(entity);
+            RemoveOptional<TweenCallbackComponent>(entity);
+            RemoveOptional<TweenCancelCallbackComponent>(entity);
+            RemoveOptional<TweenAdvancedCallbackComponent>(entity);
+            RemoveOptional<TweenSequenceLinkComponent>(entity);
+
+            availableEntities.Push(entity);
+        }
+
+        private static void RemoveOptional<T>(EcsEntity entity) where T : struct
+        {
+            if (entity.Has<T>())
+                entity.Del<T>();
         }
 
         /// <summary>
@@ -236,15 +269,15 @@ namespace UITweens.Services
         }
 
         // Slots hold the list index plus one, so 0 means inactive.
-        private void RemoveActive(EcsEntity entity)
+        private bool RemoveActive(EcsEntity entity)
         {
             int entityId = entity.GetInternalId();
             if (entityId >= activeSlotByEntityId.Length)
-                return;
+                return false;
 
             int index = activeSlotByEntityId[entityId] - 1;
             if (index < 0 || activeEntities[index] != entity)
-                return;
+                return false;
 
             int lastIndex = activeEntities.Count - 1;
             EcsEntity last = activeEntities[lastIndex];
@@ -252,6 +285,7 @@ namespace UITweens.Services
             activeSlotByEntityId[last.GetInternalId()] = index + 1;
             activeSlotByEntityId[entityId] = 0;
             activeEntities.RemoveAt(lastIndex);
+            return true;
         }
 
         public int GetActiveEntityCount()

@@ -10,12 +10,19 @@ namespace UITweens.Services
         public bool IsValid { get; private set; }
         internal EcsEntity Entity { get; private set; }
 
+        // Entities are reused, so a handle only matches the tween it was created for.
+        private int serial;
+
+        /// <summary>True while this handle's tween still exists.</summary>
+        internal bool IsAlive
+            => IsValid && Entity.IsAlive() && Entity.Get<TweenControlComponent>().Serial == serial;
+
         /// <summary>True while the tween is playing.</summary>
         public bool IsPlaying
         {
             get
             {
-                if (!IsValid || !Entity.IsAlive())
+                if (!IsAlive)
                     return false;
 
                 ref var control = ref Entity.Get<TweenControlComponent>();
@@ -28,7 +35,7 @@ namespace UITweens.Services
         {
             get
             {
-                if (!IsValid || !Entity.IsAlive())
+                if (!IsAlive)
                     return false;
 
                 ref var control = ref Entity.Get<TweenControlComponent>();
@@ -41,7 +48,7 @@ namespace UITweens.Services
         {
             get
             {
-                if (!IsValid || !Entity.IsAlive())
+                if (!IsAlive)
                     return false;
 
                 ref var control = ref Entity.Get<TweenControlComponent>();
@@ -54,7 +61,7 @@ namespace UITweens.Services
         {
             get
             {
-                if (!IsValid || !Entity.IsAlive())
+                if (!IsAlive)
                     return false;
 
                 ref var clock = ref Entity.Get<TweenClockComponent>();
@@ -67,7 +74,7 @@ namespace UITweens.Services
         {
             get
             {
-                if (!IsValid || !Entity.IsAlive() || !Entity.Has<TweenCustomFloatComponent>())
+                if (!IsAlive || !Entity.Has<TweenCustomFloatComponent>())
                     return 0f;
 
                 return Entity.Get<TweenCustomFloatComponent>().CurrentValue;
@@ -79,7 +86,7 @@ namespace UITweens.Services
         {
             get
             {
-                if (!IsValid || !Entity.IsAlive() || !Entity.Has<TweenCustomVectorComponent>())
+                if (!IsAlive || !Entity.Has<TweenCustomVectorComponent>())
                     return UnityEngine.Vector3.zero;
 
                 return Entity.Get<TweenCustomVectorComponent>().CurrentValue;
@@ -90,6 +97,7 @@ namespace UITweens.Services
         {
             Entity = entity;
             IsValid = true;
+            serial = entity.Get<TweenControlComponent>().Serial;
         }
     }
 }

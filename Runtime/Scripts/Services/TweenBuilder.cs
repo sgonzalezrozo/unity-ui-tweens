@@ -45,7 +45,7 @@ namespace UITweens.Services
         /// </summary>
         internal TweenBuilder StartFromCurrent(byte axisMask = TweenClockComponent.ALL_AXES)
         {
-            if (!lastHandle.IsValid || !lastHandle.Entity.IsAlive())
+            if (!lastHandle.IsValid || !lastHandle.IsAlive)
                 return this;
 
             ref TweenClockComponent clock = ref lastHandle.Entity.Get<TweenClockComponent>();
@@ -56,7 +56,7 @@ namespace UITweens.Services
 
         public TweenBuilder Delay(float delaySeconds)
         {
-            if (delaySeconds <= 0f || !lastHandle.IsValid || !lastHandle.Entity.IsAlive())
+            if (delaySeconds <= 0f || !lastHandle.IsValid || !lastHandle.IsAlive)
                 return this;
 
             // Unified state machine: Set delay on entity, transition from NotStarted to Delayed
@@ -116,7 +116,7 @@ namespace UITweens.Services
         /// <summary>Repeats after the first play, so Loop(2) plays three times.</summary>
         public TweenBuilder Loop(int repeatCount)
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 TweenInitializer.EnsureLoopComponent(lastHandle.Entity);
                 ref TweenLoopComponent loopComp = ref lastHandle.Entity.Get<TweenLoopComponent>();
@@ -131,7 +131,7 @@ namespace UITweens.Services
         /// <summary>Repeats until cancelled.</summary>
         public TweenBuilder LoopInfinite()
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 TweenInitializer.EnsureLoopComponent(lastHandle.Entity);
                 ref var loopComp = ref lastHandle.Entity.Get<TweenLoopComponent>();
@@ -157,7 +157,7 @@ namespace UITweens.Services
         /// <summary>Runs code when the tween finishes.</summary>
         public TweenBuilder OnComplete(Action callback)
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 ref TweenCallbackComponent cbComp = ref lastHandle.Entity.Get<TweenCallbackComponent>();
                 cbComp.OnComplete = callback;
@@ -176,7 +176,7 @@ namespace UITweens.Services
         /// </summary>
         public TweenBuilder OnComplete<TState>(TState state, Action<TState> callback) where TState : class
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 ref TweenCallbackComponent cbComp = ref lastHandle.Entity.Get<TweenCallbackComponent>();
                 cbComp.OnComplete = null;
@@ -191,7 +191,7 @@ namespace UITweens.Services
         /// <summary>Runs code when the tween starts.</summary>
         public TweenBuilder OnStart(Action callback)
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
@@ -205,7 +205,7 @@ namespace UITweens.Services
         /// <summary>Runs code on each update.</summary>
         public TweenBuilder OnUpdate(Action callback)
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
@@ -218,7 +218,7 @@ namespace UITweens.Services
         /// <summary>Runs code with the current value of a CustomFloat tween on each update.</summary>
         public TweenBuilder OnFloatUpdate(Action<float> callback)
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();
@@ -231,7 +231,7 @@ namespace UITweens.Services
         /// <summary>Runs code with the current value of a CustomVector tween on each update.</summary>
         public TweenBuilder OnVectorUpdate(Action<UnityEngine.Vector3> callback)
         {
-            if (lastHandle.IsValid && lastHandle.Entity.IsAlive())
+            if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 TweenInitializer.EnsureAdvancedCallbackComponent(lastHandle.Entity);
                 ref TweenAdvancedCallbackComponent advancedCb = ref lastHandle.Entity.Get<TweenAdvancedCallbackComponent>();

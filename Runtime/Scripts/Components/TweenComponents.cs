@@ -205,7 +205,7 @@ namespace UITweens.Components
     /// </summary>
     public struct TweenSequenceLinkComponent
     {
-        public EcsEntity NextEntity; // The tween that starts when this one finishes
+        public TweenHandle NextHandle; // The tween that starts when this one finishes
         public bool HasNext;
     }
 
@@ -227,6 +227,9 @@ namespace UITweens.Components
 
         public ControlState State;
         public float PausedElapsedTime; // Snapshot when paused
+
+        // Changes each time this entity is reused, which invalidates old handles
+        public int Serial;
 
         // Flag to ensure kill-competitors logic runs exactly once
         // when transitioning from Delayed → Playing

@@ -121,7 +121,7 @@ namespace UITweens.Services
             if (!firstHandle.IsValid || !secondHandle.IsValid)
                 return;
 
-            TweenSequencer.Link(firstHandle.Entity, secondHandle.Entity);
+            TweenSequencer.Link(firstHandle, secondHandle);
         }
 
         /// <summary>

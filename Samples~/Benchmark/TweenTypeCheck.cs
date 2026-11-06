@@ -77,6 +77,7 @@ public sealed class TweenTypeCheck : MonoBehaviour
         yield return CheckThen();
         yield return CheckSequential();
         yield return CheckPauseAndCancel();
+        yield return CheckStaleHandle();
 
         string summary = $"[TweenTypeCheck] Finished: {passed} passed, {failed} failed.";
         if (failed > 0)
@@ -175,6 +176,24 @@ public sealed class TweenTypeCheck : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(0.2f);
         Report("DoCancel stops both tweens", Near(rect.anchoredPosition.x, cancelledX) && Near(rect.localScale.x, cancelledScale));
+    }
+
+    // A finished tween's entity is reused, so its old handle must not reach the next tween.
+    private IEnumerator CheckStaleHandle()
+    {
+        rect.anchoredPosition = Vector2.zero;
+        TweenHandle oldHandle = rect.DOAnchorPosX(10f, 0.05f).GetHandle();
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        bool oldHandleEnded = !oldHandle.IsPlaying;
+        for (int i = 0; i < 64; i++)
+            rect.DOAnchorPosX(40f, Duration);
+
+        TweenManager.Cancel(oldHandle);
+        TweenManager.Pause(oldHandle);
+
+        yield return new WaitForSecondsRealtime(Duration + Settle);
+        Report("Old handle can't touch a new tween", oldHandleEnded && Near(rect.anchoredPosition.x, 40f));
     }
 
     private void CreateTarget()

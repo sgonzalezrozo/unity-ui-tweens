@@ -305,8 +305,8 @@ To do all of this during a loading screen, call `Prewarm`. It finishes setup at 
 TweenManager.Prewarm(100);
 ```
 
-- **After a tween ends:** LeoECS recycles its entity for the next tween.
-- **When more tweens start at once than the pool holds:** new entities are created, which can allocate memory, and tweens keep working.
+- **After a tween ends:** its entity returns to the pool for the next tween, and old handles to it stop working.
+- **When more tweens run at once than ever before:** the pool grows, which can allocate memory, and tweens keep working. It doesn't shrink.
 
 ## Easing
 

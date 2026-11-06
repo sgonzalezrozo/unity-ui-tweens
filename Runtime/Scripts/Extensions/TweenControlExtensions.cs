@@ -23,7 +23,7 @@ namespace UITweens.Extensions
                 return;
             }
 
-            if (!handle.IsValid)
+            if (!handle.IsAlive)
             {
                 callback.Invoke();
                 return;

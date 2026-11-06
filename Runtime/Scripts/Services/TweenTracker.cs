@@ -55,7 +55,8 @@ namespace UITweens.Services
 
             foreach (KeyValuePair<long, TweenHandle> kvp in componentPropertyTweenHandles)
             {
-                if (kvp.Value.Entity != entity)
+                // Finished tweens can stay listed here, and their entities get reused.
+                if (kvp.Value.Entity != entity || !kvp.Value.IsAlive)
                     continue;
 
                 trackedKey = kvp.Key;
@@ -75,7 +76,7 @@ namespace UITweens.Services
                 predecessor = pending;
             }
 
-            if (predecessor.IsValid && predecessor.Entity.IsAlive())
+            if (predecessor.IsValid && predecessor.IsAlive)
                 componentPropertyTweenHandles[trackedKey] = predecessor;
             else
                 componentPropertyTweenHandles.Remove(trackedKey);
@@ -108,7 +109,7 @@ namespace UITweens.Services
             foreach (KeyValuePair<long, TweenHandle> kvp in pendingCancellations)
             {
                 TweenHandle handle = kvp.Value;
-                if (!handle.IsValid || !handle.Entity.IsAlive())
+                if (!handle.IsValid || !handle.IsAlive)
                     continue;
 
                 if (handle.Entity.Get<TweenControlComponent>().State != TweenControlComponent.ControlState.Delayed)
@@ -136,7 +137,7 @@ namespace UITweens.Services
             int componentId = component.GetInstanceID();
             for (int i = 0; i < AllPropertyTypes.Length; i++)
             {
-                if (componentPropertyTweenHandles.TryGetValue(MakeKey(componentId, AllPropertyTypes[i]), out handle))
+                if (TryGetLiveTween(componentId, AllPropertyTypes[i], out handle))
                     return true;
             }
 
@@ -234,7 +235,7 @@ namespace UITweens.Services
         private bool TryGetLiveTween(int componentId, TweenPropertyType propertyType, out TweenHandle handle)
             => componentPropertyTweenHandles.TryGetValue(MakeKey(componentId, propertyType), out handle)
                && handle.IsValid
-               && handle.Entity.IsAlive();
+               && handle.IsAlive;
 
         public void RemoveFromPendingCancellations(UnityEngine.Object component, TweenPropertyType propertyType)
         {
@@ -295,7 +296,7 @@ namespace UITweens.Services
 
         public TweenPropertyType DetectPropertyType(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.Entity.IsAlive())
+            if (!handle.IsValid || !handle.IsAlive)
                 return TweenPropertyType.Unknown;
 
             return DetectPropertyType(handle.Entity);

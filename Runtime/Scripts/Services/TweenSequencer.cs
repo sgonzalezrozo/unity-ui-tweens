@@ -63,39 +63,39 @@ namespace UITweens.Services
         }
 
         /// <summary>Makes the second tween wait for the end of the first tween's chain.</summary>
-        internal static void Link(EcsEntity first, EcsEntity second)
+        internal static void Link(TweenHandle first, TweenHandle second)
         {
-            if (!first.IsAlive() || !Hold(second))
+            if (!first.IsAlive || !Hold(second.Entity))
                 return;
 
-            EcsEntity last = first;
-            while (last.Has<TweenSequenceLinkComponent>()
-                   && last.Get<TweenSequenceLinkComponent>().HasNext
-                   && last.Get<TweenSequenceLinkComponent>().NextEntity.IsAlive())
+            TweenHandle last = first;
+            while (last.Entity.Has<TweenSequenceLinkComponent>()
+                   && last.Entity.Get<TweenSequenceLinkComponent>().HasNext
+                   && last.Entity.Get<TweenSequenceLinkComponent>().NextHandle.IsAlive)
             {
-                last = last.Get<TweenSequenceLinkComponent>().NextEntity;
+                last = last.Entity.Get<TweenSequenceLinkComponent>().NextHandle;
             }
 
-            ref TweenSequenceLinkComponent link = ref last.Get<TweenSequenceLinkComponent>();
-            link.NextEntity = second;
+            ref TweenSequenceLinkComponent link = ref last.Entity.Get<TweenSequenceLinkComponent>();
+            link.NextHandle = second;
             link.HasNext = true;
         }
 
         /// <summary>Starts the next tween in a chain.</summary>
         internal static void ActivateNext(EcsEntity finished)
         {
-            if (TryGetNext(finished, out EcsEntity next))
-                Activate(next);
+            if (TryGetNext(finished, out TweenHandle next))
+                Activate(next.Entity);
         }
 
         /// <summary>Cancels the rest of a chain, so waiting tweens aren't left held forever.</summary>
         internal static void CancelNext(EcsEntity cancelled)
         {
-            if (TryGetNext(cancelled, out EcsEntity next))
+            if (TryGetNext(cancelled, out TweenHandle next))
                 TweenControlOperations.Cancel(next);
         }
 
-        private static bool TryGetNext(EcsEntity entity, out EcsEntity next)
+        private static bool TryGetNext(EcsEntity entity, out TweenHandle next)
         {
             next = default;
 
@@ -106,9 +106,9 @@ namespace UITweens.Services
             if (!link.HasNext)
                 return false;
 
-            next = link.NextEntity;
+            next = link.NextHandle;
             link.HasNext = false;
-            return next.IsAlive();
+            return next.IsAlive;
         }
 
         private static void CaptureStartValues(EcsEntity entity)
