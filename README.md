@@ -6,7 +6,7 @@
 [![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
 [![Version 0.3.0](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
 
-UI Tweens is a free, open-source tween library for Unity UI (uGUI) on Unity 6. It animates `RectTransform`, `Image` and `CanvasGroup` with a fluent, DOTween-style API (`DOAnchorPos`, `DOScale`, `DOFade`), with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel. Tweens run as pooled entities in an always-running LeoECS world. It's a UI-only alternative to DOTween, PrimeTween and LitMotion, and much younger than all three.
+UI Tweens is a free, open-source tween library for Unity UI (uGUI) on Unity 6. It animates `RectTransform`, `Image` and `CanvasGroup` with a fluent, DOTween-style API (`DOAnchorPos`, `DOScale`, `DOFade`), with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel. Tweens run as pooled entities in an always-running LeoECS world, so hundreds of UI tweens stay allocation-conscious. It's a UI-only alternative to DOTween, PrimeTween and LitMotion, and much younger than all three.
 
 <!-- Demo GIF: Documentation~/images/demo.gif -->
 
