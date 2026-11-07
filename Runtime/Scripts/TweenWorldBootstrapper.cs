@@ -69,12 +69,15 @@ namespace UITweens
         }
 
         public void Update()
+            => Update(Time.deltaTime, Time.unscaledDeltaTime);
+
+        public void Update(float deltaTime, float unscaledDeltaTime)
         {
             if (applySystem == null)
                 return;
 
             delayedCompletionSystem.Run();
-            mathSystem.Run();
+            mathSystem.Run(deltaTime, unscaledDeltaTime);
             applySystem.Run();
 
 #if DEBUG

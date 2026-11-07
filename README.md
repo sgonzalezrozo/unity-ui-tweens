@@ -181,6 +181,10 @@ Every method ends with the same three parameters: `float duration`, `EaseType ea
 | `Delay(seconds)` | Wait before starting |
 | `Loop(repeatCount)` | Repeat after the first play, so `Loop(2)` plays three times |
 | `LoopInfinite()` | Repeat until cancelled |
+| `Loop(n, LoopType.Yoyo)`, `LoopInfinite(LoopType.Yoyo)` | Play back and forth instead of restarting |
+| `From()` | Play from the given value to the current one. The target jumps to the given value at once |
+| `Relative()` | Treat the given value as an offset from where the tween starts |
+| `IgnoreTimeScale()` | Keep playing when `Time.timeScale` is `0`, for example on a pause menu |
 | `Then(handle)` | Run another tween when this one finishes |
 | `OnStart(callback)` | Run code when the tween starts |
 | `OnUpdate(callback)` | Run code on each update |
@@ -256,7 +260,30 @@ icon.DOScale(Vector3.one * 1.1f, 0.4f, EaseType.SineInOut).LoopInfinite();
 icon.DoCancel();
 ```
 
-Each loop restarts from the beginning of the tween. There's no public API for back-and-forth loops yet.
+Each loop restarts from the beginning of the tween. To play back and forth instead, pass `LoopType.Yoyo`:
+
+```csharp
+arrow.DOAnchorPosY(10f, 0.4f, EaseType.SineInOut).Relative().LoopInfinite(LoopType.Yoyo);
+```
+
+`LoopType` is in the `UITweens` namespace.
+
+### Pop in from nothing
+
+```csharp
+popup.DOScale(Vector3.zero, 0.3f, EaseType.BackOut).From();
+```
+
+`From()` sets the value straight away, even with `Delay()`, and ends at the value the target had when the tween was created.
+
+### Animate a pause menu
+
+```csharp
+Time.timeScale = 0f;
+pauseMenu.DOFade(1f, 0.2f).IgnoreTimeScale();
+```
+
+To make every tween ignore the time scale, set `TweenManager.IgnoreTimeScaleByDefault = true`. A single tween can still opt out with `IgnoreTimeScale(false)`.
 
 ### Animate a custom value
 
@@ -321,7 +348,7 @@ TweenManager.Prewarm(100);
 
 ## Runtime behavior
 
-- Tweens use `Time.deltaTime`, so they stop when `Time.timeScale` is `0`.
+- Tweens use `Time.deltaTime`, so they stop when `Time.timeScale` is `0`, unless they use `IgnoreTimeScale()`.
 - `TweenManager` persists across scene loads.
 - Tweens are cancelled when their target is destroyed.
 - When a delayed tween starts on a `RectTransform`, it cancels other tweens animating the same property.
@@ -367,12 +394,12 @@ panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetA
 | Focus | Unity UI | General purpose | General purpose | General purpose |
 | Allocations | Pools tweens to reduce allocations. Not benchmarked yet. | Recycles tweens to reduce allocations | Advertises no runtime allocations | Advertises zero allocations, including tween creation |
 | Sequences | `Then` and `Sequential` | Yes | Yes | Yes |
-| Unscaled time | No | Yes | Yes | Yes |
+| Unscaled time | Yes | Yes | Yes | Yes |
 | TextMeshPro | No | Yes, in the paid Pro version | Through examples | Yes |
 | Dependencies | LeoECS | None | None | Burst, Collections, Mathematics |
 | Track record | Pre-release, single author | Long-established, large community | Established | Established |
 
-**Where the others win:** richer sequencing, unscaled time, wider target support and years of production use. DOTween has the largest ecosystem, and LitMotion and PrimeTween are the stronger choices if allocation is your main concern.
+**Where the others win:** richer sequencing, wider target support and years of production use. DOTween has the largest ecosystem, and LitMotion and PrimeTween are the stronger choices if allocation is your main concern.
 
 **Where UI Tweens fits:** you want UI animation in an always-running ECS world, with tracking and control per component. If you already use LeoECS, it doesn't add a second runtime model.
 
@@ -386,9 +413,7 @@ panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetA
 
 ## Limitations
 
-- Tweens can't use unscaled time.
 - TextMeshPro and UI Toolkit aren't supported directly.
-- Back-and-forth loops aren't available through the public API.
 
 ## Project status
 

@@ -35,8 +35,11 @@ namespace UITweens.Systems
         }
 
         public void Run()
+            => Run(Time.deltaTime, Time.unscaledDeltaTime);
+
+        /// <summary>Advances every active tween, each with scaled or unscaled time.</summary>
+        public void Run(float deltaTime, float unscaledDeltaTime)
         {
-            float deltaTime = Time.deltaTime;
 
             // Only active tweens are visited, so tweens waiting in the pool cost nothing.
             List<EcsEntity> active = poolManager.ActiveEntities;
@@ -46,47 +49,48 @@ namespace UITweens.Systems
             {
                 EcsEntity entity = active[i];
                 ref TweenCoreComponent core = ref entity.Get<TweenCoreComponent>();
+                float dt = core.Clock.IgnoreTimeScale ? unscaledDeltaTime : deltaTime;
 
                 switch (core.Control.Kind)
                 {
                     case TweenPoolKind.Alpha:
-                        ProcessAlpha(entity, ref core, deltaTime);
+                        ProcessAlpha(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.Position:
-                        ProcessPosition(entity, ref core, deltaTime);
+                        ProcessPosition(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.Scale:
-                        ProcessScale(entity, ref core, deltaTime);
+                        ProcessScale(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.Rotation:
-                        ProcessRotation(entity, ref core, deltaTime);
+                        ProcessRotation(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.Color:
-                        ProcessColor(entity, ref core, deltaTime);
+                        ProcessColor(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.SizeDelta:
-                        ProcessSizeDelta(entity, ref core, deltaTime);
+                        ProcessSizeDelta(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.Pivot:
-                        ProcessPivot(entity, ref core, deltaTime);
+                        ProcessPivot(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.CustomFloat:
-                        ProcessCustomFloat(entity, ref core, deltaTime);
+                        ProcessCustomFloat(entity, ref core, dt);
                         break;
 
                     case TweenPoolKind.CustomVector:
-                        ProcessCustomVector(entity, ref core, deltaTime);
+                        ProcessCustomVector(entity, ref core, dt);
                         break;
 
                     default:
-                        ProcessAnyKind(entity, ref core, deltaTime);
+                        ProcessAnyKind(entity, ref core, dt);
                         break;
                 }
             }
@@ -157,7 +161,7 @@ namespace UITweens.Systems
                         TweenManager.Cancel(control.PredecessorHandle);
                         control.HasKilledCompetitors = true;
 
-                        if (entity.Has<TweenCoreComponent>())
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                             if (target.CanvasGroup != null)
@@ -186,9 +190,11 @@ namespace UITweens.Systems
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
             clock.ElapsedTime += deltaTime;
-            float normalizedT = clock.GetNormalizedTime();
-            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+            float easedT = EaseProgress(ref clock);
 
             result.AlphaResult = TweenMath.Lerp(alpha.StartValue, alpha.EndValue, easedT);
 
@@ -202,7 +208,7 @@ namespace UITweens.Systems
                     if (entity.Has<TweenLoopComponent>())
                     {
                         ref var loop = ref entity.Get<TweenLoopComponent>();
-                        if (loop.ShouldReverse)
+                        if (loop.Yoyo)
                         {
                             SwapValuesForReverse(ref alpha.StartValue, ref alpha.EndValue);
                         }
@@ -242,7 +248,7 @@ namespace UITweens.Systems
                         TweenManager.Cancel(control.PredecessorHandle);
                         control.HasKilledCompetitors = true;
 
-                        if (entity.Has<TweenCoreComponent>())
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                             if (target.RectTransform != null)
@@ -270,9 +276,11 @@ namespace UITweens.Systems
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
             clock.ElapsedTime += deltaTime;
-            float normalizedT = clock.GetNormalizedTime();
-            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+            float easedT = EaseProgress(ref clock);
 
             result.PositionResult = TweenMath.LerpVector2(position.StartValue, position.EndValue, easedT);
 
@@ -285,7 +293,7 @@ namespace UITweens.Systems
                     if (entity.Has<TweenLoopComponent>())
                     {
                         ref var loop = ref entity.Get<TweenLoopComponent>();
-                        if (loop.ShouldReverse)
+                        if (loop.Yoyo)
                         {
                             SwapValuesForReverse(ref position.StartValue, ref position.EndValue);
                         }
@@ -325,7 +333,7 @@ namespace UITweens.Systems
                         control.HasKilledCompetitors = true;
 
                         // Update start value from current UI state
-                        if (entity.Has<TweenCoreComponent>())
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                             if (target.RectTransform != null)
@@ -355,9 +363,11 @@ namespace UITweens.Systems
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
             clock.ElapsedTime += deltaTime;
-            float normalizedT = clock.GetNormalizedTime();
-            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+            float easedT = EaseProgress(ref clock);
 
             result.ScaleResult = TweenMath.LerpVector3(scale.StartValue, scale.EndValue, easedT);
 
@@ -370,7 +380,7 @@ namespace UITweens.Systems
                     if (entity.Has<TweenLoopComponent>())
                     {
                         ref var loop = ref entity.Get<TweenLoopComponent>();
-                        if (loop.ShouldReverse)
+                        if (loop.Yoyo)
                         {
                             SwapValuesForReverse(ref scale.StartValue, ref scale.EndValue);
                         }
@@ -410,7 +420,7 @@ namespace UITweens.Systems
                         control.HasKilledCompetitors = true;
 
                         // Update start value from current UI state
-                        if (entity.Has<TweenCoreComponent>())
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                             if (target.RectTransform != null)
@@ -440,9 +450,11 @@ namespace UITweens.Systems
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
             clock.ElapsedTime += deltaTime;
-            float normalizedT = clock.GetNormalizedTime();
-            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+            float easedT = EaseProgress(ref clock);
 
             result.RotationResult = TweenMath.Lerp(rotation.StartValue, rotation.EndValue, easedT);
 
@@ -455,7 +467,7 @@ namespace UITweens.Systems
                     if (entity.Has<TweenLoopComponent>())
                     {
                         ref var loop = ref entity.Get<TweenLoopComponent>();
-                        if (loop.ShouldReverse)
+                        if (loop.Yoyo)
                         {
                             SwapValuesForReverse(ref rotation.StartValue, ref rotation.EndValue);
                         }
@@ -496,7 +508,7 @@ namespace UITweens.Systems
                         control.HasKilledCompetitors = true;
 
                         // Update start value from current UI state
-                        if (entity.Has<TweenCoreComponent>())
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                             if (target.Image != null)
@@ -526,9 +538,11 @@ namespace UITweens.Systems
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
             clock.ElapsedTime += deltaTime;
-            float normalizedT = clock.GetNormalizedTime();
-            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+            float easedT = EaseProgress(ref clock);
 
             result.ColorResult = TweenMath.LerpColor(color.StartValue, color.EndValue, easedT);
 
@@ -541,7 +555,7 @@ namespace UITweens.Systems
                     if (entity.Has<TweenLoopComponent>())
                     {
                         ref var loop = ref entity.Get<TweenLoopComponent>();
-                        if (loop.ShouldReverse)
+                        if (loop.Yoyo)
                         {
                             SwapValuesForReverse(ref color.StartValue, ref color.EndValue);
                         }
@@ -581,7 +595,7 @@ namespace UITweens.Systems
                         control.HasKilledCompetitors = true;
 
                         // Update start value from current UI state
-                        if (entity.Has<TweenCoreComponent>())
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                             if (target.RectTransform != null)
@@ -611,9 +625,11 @@ namespace UITweens.Systems
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
             clock.ElapsedTime += deltaTime;
-            float normalizedT = clock.GetNormalizedTime();
-            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+            float easedT = EaseProgress(ref clock);
 
             result.SizeDeltaResult = TweenMath.LerpVector2(size.StartValue, size.EndValue, easedT);
 
@@ -626,7 +642,7 @@ namespace UITweens.Systems
                     if (entity.Has<TweenLoopComponent>())
                     {
                         ref var loop = ref entity.Get<TweenLoopComponent>();
-                        if (loop.ShouldReverse)
+                        if (loop.Yoyo)
                         {
                             SwapValuesForReverse(ref size.StartValue, ref size.EndValue);
                         }
@@ -666,7 +682,7 @@ namespace UITweens.Systems
                         control.HasKilledCompetitors = true;
 
                         // Update start value from current UI state
-                        if (entity.Has<TweenCoreComponent>())
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
                             if (target.RectTransform != null)
@@ -696,9 +712,11 @@ namespace UITweens.Systems
             if (control.State != TweenControlComponent.ControlState.Playing)
                 return;
 
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
             clock.ElapsedTime += deltaTime;
-            float normalizedT = clock.GetNormalizedTime();
-            float easedT = TweenMath.EvaluateEase(normalizedT, clock.Ease, clock.EaseParameter);
+            float easedT = EaseProgress(ref clock);
 
             result.PivotResult = TweenMath.LerpVector2(pivot.StartValue, pivot.EndValue, easedT);
 
@@ -711,7 +729,7 @@ namespace UITweens.Systems
                     if (entity.Has<TweenLoopComponent>())
                     {
                         ref var loop = ref entity.Get<TweenLoopComponent>();
-                        if (loop.ShouldReverse)
+                        if (loop.Yoyo)
                         {
                             SwapValuesForReverse(ref pivot.StartValue, ref pivot.EndValue);
                         }
@@ -729,13 +747,16 @@ namespace UITweens.Systems
             if (!TryAdvanceClock(ref clock, ref control, deltaTime))
                 return;
 
-            float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
+            float easedT = EaseProgress(ref clock);
             custom.CurrentValue = TweenMath.Lerp(custom.StartValue, custom.EndValue, easedT);
 
             if (!clock.IsFinished)
                 return;
 
-            if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
+            if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().Yoyo)
                 SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
         }
 
@@ -748,13 +769,16 @@ namespace UITweens.Systems
             if (!TryAdvanceClock(ref clock, ref control, deltaTime))
                 return;
 
-            float easedT = TweenMath.EvaluateEase(clock.GetNormalizedTime(), clock.Ease, clock.EaseParameter);
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
+            float easedT = EaseProgress(ref clock);
             custom.CurrentValue = Vector3.LerpUnclamped(custom.StartValue, custom.EndValue, easedT);
 
             if (!clock.IsFinished)
                 return;
 
-            if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().ShouldReverse)
+            if (TryProcessLoop(ref entity, ref clock) && entity.Get<TweenLoopComponent>().Yoyo)
                 SwapValuesForReverse(ref custom.StartValue, ref custom.EndValue);
         }
 
@@ -813,15 +837,15 @@ namespace UITweens.Systems
                 return false; // Loop finished
             }
 
-            // Reset animation progress for next iteration
-            clock.ElapsedTime = 0f;
+            // Start the next loop, keeping the time that ran past the end so loops don't drift.
+            clock.ElapsedTime = clock.Duration > 0f ? clock.ElapsedTime - clock.Duration : 0f;
             loop.CurrentLoop++;
 
-            // Mark if we need to reverse values
-            if (loop.Mode == TweenLoopComponent.LoopMode.Reverse ||
-                loop.Mode == TweenLoopComponent.LoopMode.PingPong)
+            // A Yoyo loop swaps start and end each time, and mirrors the ease on the way back.
+            if (loop.Yoyo)
             {
                 loop.ShouldReverse = !loop.ShouldReverse;
+                clock.Backward = loop.ShouldReverse;
             }
 
             // Continue looping
@@ -831,6 +855,15 @@ namespace UITweens.Systems
         /// <summary>
         /// Swap start and end values for Reverse/PingPong mode.
         /// </summary>
+        // Playing back mirrors the curve, so a Yoyo loop retraces the same motion in reverse.
+        private static float EaseProgress(ref TweenClockComponent clock)
+        {
+            float t = clock.GetNormalizedTime();
+            return clock.Backward
+                ? 1f - TweenMath.EvaluateEase(1f - t, clock.Ease, clock.EaseParameter)
+                : TweenMath.EvaluateEase(t, clock.Ease, clock.EaseParameter);
+        }
+
         private void SwapValuesForReverse<T>(ref T start, ref T end) where T : struct
         {
             (start, end) = (end, start);

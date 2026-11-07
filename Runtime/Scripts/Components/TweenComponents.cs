@@ -48,6 +48,12 @@ namespace UITweens.Components
         public bool StartFromCurrent;  // True when the start value comes from the UI, not from the caller
         public byte AxisMask;          // Animated axes when StartFromCurrent is true
 
+        public bool IgnoreTimeScale;   // Advances with unscaled time, so it keeps playing while the game is paused
+        public bool Backward;          // True while a Yoyo loop plays back, so the ease is mirrored
+        public bool IsFrom;            // From(): plays from the given value to the value at creation
+        public bool IsRelative;        // Relative(): the given value is an offset from the start value
+        public bool ValuesResolved;    // Relative() has turned the offset into an end value
+
         public TweenClockComponent(float duration, EaseType ease = EaseType.Linear, float easeParameter = -1f)
         {
             ElapsedTime = 0f;
@@ -59,6 +65,11 @@ namespace UITweens.Components
             HasCapturedStartValues = false;
             StartFromCurrent = false;
             AxisMask = ALL_AXES;
+            IgnoreTimeScale = false;
+            Backward = false;
+            IsFrom = false;
+            IsRelative = false;
+            ValuesResolved = false;
         }
 
         /// <summary>
@@ -347,7 +358,8 @@ namespace UITweens.Components
         public LoopMode Mode;
         public int LoopCount;           // For Repeat: how many times to repeat
         public int CurrentLoop;         // Current loop iteration
-        public bool ShouldReverse;      // Flag to reverse on next cycle
+        public bool ShouldReverse;      // True while a Yoyo loop plays back
+        public bool Yoyo;               // Plays forward, then back, then forward again
     }
 
     /// <summary>

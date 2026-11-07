@@ -1,15 +1,20 @@
 {
     "name": "UITweens.Tests",
-    "rootNamespace": "",
+    "rootNamespace": "UITweens.Tests",
     "references": [
         "UITweens",
-        "UnityEngine.UI"
+        "Leopotam.Ecs",
+        "UnityEngine.UI",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
     "autoReferenced": false,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"

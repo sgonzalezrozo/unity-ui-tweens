@@ -170,7 +170,7 @@ namespace UITweens
         private TweenWorldBootstrapper tweenBootstrapper;
         private EcsWorld world;
         private TweenTracker tracker;
-        private int lastCleanupFrame;
+        private int framesSinceCleanup;
         private int initStage;
 
         private void Awake()
@@ -208,7 +208,43 @@ namespace UITweens
             }
         }
 
+        // Tests drive time themselves through Step(), so the frame loop doesn't advance tweens.
+        internal static bool ManualUpdate { get; set; }
+
+        /// <summary>Advances every tween by deltaTime. Used by tests instead of the frame loop.</summary>
+        internal static void Step(float deltaTime)
+            => instance?.Tick(deltaTime, deltaTime);
+
+        /// <summary>Same as Step(deltaTime), with separate scaled and unscaled time, as when Time.timeScale isn't 1.</summary>
+        internal static void Step(float deltaTime, float unscaledDeltaTime)
+            => instance?.Tick(deltaTime, unscaledDeltaTime);
+
+        /// <summary>
+        /// When true, new tweens ignore Time.timeScale, so UI keeps animating while the game is paused.
+        /// A single tween can still choose with IgnoreTimeScale().
+        /// </summary>
+        public static bool IgnoreTimeScaleByDefault { get; set; }
+
+        /// <summary>Destroys TweenManager and restores the default settings, so each test starts clean.</summary>
+        internal static void ResetForTests()
+        {
+            if (instance != null)
+                DestroyImmediate(instance.gameObject);
+
+            instance = null;
+            cachedSpawner = null;
+            ManualUpdate = false;
+            IgnoreTimeScaleByDefault = false;
+            Configure();
+        }
+
         private void Update()
+        {
+            if (!ManualUpdate)
+                Tick(Time.deltaTime, Time.unscaledDeltaTime);
+        }
+
+        private void Tick(float deltaTime, float unscaledDeltaTime)
         {
             if (tracker == null || tweenBootstrapper == null)
                 return;
@@ -220,12 +256,12 @@ namespace UITweens
             using (UpdateLoopMarker.Auto())
             {
                 tracker.ProcessPendingCancellations();
-                tweenBootstrapper.Update();
+                tweenBootstrapper.Update(deltaTime, unscaledDeltaTime);
 
-                if (Time.frameCount - lastCleanupFrame >= CLEANUP_INTERVAL_FRAMES)
+                if (++framesSinceCleanup >= CLEANUP_INTERVAL_FRAMES)
                 {
                     tracker.CleanupDestroyedTargets();
-                    lastCleanupFrame = Time.frameCount;
+                    framesSinceCleanup = 0;
                 }
 
                 tweenBootstrapper.PoolManager.RefillIfLow();

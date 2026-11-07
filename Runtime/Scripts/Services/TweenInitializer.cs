@@ -40,6 +40,13 @@ namespace UITweens.Services
             clock.ElapsedDelay = 0f;
             clock.DelayDuration = 0f;
             clock.HasCapturedStartValues = false;
+            clock.StartFromCurrent = false;
+            clock.AxisMask = TweenClockComponent.ALL_AXES;
+            clock.IgnoreTimeScale = TweenManager.IgnoreTimeScaleByDefault;
+            clock.Backward = false;
+            clock.IsFrom = false;
+            clock.IsRelative = false;
+            clock.ValuesResolved = false;
 
             ref var target = ref entity.Get<TweenCoreComponent>().Target;
             target.RectTransform = element;

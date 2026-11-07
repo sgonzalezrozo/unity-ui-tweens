@@ -113,8 +113,11 @@ namespace UITweens.Services
             return TweenPropertyType.Unknown;
         }
 
-        /// <summary>Repeats after the first play, so Loop(2) plays three times.</summary>
-        public TweenBuilder Loop(int repeatCount)
+        /// <summary>
+        /// Repeats after the first play, so Loop(2) plays three times. With LoopType.Yoyo it plays
+        /// back and forth, so an odd repeat count ends where it started.
+        /// </summary>
+        public TweenBuilder Loop(int repeatCount, LoopType type = LoopType.Restart)
         {
             if (lastHandle.IsValid && lastHandle.IsAlive)
             {
@@ -123,20 +126,73 @@ namespace UITweens.Services
                 loopComp.Mode = TweenLoopComponent.LoopMode.Repeat;
                 loopComp.LoopCount = repeatCount;
                 loopComp.CurrentLoop = 0;
+                loopComp.Yoyo = type == LoopType.Yoyo;
             }
 
             return this;
         }
 
-        /// <summary>Repeats until cancelled.</summary>
-        public TweenBuilder LoopInfinite()
+        /// <summary>Repeats until cancelled. With LoopType.Yoyo it plays back and forth.</summary>
+        public TweenBuilder LoopInfinite(LoopType type = LoopType.Restart)
         {
             if (lastHandle.IsValid && lastHandle.IsAlive)
             {
                 TweenInitializer.EnsureLoopComponent(lastHandle.Entity);
                 ref var loopComp = ref lastHandle.Entity.Get<TweenLoopComponent>();
                 loopComp.Mode = TweenLoopComponent.LoopMode.Infinite;
+                loopComp.Yoyo = type == LoopType.Yoyo;
             }
+            return this;
+        }
+
+        /// <summary>
+        /// Plays from the given value to the value the target has now, instead of the other way
+        /// round. The target jumps to the given value straight away, even if the tween is delayed:
+        /// panel.DOScale(Vector3.zero, 0.3f, EaseType.BackOut).From();
+        /// </summary>
+        public TweenBuilder From()
+        {
+            if (lastHandle.IsValid && lastHandle.IsAlive)
+                TweenValueModifiers.ApplyFrom(lastHandle.Entity);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Treats the given value as an offset from the value the tween starts at, so
+        /// rect.DOAnchorPosX(50f, 0.3f).Relative() moves 50 units right from wherever it is
+        /// when it starts. Works with From() too.
+        /// </summary>
+        public TweenBuilder Relative()
+        {
+            if (!lastHandle.IsValid || !lastHandle.IsAlive)
+                return this;
+
+            ref TweenClockComponent clock = ref lastHandle.Entity.Get<TweenCoreComponent>().Clock;
+            if (clock.IsRelative)
+                return this;
+
+            clock.IsRelative = true;
+
+            // A From() tween's values are already fixed, so its offset is applied now.
+            if (clock.IsFrom)
+            {
+                TweenValueModifiers.ResolveRelative(lastHandle.Entity);
+                TweenValueModifiers.ShowStartValue(lastHandle.Entity);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Advances with unscaled time, so the tween keeps playing when Time.timeScale is 0,
+        /// for example on a pause menu. See also TweenManager.IgnoreTimeScaleByDefault.
+        /// </summary>
+        public TweenBuilder IgnoreTimeScale(bool ignore = true)
+        {
+            if (lastHandle.IsValid && lastHandle.IsAlive)
+                lastHandle.Entity.Get<TweenCoreComponent>().Clock.IgnoreTimeScale = ignore;
+
             return this;
         }
 

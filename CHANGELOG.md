@@ -6,6 +6,11 @@ All notable changes to this package are documented in this file.
 
 ### Added
 
+- Added `IgnoreTimeScale()` and `TweenManager.IgnoreTimeScaleByDefault`, so tweens can keep playing while `Time.timeScale` is `0`.
+- Added `LoopType.Yoyo` to `Loop()` and `LoopInfinite()`. A Yoyo loop plays back and forth, and retraces the same curve on the way back.
+- Added `From()`, which plays from the given value to the current one.
+- Added `Relative()`, which treats the given value as an offset from where the tween starts.
+- Added a PlayMode test suite under `Tests/`.
 - Added `TweenManager.Configure`, `TweenManager.Prewarm` and `TweenManager.Initialize`.
 - Added `OnComplete(state, callback)`, which runs a callback with a value and doesn't allocate a closure.
 - Added a benchmark sample under `Samples~/Benchmark`. It covers allocation, capacity and pool growth, and writes one JSON file per scenario run.
@@ -20,6 +25,8 @@ All notable changes to this package are documented in this file.
 
 ### Changed
 
+- Looping tweens keep the time that ran past the end of each loop, so they no longer drift by up to a frame per loop.
+- A delayed tween that replaces another one only re-reads its start value from the UI when it starts from the current value, so `DOFadeFromTo`, `DOColorFromTo` and `From()` keep their start value.
 - **Breaking:** removed `UITweenPoolConfig` and its asset lookup. Use `TweenManager.Configure` instead.
 - The pool is no longer created during startup. 50 entities are prepared in small batches afterward, and it adds 12 on the next update when 2 or fewer are left. The old minimum of 64 is gone.
 - UI Tweens does nothing at startup. The first tween sets it up, unless `Initialize()` or `Prewarm()` already did. `Configure(autoStart: true)` starts it after the first scene loads instead. Tweens can now also start from `Awake()`.
