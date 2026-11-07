@@ -7,6 +7,9 @@ namespace UITweens
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void InitializeTweenManager()
         {
+            if (!TweenManager.AutoStartEnabled)
+                return;
+
 #if UITWEENS_BENCHMARK
             TweenManager.BeginInitializationSample(out long startTimestamp, out long startBytes);
 #endif

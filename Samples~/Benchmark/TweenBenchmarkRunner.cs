@@ -13,6 +13,12 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     private const int AllocationTargetCount = 400;
     private const int MinMobileFrameRate = 120;
     private const int MaxCanvasPerTargetCount = 1000;
+
+    // A UI that's mostly idle: about 250 short tweens start over 15 frames, then nothing for a while.
+    private const int GameBurstTargets = 250;
+    private const int GameBurstCycleFrames = 120;
+    private const int GameBurstSpawnFrames = 15;
+    private const float GameBurstDuration = 0.25f;
     private const string SharedCanvasVariant = "shared-canvas";
     private const string CanvasPerTargetVariant = "canvas-per-target";
 
@@ -34,7 +40,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
     [SerializeField] private string notes = "";
 
     // 0 and 10 show the fixed cost each frame, which every user pays.
-    private static readonly int[] CapacitySteps = { 0, 10, 50, 100, 150, 350, 1000, 2500, 5000 };
+    private static readonly int[] CapacitySteps = { 0, 10, 50, 100, 150, 250, 350, 1000, 2500, 5000 };
     private static readonly Action NoCaptureCallback = StaticNoCaptureCallback;
 
     // The pool never shrinks, so growth can only be measured once per process.
@@ -241,6 +247,7 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         }
 
         scenarios.Add(new Scenario($"pool-stress-{poolStressCount}", poolStressCount, OnPoolStress));
+        scenarios.Add(new Scenario($"game-burst-{GameBurstTargets}", GameBurstTargets, OnGameBurst));
         return scenarios;
     }
 
@@ -570,6 +577,25 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
         }
     }
 
+    private static void OnGameBurst(int frame, TweenSpawner spawner, TweenBenchmarkTargets benchmarkTargets)
+    {
+        int phase = frame % GameBurstCycleFrames;
+        if (phase >= GameBurstSpawnFrames)
+            return;
+
+        int perFrame = (benchmarkTargets.Count + GameBurstSpawnFrames - 1) / GameBurstSpawnFrames;
+        float targetX = ((frame / GameBurstCycleFrames) & 1) == 0 ? 30f : -30f;
+
+        for (int i = 0; i < perFrame; i++)
+        {
+            int index = phase * perFrame + i;
+            if (index >= benchmarkTargets.Count)
+                return;
+
+            benchmarkTargets.GetRect(index).DOAnchorPosX(targetX, GameBurstDuration, EaseType.QuadOut);
+        }
+    }
+
     private static void OnCreateTweensEachFrame(int frame, TweenSpawner spawner, TweenBenchmarkTargets benchmarkTargets)
     {
         int index = frame % benchmarkTargets.Count;
@@ -721,6 +747,9 @@ public sealed class TweenBenchmarkRunner : MonoBehaviour
 
     private IEnumerator WaitForTweenManager()
     {
+        // Starts UI Tweens the way the auto start setting would, after the first scene.
+        TweenManager.Initialize();
+
         while (!TweenManager.IsReady)
             yield return null;
 

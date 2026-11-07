@@ -70,6 +70,10 @@ namespace UITweens
         private static int refillThreshold = 2;
         private static int growthBatchSize = 12;
         private static int startupDelayFrames = 30;
+        private static bool autoStart;
+
+        internal static bool AutoStartEnabled
+            => autoStart;
 
         /// <summary>
         /// Changes the startup settings. Call it before the first scene loads, for example from a
@@ -79,11 +83,13 @@ namespace UITweens
         /// <param name="refillThreshold">The pool refills when this many entities or fewer are left.</param>
         /// <param name="growthBatchSize">Entities added per update while filling or refilling.</param>
         /// <param name="startupDelayFrames">Frames to wait after the first scene before starting setup.</param>
+        /// <param name="autoStart">True starts setup after the first scene loads. By default UI Tweens does nothing until the first tween, Initialize() or Prewarm().</param>
         public static void Configure(
             int initialPoolSize = 50,
             int refillThreshold = 2,
             int growthBatchSize = 12,
-            int startupDelayFrames = 30)
+            int startupDelayFrames = 30,
+            bool autoStart = false)
         {
             if (instance != null && instance.initStage > 0)
                 Debug.LogWarning("[UITweens] Configure() was called after startup began, so the pool settings won't change.");
@@ -92,6 +98,19 @@ namespace UITweens
             TweenManager.refillThreshold = Mathf.Max(0, refillThreshold);
             TweenManager.growthBatchSize = Mathf.Max(0, growthBatchSize);
             TweenManager.startupDelayFrames = Mathf.Max(0, startupDelayFrames);
+            TweenManager.autoStart = autoStart;
+        }
+
+        /// <summary>
+        /// Creates TweenManager and finishes its setup now, for example during a loading screen.
+        /// Otherwise the first tween does this. Safe to call more than once.
+        /// </summary>
+        public static void Initialize()
+        {
+            if (instance == null)
+                new GameObject("TweenManager", typeof(TweenManager));
+
+            instance.EnsureInitialized();
         }
 
         /// <summary>
@@ -100,13 +119,7 @@ namespace UITweens
         /// </summary>
         public static void Prewarm(int entityCount)
         {
-            if (instance == null)
-            {
-                Debug.LogError("[UITweens] TweenManager isn't created yet. Call Prewarm() from Start() or later.");
-                return;
-            }
-
-            instance.EnsureInitialized();
+            Initialize();
             instance.tweenBootstrapper.PoolManager.Prewarm(entityCount);
         }
 
@@ -123,14 +136,8 @@ namespace UITweens
         /// <summary>Gets the spawner used to create tweens.</summary>
         public static TweenSpawner GetSpawner()
         {
-            if (instance == null)
-            {
-                Debug.LogError("[UITweens] TweenManager not initialized. Call TweenManager.Initialize() first.");
-                return null;
-            }
-
-            // Tweens can start before the frame-spread setup has finished, for example in Start().
-            instance.EnsureInitialized();
+            // The first tween sets everything up, unless Initialize() or Prewarm() already did.
+            Initialize();
 
             // Return cached instance instead of creating new one every time
             if (cachedSpawner == null)

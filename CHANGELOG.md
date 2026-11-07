@@ -6,7 +6,7 @@ All notable changes to this package are documented in this file.
 
 ### Added
 
-- Added `TweenManager.Configure` and `TweenManager.Prewarm`.
+- Added `TweenManager.Configure`, `TweenManager.Prewarm` and `TweenManager.Initialize`.
 - Added `OnComplete(state, callback)`, which runs a callback with a value and doesn't allocate a closure.
 - Added a benchmark sample under `Samples~/Benchmark`. It covers allocation, capacity and pool growth, and writes one JSON file per scenario run.
 - Added the benchmark result schema, evidence rules and summary script under `Documentation~/benchmarks/`.
@@ -22,7 +22,7 @@ All notable changes to this package are documented in this file.
 
 - **Breaking:** removed `UITweenPoolConfig` and its asset lookup. Use `TweenManager.Configure` instead.
 - The pool is no longer created during startup. 50 entities are prepared in small batches afterward, and it adds 12 on the next update when 2 or fewer are left. The old minimum of 64 is gone.
-- Setup waits 30 frames after the first scene loads, unless a tween starts earlier.
+- UI Tweens does nothing at startup. The first tween sets it up, unless `Initialize()` or `Prewarm()` already did. `Configure(autoStart: true)` starts it after the first scene loads instead. Tweens can now also start from `Awake()`.
 - Startup now runs in five stages on separate frames, so it doesn't land on one frame. Added `TweenManager.IsReady`. A tween that starts earlier finishes the remaining stages at once.
 - **Breaking:** `TweenManager` creates itself in code, so **Tools > UI Tweens > Setup** and the `TweenManager` prefab are no longer needed. You can delete the prefab.
 - LeoECS filters are created the first time a tween type is used, systems run without reflection, and the ECS world starts smaller. This lowers startup time and memory.

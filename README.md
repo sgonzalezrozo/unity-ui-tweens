@@ -95,9 +95,7 @@ https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.3.0
 
 ## Setup
 
-There's nothing to set up. `TweenManager` creates itself after the first scene loads and spreads its startup work across a few frames, so don't add it to a scene. Check `TweenManager.IsReady` if you need to know when it has finished.
-
-Start tweens from `Start()` or later, not `Awake()`.
+There's nothing to set up, and nothing runs until you need it. The first tween creates `TweenManager` and sets it up, so don't add it to a scene. To keep that work off your first animation, call `TweenManager.Initialize()` or `TweenManager.Prewarm()` during a loading screen.
 
 ## Quick start
 
@@ -280,7 +278,7 @@ You can also read the current value with `TweenHandle.FloatValue` or `TweenHandl
 
 ## Startup and the tween pool
 
-`TweenManager` waits for the first scene to settle, then spreads its setup across a few frames. A tween that starts earlier finishes that setup at once, so it can start from `Start()` onward.
+UI Tweens does nothing at startup. The first tween sets it up, unless `Initialize()` or `Prewarm()` already did. To start it automatically after the first scene loads instead, with the work spread across a few frames, set `autoStart` to true.
 
 Tween entities are prepared in small batches after setup, so none of that work lands on your first frame. Call `Configure` before the first scene loads to change the defaults:
 
@@ -288,7 +286,7 @@ Tween entities are prepared in small batches after setup, so none of that work l
 [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 private static void ConfigureTweens()
 {
-    TweenManager.Configure(initialPoolSize: 100, startupDelayFrames: 60);
+    TweenManager.Configure(initialPoolSize: 100);
 }
 ```
 
@@ -297,7 +295,8 @@ private static void ConfigureTweens()
 | `initialPoolSize` | 50. Entities prepared after setup. |
 | `refillThreshold` | 2. The pool refills on the next update when this many entities or fewer are left. |
 | `growthBatchSize` | 12. Entities added per update while filling or refilling. Set it to 0 to turn refills off. |
-| `startupDelayFrames` | 30. Frames to wait after the first scene loads. |
+| `autoStart` | False. Set it to true to start setup after the first scene loads. |
+| `startupDelayFrames` | 30. With `autoStart`, frames to wait after the first scene loads. |
 
 To do all of this during a loading screen, call `Prewarm`. It finishes setup at once, and prepares entities and the position, alpha and scale tween types:
 
@@ -383,7 +382,6 @@ panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetA
 |---|---|
 | Compile errors mention `Leopotam` | Install LeoECS by following [Installation](#installation) |
 | Tweens stop in a pause menu | Tweens follow `Time.timeScale` |
-| A tween doesn't start in `Awake()` | Start it from `Start()` or later |
 | A declared tween never starts | Pass it to `Sequential()` |
 
 ## Limitations
