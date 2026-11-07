@@ -6,7 +6,7 @@
 [![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
 [![Version 0.3.0](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
 
-UI Tweens runs on LeoECS and provides a fluent API for `RectTransform`, `Image` and `CanvasGroup`, with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel controls.
+UI Tweens is a free, open-source tween library for Unity UI (uGUI) on Unity 6. It animates `RectTransform`, `Image` and `CanvasGroup` with a fluent, DOTween-style API (`DOAnchorPos`, `DOScale`, `DOFade`), with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel. Tweens run as pooled entities in an always-running LeoECS world, so hundreds of UI tweens stay allocation-conscious. It's a UI-only alternative to DOTween, PrimeTween and LitMotion, and much younger than all three.
 
 <!-- Demo GIF: Documentation~/images/demo.gif -->
 
@@ -402,6 +402,69 @@ panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetA
 **Where the others win:** richer sequencing, wider target support and years of production use. DOTween has the largest ecosystem, and LitMotion and PrimeTween are the stronger choices if allocation is your main concern.
 
 **Where UI Tweens fits:** you want UI animation in an always-running ECS world, with tracking and control per component. If you already use LeoECS, it doesn't add a second runtime model.
+
+## Use it with AI coding agents
+
+Coding agents write C# files, and this package is newer than their training data. Give them its rules so they use the real API:
+
+1. Copy [`Documentation~/agent-rules.md`](Documentation~/agent-rules.md) into your project's agent rules, for example `AGENTS.md`, `CLAUDE.md` or `.cursor/rules/ui-tweens.md`.
+2. For a whole Unity architecture with a verify loop, add [Unity Architecture Agents](https://github.com/sgonzalezrozo/unity-architecture-agents). It detects this package and adapts its code.
+
+There are no MCP tools for UI Tweens yet. The rules file works with any agent that reads project files.
+
+## FAQ
+
+### How do I animate UI in Unity without DOTween?
+
+Install UI Tweens and LeoECS, then call an extension method on the component: `panel.DOAnchorPos(Vector2.zero, 0.35f, EaseType.BackOut)`. See [Quick start](#quick-start).
+
+### UI Tweens vs DOTween vs PrimeTween vs LitMotion: which should I use?
+
+UI Tweens focuses only on Unity UI and runs every tween in one always-running ECS world. DOTween, PrimeTween and LitMotion are mature, general-purpose, animate any property and support unscaled time. LitMotion and PrimeTween are the stronger choices if allocations are your main concern, and UI Tweens isn't benchmarked yet. Choose UI Tweens if you want a small UI-only API with per-component control, or already use LeoECS. See [How it compares](#how-it-compares).
+
+### Does it work with Unity 6?
+
+Yes. It's tested on Unity `6000.3`. The package declares `2022.3` as its minimum, but older versions aren't tested yet.
+
+### Does it work with IL2CPP, mobile and WebGL?
+
+Not verified yet. See [Compatibility](#compatibility).
+
+### Does it work with UI Toolkit?
+
+No. It animates uGUI components: `RectTransform`, `Image` and `CanvasGroup`.
+
+### Do tweens run while the game is paused?
+
+No. Tweens use `Time.deltaTime`, so they stop when `Time.timeScale` is `0`.
+
+### Why does it need LeoECS?
+
+Tweens run as entities in a LeoECS world that never shuts down, which avoids creating and destroying tween objects. Install LeoECS first, as shown in [Installation](#installation).
+
+### Does it work with AI coding agents?
+
+It ships a rules file you copy into your project, so agents use its real API instead of guessing. It hasn't been tested with agents beyond the author's own projects. See [Use it with AI coding agents](#use-it-with-ai-coding-agents).
+
+### Is there a DOTween alternative for Unity UI?
+
+Yes, several. PrimeTween and LitMotion are established general-purpose alternatives. UI Tweens is a newer, UI-only option with a DOTween-style API, so `panel.DOFade(0f, 0.2f)` reads the same. See [How it compares](#how-it-compares).
+
+### Is it faster than DOTween?
+
+Unknown. Benchmarks aren't published yet, so measure your own project. See [Performance](#performance).
+
+### How do I install it?
+
+In Unity, open **Window > Package Manager**, select **+ > Add package from git URL** and enter `https://github.com/sgonzalezrozo/unity-ui-tweens.git`. Install [LeoECS](https://github.com/LeoECSCommunity/ecs) first, with the exact URL in Installation. See [Installation](#installation).
+
+### Is it production-ready? Does anyone use it?
+
+Not yet. UI Tweens is a pre-release package (`0.x`) by a single author. It isn't used in a shipped game, and it has no other users yet, so expect rough edges and API changes before `1.0.0`. Bug reports are very welcome. See [Project status](#project-status).
+
+### Is it free for commercial use?
+
+Yes. It's MIT licensed.
 
 ## Troubleshooting
 

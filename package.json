@@ -2,7 +2,7 @@
   "name": "com.sgonzalezrozo.ui-tweens",
   "version": "0.3.0",
   "displayName": "UI Tweens",
-  "description": "An ECS-based tween engine for Unity UI, built on LeoECS.",
+  "description": "Tween library for Unity UI (uGUI): fluent DOTween-style API for RectTransform, Image and CanvasGroup, with sequences, loops, 33 easings and per-component control. Runs on LeoECS.",
   "unity": "2022.3",
   "license": "MIT",
   "author": {
@@ -17,7 +17,22 @@
     "ui",
     "tweens",
     "animation",
-    "ecs"
+    "ecs",
+    "unity",
+    "unity3d",
+    "unity6",
+    "unity-package",
+    "upm",
+    "csharp",
+    "gamedev",
+    "tween",
+    "tweening",
+    "ui-animation",
+    "ugui",
+    "leoecs",
+    "easing",
+    "dotween-alternative",
+    "primetween-alternative"
   ],
   "samples": [
     {
