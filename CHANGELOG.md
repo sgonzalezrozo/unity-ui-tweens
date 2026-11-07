@@ -4,6 +4,10 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+### Documentation
+
+- An FAQ, rules for AI coding agents in `Documentation~/agent-rules.md`, `llms.txt` and more package keywords.
+
 ### Added
 
 - Added `TweenManager.Configure`, `TweenManager.Prewarm` and `TweenManager.Initialize`.

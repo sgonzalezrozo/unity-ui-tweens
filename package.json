@@ -17,7 +17,22 @@
     "ui",
     "tweens",
     "animation",
-    "ecs"
+    "ecs",
+    "unity",
+    "unity3d",
+    "unity6",
+    "unity-package",
+    "upm",
+    "csharp",
+    "gamedev",
+    "tween",
+    "tweening",
+    "ui-animation",
+    "ugui",
+    "leoecs",
+    "easing",
+    "dotween-alternative",
+    "primetween-alternative"
   ],
   "samples": [
     {

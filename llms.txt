@@ -1,0 +1,14 @@
+# UI Tweens
+
+> Tween library for Unity UI (uGUI) on Unity 6, an alternative to DOTween, PrimeTween and LitMotion for UI animation. Fluent extension methods (`DOAnchorPos`, `DOScale`, `DOFade`, `DOColor`...) on `RectTransform`, `Image` and `CanvasGroup`, with delays, loops, chaining, callbacks, 33 easing types and per-component pause, resume and cancel. Runs in an always-on LeoECS world with pooled entities. Requires classic LeoECS (`com.leopotam.ecs`). MIT licensed, pre-release (0.x).
+
+## Docs
+
+- [README](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/README.md): installation, quick start, API, troubleshooting, FAQ
+- [Rules for AI coding agents](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/agent-rules.md): copy into AGENTS.md, CLAUDE.md or Cursor rules
+- [Changelog](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/CHANGELOG.md)
+- [Benchmarks](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/README.md#performance)
+
+## Optional
+
+- [Unity Architecture Agents](https://github.com/sgonzalezrozo/unity-architecture-agents): architecture rules and a verify loop for AI coding agents on Unity
