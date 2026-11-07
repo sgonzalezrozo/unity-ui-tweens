@@ -1,6 +1,6 @@
 # UI Tweens
 
-> Tween library for Unity UI (uGUI) on Unity 6, an alternative to DOTween, PrimeTween and LitMotion for UI animation. Fluent extension methods (`DOAnchorPos`, `DOScale`, `DOFade`, `DOColor`...) on `RectTransform`, `Image` and `CanvasGroup`, with delays, loops, chaining, callbacks, 33 easing types and per-component pause, resume and cancel. Runs in an always-on LeoECS world with pooled entities. Requires classic LeoECS (`com.leopotam.ecs`). MIT licensed, pre-release (0.x).
+> Tween library for Unity UI (uGUI) on Unity 6, an alternative to DOTween, PrimeTween and LitMotion for UI animation. Fluent extension methods (`DOAnchorPos`, `DOScale`, `DOFade`, `DOColor`...) on `RectTransform`, `Image` and `CanvasGroup`, with delays, loops, chaining, callbacks, 33 easing types and per-component pause, resume and cancel. Runs in an always-on LeoECS world with pooled entities. Requires classic LeoECS (`com.leopotam.ecs`). MIT licensed, pre-release (0.x), single author, no other users yet.
 
 ## Docs
 
