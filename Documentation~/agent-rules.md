@@ -24,7 +24,7 @@ panel.DOAnchorPos(Vector2.zero, 0.35f, EaseType.BackOut)
 | `Image` | `DOFade`, `DOColor`, `DOColorFromTo` |
 | `CanvasGroup` | `DOFade`, `DOFadeFromTo` |
 
-Options: `Delay`, `Loop(repeatCount)`, `LoopInfinite`, `Then(handle)`, `OnStart`, `OnUpdate`, `OnComplete`, `GetHandle`, `DeclareOnly`. `Loop(2)` plays three times. There are no back-and-forth (yoyo) loops.
+Options: `Delay`, `Loop(repeatCount, LoopType)`, `LoopInfinite(LoopType)`, `From`, `Relative`, `IgnoreTimeScale`, `Then(handle)`, `OnStart`, `OnUpdate`, `OnComplete`, `GetHandle`, `DeclareOnly`. `Loop(2)` plays three times. `LoopType.Yoyo` (namespace `UITweens`) plays back and forth; the default `LoopType.Restart` starts each loop over. `From()` plays from the given value to the current one and sets the given value at once. `Relative()` treats the value as an offset from where the tween starts.
 
 ## Control and clean up
 
@@ -37,5 +37,5 @@ Options: `Delay`, `Loop(repeatCount)`, `LoopInfinite`, `Then(handle)`, `OnStart`
 ## Don't
 
 - Don't invent methods. If a method isn't listed here or in the README, read the package source.
-- Don't expect tweens to run while `Time.timeScale` is `0`.
+- Don't expect tweens to run while `Time.timeScale` is `0` unless they use `IgnoreTimeScale()` or `TweenManager.IgnoreTimeScaleByDefault` is true.
 - Don't use it for UI Toolkit elements or non-UI transforms.

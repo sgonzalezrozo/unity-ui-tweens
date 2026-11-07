@@ -33,13 +33,14 @@ I built and refined it on my own time in personal projects. It isn't used in pro
 
 - Need a mature, general-purpose animation ecosystem. DOTween, PrimeTween and LitMotion are established alternatives.
 - Don't want LeoECS in your project.
-- Need animations to keep running while `Time.timeScale` is `0`.
 
 ## Features
 
 - Runs on LeoECS
 - Fluent API for `RectTransform`, `Image` and `CanvasGroup`
-- Delays, finite and infinite loops, chaining and callbacks
+- Delays, finite and infinite loops (restart or yoyo), chaining and callbacks
+- `From()` and `Relative()` values
+- Unscaled time for pause menus, per tween or by default
 - 33 built-in easing types
 - Per-component pause, resume, toggle and cancel controls
 - Custom float and vector tweens
@@ -420,7 +421,7 @@ Install UI Tweens and LeoECS, then call an extension method on the component: `p
 
 ### UI Tweens vs DOTween vs PrimeTween vs LitMotion: which should I use?
 
-UI Tweens focuses only on Unity UI and runs every tween in one always-running ECS world. DOTween, PrimeTween and LitMotion are mature, general-purpose, animate any property and support unscaled time. LitMotion and PrimeTween are the stronger choices if allocations are your main concern, and UI Tweens isn't benchmarked yet. Choose UI Tweens if you want a small UI-only API with per-component control, or already use LeoECS. See [How it compares](#how-it-compares).
+UI Tweens focuses only on Unity UI and runs every tween in one always-running ECS world. DOTween, PrimeTween and LitMotion are mature, general-purpose and animate any property. LitMotion and PrimeTween are the stronger choices if allocations are your main concern, and UI Tweens isn't benchmarked yet. Choose UI Tweens if you want a small UI-only API with per-component control, or already use LeoECS. See [How it compares](#how-it-compares).
 
 ### Does it work with Unity 6?
 
@@ -436,7 +437,7 @@ No. It animates uGUI components: `RectTransform`, `Image` and `CanvasGroup`.
 
 ### Do tweens run while the game is paused?
 
-No. Tweens use `Time.deltaTime`, so they stop when `Time.timeScale` is `0`.
+Only if you ask them to. Tweens follow `Time.timeScale` by default, so they stop when it's `0`. Add `IgnoreTimeScale()` to a tween, or set `TweenManager.IgnoreTimeScaleByDefault = true`, to keep UI animating on a pause menu.
 
 ### Why does it need LeoECS?
 
@@ -471,7 +472,7 @@ Yes. It's MIT licensed.
 | Problem | Try this |
 |---|---|
 | Compile errors mention `Leopotam` | Install LeoECS by following [Installation](#installation) |
-| Tweens stop in a pause menu | Tweens follow `Time.timeScale` |
+| Tweens stop in a pause menu | Tweens follow `Time.timeScale`. Add `IgnoreTimeScale()` to the tween |
 | A declared tween never starts | Pass it to `Sequential()` |
 
 ## Limitations
