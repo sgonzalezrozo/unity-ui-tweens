@@ -16,7 +16,7 @@ namespace UITweens.Extensions
         {
             if (canvasGroup == null)
             {
-                Debug.LogWarning("[UITweens] CanvasGroup is null in DOFade()");
+                Debug.LogWarning("[UITweens] DOFade() was called with a null CanvasGroup — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -42,7 +42,7 @@ namespace UITweens.Extensions
         {
             if (canvasGroup == null)
             {
-                Debug.LogWarning("[UITweens] CanvasGroup is null in DOFadeFromTo()");
+                Debug.LogWarning("[UITweens] DOFadeFromTo() was called with a null CanvasGroup — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 

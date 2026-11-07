@@ -8,9 +8,14 @@ namespace UITweens.Services
     {
         public static void Pause(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.IsAlive)
+            if (!handle.IsValid)
             {
-                Debug.LogWarning("[UITweens] Cannot pause invalid or dead tween handle");
+                Debug.LogWarning("[UITweens] Pause() was called on a TweenHandle that was never assigned a tween.");
+                return;
+            }
+            if (!handle.IsAlive)
+            {
+                Debug.LogWarning("[UITweens] Pause() was called on a stale TweenHandle — the tween has already completed or its entity was recycled.");
                 return;
             }
 
@@ -25,9 +30,14 @@ namespace UITweens.Services
 
         public static void Resume(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.IsAlive)
+            if (!handle.IsValid)
             {
-                Debug.LogWarning("[UITweens] Cannot resume invalid or dead tween handle");
+                Debug.LogWarning("[UITweens] Resume() was called on a TweenHandle that was never assigned a tween.");
+                return;
+            }
+            if (!handle.IsAlive)
+            {
+                Debug.LogWarning("[UITweens] Resume() was called on a stale TweenHandle — the tween has already completed or its entity was recycled.");
                 return;
             }
 
@@ -58,9 +68,14 @@ namespace UITweens.Services
 
         public static void TogglePause(TweenHandle handle)
         {
-            if (!handle.IsValid || !handle.IsAlive)
+            if (!handle.IsValid)
             {
-                Debug.LogWarning("[UITweens] Cannot toggle pause on invalid or dead tween handle");
+                Debug.LogWarning("[UITweens] TogglePause() was called on a TweenHandle that was never assigned a tween.");
+                return;
+            }
+            if (!handle.IsAlive)
+            {
+                Debug.LogWarning("[UITweens] TogglePause() was called on a stale TweenHandle — the tween has already completed or its entity was recycled.");
                 return;
             }
 

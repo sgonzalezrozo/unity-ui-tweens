@@ -17,7 +17,7 @@ namespace UITweens.Extensions
         {
             if (image == null)
             {
-                Debug.LogWarning("[UITweens] Image is null in DOColor()");
+                Debug.LogWarning("[UITweens] DOColor() was called with a null Image — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -43,7 +43,7 @@ namespace UITweens.Extensions
         {
             if (image == null)
             {
-                Debug.LogWarning("[UITweens] Image is null in DOColorFromTo()");
+                Debug.LogWarning("[UITweens] DOColorFromTo() was called with a null Image — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -68,7 +68,7 @@ namespace UITweens.Extensions
         {
             if (image == null)
             {
-                Debug.LogWarning("[UITweens] Image is null in DOFade()");
+                Debug.LogWarning("[UITweens] DOFade() was called with a null Image — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 

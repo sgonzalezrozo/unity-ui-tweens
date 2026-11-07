@@ -16,7 +16,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOAnchorPos()");
+                Debug.LogWarning("[UITweens] DOAnchorPos() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -38,7 +38,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOAnchorPosX()");
+                Debug.LogWarning("[UITweens] DOAnchorPosX() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -58,7 +58,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOAnchorPosY()");
+                Debug.LogWarning("[UITweens] DOAnchorPosY() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -78,7 +78,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOScale()");
+                Debug.LogWarning("[UITweens] DOScale() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -99,7 +99,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOScaleX()");
+                Debug.LogWarning("[UITweens] DOScaleX() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -120,7 +120,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOScaleY()");
+                Debug.LogWarning("[UITweens] DOScaleY() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -141,7 +141,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOScaleZ()");
+                Debug.LogWarning("[UITweens] DOScaleZ() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -162,7 +162,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DORotate()");
+                Debug.LogWarning("[UITweens] DORotate() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -183,7 +183,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOSizeDelta()");
+                Debug.LogWarning("[UITweens] DOSizeDelta() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 
@@ -204,7 +204,7 @@ namespace UITweens.Extensions
         {
             if (rect == null)
             {
-                Debug.LogWarning("[UITweens] RectTransform is null in DOPivot()");
+                Debug.LogWarning("[UITweens] DOPivot() was called with a null RectTransform — no tween was created.");
                 return new TweenBuilder(TweenManager.GetSpawner());
             }
 

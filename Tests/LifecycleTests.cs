@@ -94,7 +94,7 @@ namespace UITweens.Tests
 
             Assert.That(old.IsPlaying, Is.False);
             TweenManager.Cancel(old);
-            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("invalid or dead tween handle"));
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("stale TweenHandle"));
             TweenManager.Pause(old);
 
             StepPast(0.5f);

@@ -183,6 +183,7 @@ namespace UITweens.Systems
             }
             catch (Exception exception)
             {
+                Debug.LogWarning("[UITweens] A tween callback threw an exception. The tween will still complete and other tweens will continue running.");
                 Debug.LogException(exception);
             }
         }
@@ -195,6 +196,7 @@ namespace UITweens.Systems
             }
             catch (Exception exception)
             {
+                Debug.LogWarning("[UITweens] A tween callback threw an exception. The tween will still complete and other tweens will continue running.");
                 Debug.LogException(exception);
             }
         }
@@ -207,6 +209,7 @@ namespace UITweens.Systems
             }
             catch (Exception exception)
             {
+                Debug.LogWarning("[UITweens] A tween callback threw an exception. The tween will still complete and other tweens will continue running.");
                 Debug.LogException(exception);
             }
         }
