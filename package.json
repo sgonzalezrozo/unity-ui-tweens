@@ -1,6 +1,6 @@
 {
   "name": "com.sgonzalezrozo.ui-tweens",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "displayName": "UI Tweens",
   "description": "Tween library for Unity UI (uGUI): fluent DOTween-style API for RectTransform, Image and CanvasGroup, with sequences, loops, 33 easings and per-component control. Runs on LeoECS.",
   "unity": "2022.3",

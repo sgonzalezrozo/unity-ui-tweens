@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
-[![Version 0.3.0](https://img.shields.io/badge/version-0.3.0-blue.svg)](CHANGELOG.md)
+[![Version 0.4.0](https://img.shields.io/badge/version-0.4.0-blue.svg)](CHANGELOG.md)
 
 UI Tweens is a free, open-source tween library for Unity UI (uGUI) on Unity 6. It animates `RectTransform`, `Image` and `CanvasGroup` with a fluent, DOTween-style API (`DOAnchorPos`, `DOScale`, `DOFade`), with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel. Tweens run as pooled entities in an always-running LeoECS world, so hundreds of UI tweens stay allocation-conscious. It's a UI-only alternative to DOTween, PrimeTween and LitMotion, and much younger than all three.
 
@@ -92,7 +92,7 @@ https://github.com/sgonzalezrozo/unity-ui-tweens.git
 To pin a release, add its tag:
 
 ```text
-https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.3.0
+https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.4.0
 ```
 
 ## Setup
@@ -121,15 +121,14 @@ public class PanelAnimator : MonoBehaviour
 
 ## Usage example
 
-This component slides a panel in when its screen opens, using [Screen System](https://github.com/sgonzalezrozo/unity-screen-system). It cancels the tween when the screen closes, so a late animation can't move the hidden panel.
+This component slides a panel in each time its GameObject is enabled, for example when a screen opens. It cancels the tween when the GameObject is disabled, so a late animation can't move the hidden panel.
 
 ```csharp
-using ScreenSystem;
 using UITweens.Extensions;
 using UITweens.Math;
 using UnityEngine;
 
-public class SlideInPanel : MonoBehaviour, IScreenLifecycle
+public class SlideInPanel : MonoBehaviour
 {
     private const float Duration = 0.65f;
     private const float EntranceDelay = 0.25f;
@@ -137,13 +136,13 @@ public class SlideInPanel : MonoBehaviour, IScreenLifecycle
     [SerializeField] private RectTransform panel;
     [SerializeField] private EaseType ease = EaseType.QuadOut;
 
-    public void OnScreenShown()
+    private void OnEnable()
     {
         panel.anchoredPosition = OffscreenPosition;
         panel.DOAnchorPos(Vector2.zero, Duration, ease).Delay(EntranceDelay);
     }
 
-    public void OnScreenHidden()
+    private void OnDisable()
     {
         panel.DoCancel();
         panel.anchoredPosition = OffscreenPosition;
@@ -152,8 +151,6 @@ public class SlideInPanel : MonoBehaviour, IScreenLifecycle
     private Vector2 OffscreenPosition => new(0f, panel.rect.height);
 }
 ```
-
-To use it without Screen System, remove `IScreenLifecycle` and call these methods yourself.
 
 ## Tween methods
 
@@ -509,7 +506,7 @@ Yes. It's MIT licensed.
 
 ## Project status
 
-This is a pre-release package at version `0.3.0`. Its API and behavior may change before `1.0.0`. Not yet used in a shipped game.
+This is a pre-release package at version `0.4.0`. Its API and behavior may change before `1.0.0`. Not yet used in a shipped game.
 
 Until `1.0.0`, minor versions (`0.x.0`) can include breaking changes, and patch versions (`0.x.y`) don't. Breaking changes are marked **Breaking** in the [changelog](CHANGELOG.md).
 
@@ -523,10 +520,9 @@ Bug reports and pull requests are welcome. Please open an issue before starting 
 
 | Package | Purpose |
 |---|---|
+| [Unity Architecture Agents](https://github.com/sgonzalezrozo/unity-architecture-agents) | Architecture rules for coding agents |
 | [Fast IoC](https://github.com/sgonzalezrozo/unity-fast-ioc) | Code-generated dependency injection |
-| [Screen System](https://github.com/sgonzalezrozo/unity-screen-system) | Declarative UI navigation |
-| [Recyclable Scroller](https://github.com/sgonzalezrozo/unity-recyclable-scroller) | Virtualized lists |
-| [Enhanced Console](https://github.com/sgonzalezrozo/unity-enhanced-console) | Unity Editor log triage |
+| [UI Foundations](https://github.com/sgonzalezrozo/unity-ui-foundations) | uGUI click Controllers and view states |
 | [Tools Core](https://github.com/sgonzalezrozo/unity-tools-core) | Shared injection interfaces |
 
 ## License

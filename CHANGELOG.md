@@ -4,9 +4,7 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
-### Documentation
-
-- An FAQ, rules for AI coding agents in `Documentation~/agent-rules.md`, `llms.txt` and more package keywords.
+## [0.4.0] - 2026-11-10
 
 ### Added
 
@@ -23,11 +21,6 @@ All notable changes to this package are documented in this file.
 - Added the benchmark result schema, evidence rules and summary script under `Documentation~/benchmarks/`.
 - Added a `UITweens.UpdateLoop` profiler marker around the tween update, including orphan cleanup.
 - Added `TweenManager.LastUpdateLoopNanoseconds`, available with the `UITWEENS_BENCHMARK` define, so Release builds can time the tween update.
-
-### Documentation
-
-- Removed the unpublished 350+ tweens and zero-GC claims until a reproducible benchmark exists.
-- Said that the package isn't used in production or in a shipped game yet.
 
 ### Changed
 
@@ -59,7 +52,12 @@ All notable changes to this package are documented in this file.
 
 ### Documentation
 
+- An FAQ, rules for AI coding agents in `Documentation~/agent-rules.md`, `llms.txt` and more package keywords.
+- Removed the unpublished 350+ tweens and zero-GC claims until a reproducible benchmark exists.
+- Said that the package isn't used in production or in a shipped game yet.
 - Added an animated easing reference.
+- Removed links to packages that aren't published yet.
+- The usage example uses `OnEnable` and `OnDisable`, so it needs no other package.
 
 ## [0.3.0] - 2026-11-03
 
