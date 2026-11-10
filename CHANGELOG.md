@@ -10,6 +10,8 @@ All notable changes to this package are documented in this file.
 
 ### Added
 
+- Added `TweenManager.Complete`, `Restart` and `Rewind`, and `DoComplete()`, `DoRestart()` and `DoRewind()` on `RectTransform`, `Image` and `CanvasGroup`.
+- Added `WhenDisabled(DisableBehaviour)` and `TweenManager.DisableBehaviourByDefault`, so a tween can pause, cancel or complete when its GameObject is disabled.
 - Added `IgnoreTimeScale()` and `TweenManager.IgnoreTimeScaleByDefault`, so tweens can keep playing while `Time.timeScale` is `0`.
 - Added `LoopType.Yoyo` to `Loop()` and `LoopInfinite()`. A Yoyo loop plays back and forth, and retraces the same curve on the way back.
 - Added `From()`, which plays from the given value to the current one.

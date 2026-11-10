@@ -219,5 +219,41 @@ namespace UITweens.Extensions
             else
                 Debug.LogWarning("[UITweens] No active tween to toggle on CanvasGroup: " + group.name);
         }
+
+        /// <summary>Jumps every tween on this component to its end. OnComplete runs on the next update.</summary>
+        public static void DoComplete(this Image target)
+            => TweenManager.CompleteComponentTweens(target);
+
+        /// <summary>Plays every tween on this component again from the start, while they still exist.</summary>
+        public static void DoRestart(this Image target)
+            => TweenManager.RestartComponentTweens(target);
+
+        /// <summary>Sends every tween on this component back to its start and pauses it. DoPlay() resumes them.</summary>
+        public static void DoRewind(this Image target)
+            => TweenManager.RewindComponentTweens(target);
+
+        /// <summary>Jumps every tween on this component to its end. OnComplete runs on the next update.</summary>
+        public static void DoComplete(this RectTransform target)
+            => TweenManager.CompleteComponentTweens(target);
+
+        /// <summary>Plays every tween on this component again from the start, while they still exist.</summary>
+        public static void DoRestart(this RectTransform target)
+            => TweenManager.RestartComponentTweens(target);
+
+        /// <summary>Sends every tween on this component back to its start and pauses it. DoPlay() resumes them.</summary>
+        public static void DoRewind(this RectTransform target)
+            => TweenManager.RewindComponentTweens(target);
+
+        /// <summary>Jumps every tween on this component to its end. OnComplete runs on the next update.</summary>
+        public static void DoComplete(this CanvasGroup target)
+            => TweenManager.CompleteComponentTweens(target);
+
+        /// <summary>Plays every tween on this component again from the start, while they still exist.</summary>
+        public static void DoRestart(this CanvasGroup target)
+            => TweenManager.RestartComponentTweens(target);
+
+        /// <summary>Sends every tween on this component back to its start and pauses it. DoPlay() resumes them.</summary>
+        public static void DoRewind(this CanvasGroup target)
+            => TweenManager.RewindComponentTweens(target);
     }
 }

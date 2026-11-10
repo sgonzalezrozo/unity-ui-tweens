@@ -185,6 +185,19 @@ namespace UITweens.Services
         }
 
         /// <summary>
+        /// Chooses what happens when the target's GameObject is disabled: keep playing (the default),
+        /// pause until it's enabled again, cancel, or jump to the end. Useful with pooled UI.
+        /// See also TweenManager.DisableBehaviourByDefault.
+        /// </summary>
+        public TweenBuilder WhenDisabled(DisableBehaviour behaviour)
+        {
+            if (lastHandle.IsValid && lastHandle.IsAlive)
+                lastHandle.Entity.Get<TweenCoreComponent>().Clock.DisableBehaviour = behaviour;
+
+            return this;
+        }
+
+        /// <summary>
         /// Advances with unscaled time, so the tween keeps playing when Time.timeScale is 0,
         /// for example on a pause menu. See also TweenManager.IgnoreTimeScaleByDefault.
         /// </summary>

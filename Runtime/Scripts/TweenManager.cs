@@ -161,6 +161,32 @@ namespace UITweens
         public static void Cancel(EcsEntity entity)
             => TweenControlOperations.Cancel(entity);
 
+        /// <summary>
+        /// Jumps to the end. OnComplete runs, and the next tween in a sequence starts, on the next update.
+        /// Does nothing once the tween has ended.
+        /// </summary>
+        public static void Complete(TweenHandle handle)
+        {
+            if (handle.IsAlive)
+                TweenPlayback.Complete(handle.Entity);
+        }
+
+        /// <summary>
+        /// Plays the tween again from the start, while it still exists: playing, paused, delayed or looping.
+        /// </summary>
+        public static void Restart(TweenHandle handle, bool includeDelay = true)
+        {
+            if (handle.IsAlive)
+                TweenPlayback.Restart(handle.Entity, includeDelay);
+        }
+
+        /// <summary>Goes back to the start and pauses. Resume() plays it again from there.</summary>
+        public static void Rewind(TweenHandle handle)
+        {
+            if (handle.IsAlive)
+                TweenPlayback.Rewind(handle.Entity);
+        }
+
         /// <summary>Pauses a playing tween or resumes a paused one.</summary>
         public static void TogglePause(TweenHandle handle)
             => TweenControlOperations.TogglePause(handle);
@@ -225,6 +251,12 @@ namespace UITweens
         /// </summary>
         public static bool IgnoreTimeScaleByDefault { get; set; }
 
+        /// <summary>
+        /// What new tweens do when their GameObject is disabled. KeepPlaying by default.
+        /// A single tween can still choose with WhenDisabled().
+        /// </summary>
+        public static DisableBehaviour DisableBehaviourByDefault { get; set; }
+
         /// <summary>Destroys TweenManager and restores the default settings, so each test starts clean.</summary>
         internal static void ResetForTests()
         {
@@ -235,6 +267,7 @@ namespace UITweens
             cachedSpawner = null;
             ManualUpdate = false;
             IgnoreTimeScaleByDefault = false;
+            DisableBehaviourByDefault = DisableBehaviour.KeepPlaying;
             Configure();
         }
 
@@ -415,6 +448,29 @@ namespace UITweens
             if (component != null)
                 instance?.tracker?.TogglePauseAllTweensForComponent(component.GetInstanceID());
         }
+
+        internal static void CompleteComponentTweens(UnityEngine.Object component)
+        {
+            if (component != null)
+                instance?.tracker?.ForEachLiveTween(component.GetInstanceID(), CompleteAction);
+        }
+
+        internal static void RestartComponentTweens(UnityEngine.Object component)
+        {
+            if (component != null)
+                instance?.tracker?.ForEachLiveTween(component.GetInstanceID(), RestartWithDelay);
+        }
+
+        internal static void RewindComponentTweens(UnityEngine.Object component)
+        {
+            if (component != null)
+                instance?.tracker?.ForEachLiveTween(component.GetInstanceID(), RewindAction);
+        }
+
+        // Cached, so controlling a component's tweens doesn't allocate a delegate each time.
+        private static readonly System.Action<EcsEntity> CompleteAction = TweenPlayback.Complete;
+        private static readonly System.Action<EcsEntity> RewindAction = TweenPlayback.Rewind;
+        private static readonly System.Action<EcsEntity> RestartWithDelay = entity => TweenPlayback.Restart(entity, true);
 
         internal static void CancelComponentTweens(UnityEngine.Object component)
         {

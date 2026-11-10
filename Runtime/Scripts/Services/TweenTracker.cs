@@ -275,6 +275,16 @@ namespace UITweens.Services
             ResumeAllTweensForComponent(componentId);
         }
 
+        /// <summary>Runs an action on every live tween of a component, one per property.</summary>
+        public void ForEachLiveTween(int componentId, System.Action<EcsEntity> action)
+        {
+            for (int i = 0; i < AllPropertyTypes.Length; i++)
+            {
+                if (TryGetLiveTween(componentId, AllPropertyTypes[i], out TweenHandle handle))
+                    action(handle.Entity);
+            }
+        }
+
         private bool TryGetLiveTween(int componentId, TweenPropertyType propertyType, out TweenHandle handle)
             => componentPropertyTweenHandles.TryGetValue(MakeKey(componentId, propertyType), out handle)
                && handle.IsValid

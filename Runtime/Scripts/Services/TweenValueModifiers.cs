@@ -99,6 +99,10 @@ namespace UITweens.Services
 
         /// <summary>Writes the start value to the target, for a From() tween that hasn't started yet.</summary>
         internal static void ShowStartValue(EcsEntity entity)
+            => ShowValue(entity, end: false);
+
+        /// <summary>Writes the start or end value to the target straight away, for From(), Complete() and Restart().</summary>
+        internal static void ShowValue(EcsEntity entity, bool end)
         {
             ref TweenCoreComponent core = ref entity.Get<TweenCoreComponent>();
             ref TweenTargetComponent target = ref core.Target;
@@ -106,17 +110,27 @@ namespace UITweens.Services
 
             if (entity.Has<TweenAlphaComponent>())
             {
-                float start = entity.Get<TweenAlphaComponent>().StartValue;
+                float start = end ? entity.Get<TweenAlphaComponent>().EndValue : entity.Get<TweenAlphaComponent>().StartValue;
                 result.AlphaResult = start;
                 if (target.CanvasGroup != null)
                     target.CanvasGroup.alpha = start;
             }
             else if (entity.Has<TweenColorComponent>())
             {
-                Color start = entity.Get<TweenColorComponent>().StartValue;
+                Color start = end ? entity.Get<TweenColorComponent>().EndValue : entity.Get<TweenColorComponent>().StartValue;
                 result.ColorResult = start;
                 if (target.Image != null)
                     target.Image.color = start;
+            }
+            else if (entity.Has<TweenCustomFloatComponent>())
+            {
+                ref TweenCustomFloatComponent custom = ref entity.Get<TweenCustomFloatComponent>();
+                custom.CurrentValue = end ? custom.EndValue : custom.StartValue;
+            }
+            else if (entity.Has<TweenCustomVectorComponent>())
+            {
+                ref TweenCustomVectorComponent custom = ref entity.Get<TweenCustomVectorComponent>();
+                custom.CurrentValue = end ? custom.EndValue : custom.StartValue;
             }
             else if (target.RectTransform == null)
             {
@@ -124,19 +138,19 @@ namespace UITweens.Services
             }
             else if (entity.Has<TweenPositionComponent>())
             {
-                Vector2 start = entity.Get<TweenPositionComponent>().StartValue;
+                Vector2 start = end ? entity.Get<TweenPositionComponent>().EndValue : entity.Get<TweenPositionComponent>().StartValue;
                 result.PositionResult = start;
                 target.RectTransform.anchoredPosition = start;
             }
             else if (entity.Has<TweenScaleComponent>())
             {
-                Vector3 start = entity.Get<TweenScaleComponent>().StartValue;
+                Vector3 start = end ? entity.Get<TweenScaleComponent>().EndValue : entity.Get<TweenScaleComponent>().StartValue;
                 result.ScaleResult = start;
                 target.RectTransform.localScale = start;
             }
             else if (entity.Has<TweenRotationComponent>())
             {
-                float start = entity.Get<TweenRotationComponent>().StartValue;
+                float start = end ? entity.Get<TweenRotationComponent>().EndValue : entity.Get<TweenRotationComponent>().StartValue;
                 result.RotationResult = start;
                 Vector3 euler = target.RectTransform.eulerAngles;
                 euler.z = start;
@@ -144,19 +158,19 @@ namespace UITweens.Services
             }
             else if (entity.Has<TweenSizeDeltaComponent>())
             {
-                Vector2 start = entity.Get<TweenSizeDeltaComponent>().StartValue;
+                Vector2 start = end ? entity.Get<TweenSizeDeltaComponent>().EndValue : entity.Get<TweenSizeDeltaComponent>().StartValue;
                 result.SizeDeltaResult = start;
                 target.RectTransform.sizeDelta = start;
             }
             else if (entity.Has<TweenPivotComponent>())
             {
-                Vector2 start = entity.Get<TweenPivotComponent>().StartValue;
+                Vector2 start = end ? entity.Get<TweenPivotComponent>().EndValue : entity.Get<TweenPivotComponent>().StartValue;
                 result.PivotResult = start;
                 target.RectTransform.pivot = start;
             }
         }
 
-        private static void Swap(EcsEntity entity)
+        internal static void Swap(EcsEntity entity)
         {
             if (entity.Has<TweenAlphaComponent>())
             {

@@ -47,6 +47,8 @@ namespace UITweens.Services
             clock.IsFrom = false;
             clock.IsRelative = false;
             clock.ValuesResolved = false;
+            clock.DisableBehaviour = TweenManager.DisableBehaviourByDefault;
+            clock.PausedByDisable = false;
 
             ref var target = ref entity.Get<TweenCoreComponent>().Target;
             target.RectTransform = element;

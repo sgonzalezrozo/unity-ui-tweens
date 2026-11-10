@@ -24,13 +24,13 @@ panel.DOAnchorPos(Vector2.zero, 0.35f, EaseType.BackOut)
 | `Image` | `DOFade`, `DOColor`, `DOColorFromTo` |
 | `CanvasGroup` | `DOFade`, `DOFadeFromTo` |
 
-Options: `Delay`, `Loop(repeatCount, LoopType)`, `LoopInfinite(LoopType)`, `From`, `Relative`, `IgnoreTimeScale`, `Then(handle)`, `OnStart`, `OnUpdate`, `OnComplete`, `GetHandle`, `DeclareOnly`. `Loop(2)` plays three times. `LoopType.Yoyo` (namespace `UITweens`) plays back and forth; the default `LoopType.Restart` starts each loop over. `From()` plays from the given value to the current one and sets the given value at once. `Relative()` treats the value as an offset from where the tween starts.
+Options: `Delay`, `Loop(repeatCount, LoopType)`, `LoopInfinite(LoopType)`, `From`, `Relative`, `IgnoreTimeScale`, `WhenDisabled`, `Then(handle)`, `OnStart`, `OnUpdate`, `OnComplete`, `GetHandle`, `DeclareOnly`. `Loop(2)` plays three times. `LoopType.Yoyo` (namespace `UITweens`) plays back and forth; the default `LoopType.Restart` starts each loop over. `From()` plays from the given value to the current one and sets the given value at once. `Relative()` treats the value as an offset from where the tween starts.
 
 ## Control and clean up
 
-- Per component: `DoPause()`, `DoPlay()`, `DoTogglePause()`, `DoCancel()`.
-- One tween: keep `TweenHandle handle = ...GetHandle();`, then `TweenManager.Pause(handle)`, `Resume(handle)` or `Cancel(handle)`.
-- Cancel tweens when the object is hidden, for example in `OnDisable`, so a late tween can't move a hidden object. Tweens on destroyed targets are cancelled automatically.
+- Per component: `DoPause()`, `DoPlay()`, `DoTogglePause()`, `DoCancel()`, `DoComplete()`, `DoRestart()`, `DoRewind()`.
+- One tween: keep `TweenHandle handle = ...GetHandle();`, then `TweenManager.Pause(handle)`, `Resume(handle)`, `Cancel(handle)`, `Complete(handle)`, `Restart(handle)` or `Rewind(handle)`.
+- For objects that get disabled or pooled, use `.WhenDisabled(DisableBehaviour.Pause)` (or `Cancel`, `Complete`), or set `TweenManager.DisableBehaviourByDefault`. Otherwise cancel tweens in `OnDisable`, so a late tween can't move a hidden object. Tweens on destroyed targets are cancelled automatically.
 - Sequences: `TweenManager.GetSpawner().Sequential(a.DeclareOnly(), spawner.Wait(0.2f), b.DeclareOnly())`.
 - Custom values: `TweenManager.GetSpawner().CustomFloat(from, to, duration, ease).OnFloatUpdate(callback)`.
 

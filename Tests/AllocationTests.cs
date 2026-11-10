@@ -73,6 +73,47 @@ namespace UITweens.Tests
         }
 
         [Test]
+        public void PausedTweensOnDisabledObjects_DoNotAllocate()
+        {
+            RectTransform[] rects = CreateRects();
+            foreach (RectTransform rect in rects)
+                rect.DOAnchorPosX(100f, 0.5f).LoopInfinite().WhenDisabled(DisableBehaviour.Pause);
+
+            StepFrames(5);
+            for (int i = 0; i < rects.Length; i += 2)
+                rects[i].gameObject.SetActive(false);
+            StepFrames(5);
+
+            Assert.That(() => StepFrames(60), NoAlloc.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void CompletingAndRestartingTweens_DoesNotAllocateOnceWarm()
+        {
+            TweenManager.Prewarm(Count * 2);
+            RectTransform[] rects = CreateRects();
+
+            RunControlBatch(rects);
+            RunControlBatch(rects);
+
+            Assert.That(() => RunControlBatch(rects), NoAlloc.Not.AllocatingGCMemory());
+        }
+
+        private static void RunControlBatch(RectTransform[] rects)
+        {
+            foreach (RectTransform rect in rects)
+                rect.DOAnchorPosX(100f, 1f).Loop(1, LoopType.Yoyo);
+
+            StepFrames(5);
+            foreach (RectTransform rect in rects)
+                rect.DoRestart();
+            StepFrames(5);
+            foreach (RectTransform rect in rects)
+                rect.DoComplete();
+            StepFrames(2);
+        }
+
+        [Test]
         public void IdleFrames_DoNotAllocate()
         {
             StepFrames(10);

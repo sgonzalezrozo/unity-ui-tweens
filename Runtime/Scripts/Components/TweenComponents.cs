@@ -54,6 +54,10 @@ namespace UITweens.Components
         public bool IsRelative;        // Relative(): the given value is an offset from the start value
         public bool ValuesResolved;    // Relative() has turned the offset into an end value
 
+        public DisableBehaviour DisableBehaviour;                 // What happens when the GameObject is disabled
+        public bool PausedByDisable;                              // Paused because the GameObject was disabled
+        public TweenControlComponent.ControlState ResumeState;    // State to return to when it's enabled again
+
         public TweenClockComponent(float duration, EaseType ease = EaseType.Linear, float easeParameter = -1f)
         {
             ElapsedTime = 0f;
@@ -70,6 +74,9 @@ namespace UITweens.Components
             IsFrom = false;
             IsRelative = false;
             ValuesResolved = false;
+            DisableBehaviour = DisableBehaviour.KeepPlaying;
+            PausedByDisable = false;
+            ResumeState = TweenControlComponent.ControlState.NotStarted;
         }
 
         /// <summary>

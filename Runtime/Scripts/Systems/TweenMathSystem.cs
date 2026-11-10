@@ -51,6 +51,9 @@ namespace UITweens.Systems
                 ref TweenCoreComponent core = ref entity.Get<TweenCoreComponent>();
                 float dt = core.Clock.IgnoreTimeScale ? unscaledDeltaTime : deltaTime;
 
+                if (core.Clock.DisableBehaviour != DisableBehaviour.KeepPlaying)
+                    TweenPlayback.ApplyDisableBehaviour(entity, ref core);
+
                 switch (core.Control.Kind)
                 {
                     case TweenPoolKind.Alpha:

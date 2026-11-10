@@ -42,7 +42,8 @@ I built and refined it on my own time in personal projects. It isn't used in pro
 - `From()` and `Relative()` values
 - Unscaled time for pause menus, per tween or by default
 - 33 built-in easing types
-- Per-component pause, resume, toggle and cancel controls
+- Per-component pause, resume, toggle, cancel, complete, restart and rewind controls
+- Pause, cancel or complete tweens when their GameObject is disabled
 - Custom float and vector tweens
 - Automatic cleanup when targets are destroyed
 - Configurable startup and pool settings with `TweenManager.Configure`
@@ -186,6 +187,7 @@ Every method ends with the same three parameters: `float duration`, `EaseType ea
 | `From()` | Play from the given value to the current one. The target jumps to the given value at once |
 | `Relative()` | Treat the given value as an offset from where the tween starts |
 | `IgnoreTimeScale()` | Keep playing when `Time.timeScale` is `0`, for example on a pause menu |
+| `WhenDisabled(behaviour)` | Keep playing, pause, cancel or complete when the target's GameObject is disabled |
 | `Then(handle)` | Run another tween when this one finishes |
 | `OnStart(callback)` | Run code when the tween starts |
 | `OnUpdate(callback)` | Run code on each update |
@@ -219,6 +221,32 @@ TweenManager.Cancel(handle);
 ```
 
 `TweenHandle` also has `IsPlaying`, `IsPaused`, `IsCancelled` and `IsFinished`.
+
+To skip to the end or play again, use `Complete`, `Restart` and `Rewind`:
+
+```csharp
+TweenManager.Complete(handle);   // jump to the end; OnComplete runs on the next update
+TweenManager.Restart(handle);    // play again from the start, with its delay
+TweenManager.Rewind(handle);     // back to the start, paused; Resume() plays it again
+
+panel.DoComplete();              // the same, for every tween on a component
+panel.DoRestart();
+panel.DoRewind();
+```
+
+`Restart` and `Rewind` work while the tween still exists: playing, paused, delayed or looping. `Complete` on a loop ends where its last play would; an infinite loop ends at its target.
+
+### When the GameObject is disabled
+
+Tweens keep playing on a disabled GameObject by default. For pooled UI, choose what happens instead:
+
+```csharp
+toast.DOAnchorPosY(0f, 0.3f).WhenDisabled(DisableBehaviour.Pause);   // or Cancel, Complete
+
+TweenManager.DisableBehaviourByDefault = DisableBehaviour.Pause;     // for every new tween
+```
+
+`DisableBehaviour.Pause` also reacts to a disabled parent, and holds a delay too.
 
 ## Recipes
 
