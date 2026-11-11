@@ -1,0 +1,128 @@
+{
+    "tool": "ui-tweens",
+    "schemaVersion": "1.0.0",
+    "timestampUtc": "2026-11-07T03:18:56.2003440Z",
+    "session": {
+        "deviceName": "device-c0b4e7bc",
+        "deviceModel": "iPhone18,4",
+        "osVersion": "iOS 27.0.1",
+        "unityVersion": "6000.3.6f1",
+        "gitCommit": "fe3c748",
+        "buildMode": "Release",
+        "scriptingBackend": "IL2CPP",
+        "notes": "final | engine ui-tweens 0.3.0 | display 120 Hz"
+    },
+    "workload": {
+        "profileOrScenario": "then-chaining",
+        "variant": "ui-tweens",
+        "runIndex": 1,
+        "totalRuns": 5,
+        "warmupFrames": 120,
+        "measuredFrames": 600,
+        "seed": 0
+    },
+    "metrics": [
+        {
+            "name": "heap-growth-per-window",
+            "value": 0.0,
+            "unit": "bytes",
+            "aggregation": "single"
+        },
+        {
+            "name": "gc-collections-per-window",
+            "value": 0.0,
+            "unit": "count",
+            "aggregation": "single"
+        },
+        {
+            "name": "frame-time",
+            "value": 16.672519966959955,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "frame-time",
+            "value": 16.708897706121208,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "frame-time",
+            "value": 16.758333891630174,
+            "unit": "ms",
+            "aggregation": "max"
+        },
+        {
+            "name": "cpu-main-thread",
+            "value": 0.645896,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "cpu-main-thread",
+            "value": 1.3426639499999996,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "cpu-main-thread",
+            "value": 1.877791,
+            "unit": "ms",
+            "aggregation": "max"
+        },
+        {
+            "name": "cpu-render-thread",
+            "value": 0.59825,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "cpu-render-thread",
+            "value": 0.9054454999999999,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "cpu-render-thread",
+            "value": 4.553124,
+            "unit": "ms",
+            "aggregation": "max"
+        },
+        {
+            "name": "tween-create-per-frame",
+            "value": 0.015000000000000002,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "tween-create-per-frame",
+            "value": 0.020604999999999996,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "tween-create-per-frame",
+            "value": 0.0357,
+            "unit": "ms",
+            "aggregation": "max"
+        },
+        {
+            "name": "tween-update-loop",
+            "value": 0.0174,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "tween-update-loop",
+            "value": 0.0253,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "tween-update-loop",
+            "value": 0.0505,
+            "unit": "ms",
+            "aggregation": "max"
+        }
+    ]
+}

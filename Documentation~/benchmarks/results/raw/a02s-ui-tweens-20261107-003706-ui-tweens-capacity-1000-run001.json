@@ -1,0 +1,110 @@
+{
+    "tool": "ui-tweens",
+    "schemaVersion": "1.0.0",
+    "timestampUtc": "2026-11-07T00:39:47.9160150Z",
+    "session": {
+        "deviceName": "device-73d45a84",
+        "deviceModel": "samsung SM-A025M",
+        "osVersion": "Android OS 12 / API-31 (SP1A.210812.016/A025MUBS9CXI1)",
+        "unityVersion": "6000.3.6f1",
+        "gitCommit": "fe3c748",
+        "buildMode": "Release",
+        "scriptingBackend": "IL2CPP",
+        "notes": "final | engine ui-tweens 0.3.0 | display 60 Hz"
+    },
+    "workload": {
+        "profileOrScenario": "capacity-1000",
+        "variant": "ui-tweens",
+        "runIndex": 1,
+        "totalRuns": 5,
+        "warmupFrames": 120,
+        "measuredFrames": 600,
+        "seed": 0
+    },
+    "metrics": [
+        {
+            "name": "heap-growth-per-window",
+            "value": 0.0,
+            "unit": "bytes",
+            "aggregation": "single"
+        },
+        {
+            "name": "gc-collections-per-window",
+            "value": 0.0,
+            "unit": "count",
+            "aggregation": "single"
+        },
+        {
+            "name": "frame-time",
+            "value": 16.67058188468218,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "frame-time",
+            "value": 16.827564034610988,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "frame-time",
+            "value": 17.08613894879818,
+            "unit": "ms",
+            "aggregation": "max"
+        },
+        {
+            "name": "cpu-main-thread",
+            "value": 15.273385,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "cpu-main-thread",
+            "value": 16.9999776,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "cpu-main-thread",
+            "value": 18.248073,
+            "unit": "ms",
+            "aggregation": "max"
+        },
+        {
+            "name": "cpu-render-thread",
+            "value": 4.615599,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "cpu-render-thread",
+            "value": 5.819820399999997,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "cpu-render-thread",
+            "value": 7.112657,
+            "unit": "ms",
+            "aggregation": "max"
+        },
+        {
+            "name": "tween-update-loop",
+            "value": 3.6606,
+            "unit": "ms",
+            "aggregation": "median"
+        },
+        {
+            "name": "tween-update-loop",
+            "value": 4.35555,
+            "unit": "ms",
+            "aggregation": "p95"
+        },
+        {
+            "name": "tween-update-loop",
+            "value": 5.3361,
+            "unit": "ms",
+            "aggregation": "max"
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "tool": "ui-tweens",
+    "schemaVersion": "1.0.0",
+    "timestampUtc": "2026-11-07T00:36:57.9481590Z",
+    "session": {
+        "deviceName": "device-01d50f44",
+        "deviceModel": "Google Pixel 5",
+        "osVersion": "Android OS 14 / API-34 (UP1A.231105.001/10817346)",
+        "unityVersion": "6000.3.6f1",
+        "gitCommit": "fe3c748",
+        "buildMode": "Release",
+        "scriptingBackend": "IL2CPP",
+        "notes": "final | engine ui-tweens 0.3.0 | display 30 Hz"
+    },
+    "workload": {
+        "profileOrScenario": "startup",
+        "variant": "ui-tweens",
+        "runIndex": 1,
+        "totalRuns": 5,
+        "warmupFrames": 0,
+        "measuredFrames": 1,
+        "seed": 0
+    },
+    "metrics": [
+        {
+            "name": "engine-init",
+            "value": 4.9125000000000009,
+            "unit": "ms",
+            "aggregation": "single"
+        },
+        {
+            "name": "first-tween",
+            "value": 1.0708,
+            "unit": "ms",
+            "aggregation": "single"
+        },
+        {
+            "name": "init-order",
+            "value": 0.0,
+            "unit": "count",
+            "aggregation": "single"
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "tool": "ui-tweens",
+    "schemaVersion": "1.0.0",
+    "timestampUtc": "2026-11-07T03:15:38.0486290Z",
+    "session": {
+        "deviceName": "device-c0b4e7bc",
+        "deviceModel": "iPhone18,4",
+        "osVersion": "iOS 27.0.1",
+        "unityVersion": "6000.3.6f1",
+        "gitCommit": "fe3c748",
+        "buildMode": "Release",
+        "scriptingBackend": "IL2CPP",
+        "notes": "final | engine ui-tweens 0.3.0 | display 120 Hz"
+    },
+    "workload": {
+        "profileOrScenario": "startup",
+        "variant": "ui-tweens",
+        "runIndex": 1,
+        "totalRuns": 5,
+        "warmupFrames": 0,
+        "measuredFrames": 1,
+        "seed": 0
+    },
+    "metrics": [
+        {
+            "name": "engine-init",
+            "value": 5.7666,
+            "unit": "ms",
+            "aggregation": "single"
+        },
+        {
+            "name": "first-tween",
+            "value": 0.9997,
+            "unit": "ms",
+            "aggregation": "single"
+        },
+        {
+            "name": "init-order",
+            "value": 0.0,
+            "unit": "count",
+            "aggregation": "single"
+        }
+    ]
+}

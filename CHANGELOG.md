@@ -4,6 +4,10 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+### Documentation
+
+- Published benchmark results from four phones (IL2CPP Release, commit `fe3c748`), with the raw JSON for every run under `Documentation~/benchmarks/results/`.
+
 ## [0.4.0] - 2026-11-10
 
 ### Added

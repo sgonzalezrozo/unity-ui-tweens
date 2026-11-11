@@ -402,8 +402,25 @@ flowchart LR
 
 ## Performance
 
-Benchmarks aren't published yet, so measure your own project.
-When benchmarks are published, each claim will link to raw JSON evidence under `Documentation~/benchmarks/`, validated against `Documentation~/benchmarks/benchmark-result.schema.json`.
+Measured in IL2CPP Release builds on four phones, with Unity `6000.3.6f1`. Each scenario ran 5 times, with 120 warm-up frames and 600 measured frames per run. Values are medians of the runs. "Update loop" is UI Tweens' own update time per frame.
+
+| Metric | Pixel 5 (mid-range Android) | Galaxy A02s (low-end Android) | iPhone 13 mini (2021) | iPhone Air (2025) |
+|---|---|---|---|---|
+| Update loop, 10 tweens, median / p95 | 0.050 / 0.065 ms | 0.084 / 0.134 ms | 0.021 / 0.054 ms | 0.009 / 0.014 ms |
+| Update loop, 100 tweens, median / p95 | 0.180 / 0.266 ms | 0.464 / 0.668 ms | 0.113 / 0.122 ms | 0.059 / 0.108 ms |
+| Update loop, 250 tweens, median / p95 | 0.370 / 0.576 ms | 1.187 / 1.655 ms | 0.293 / 0.319 ms | 0.160 / 0.195 ms |
+| Update loop, 1,000 tweens, median / p95 | 0.971 / 1.132 ms | 3.702 / 4.463 ms | 1.021 / 1.188 ms | 0.583 / 0.671 ms |
+| Replace 500 tweens every frame: update loop / main thread | 0.92 / 4.33 ms | 3.31 / 11.59 ms | 1.04 / 4.96 ms | 0.57 / 2.85 ms |
+| Frame rate while replacing 500 tweens every frame | 90 fps (the cap) | 60 fps (the cap) | 60 fps (the cap) | 60 fps (the cap) |
+| Create one tween | 0.021 ms | 0.040 ms | 0.008 ms | 0.004 ms |
+| Startup: setup + first tween, one launch | 4.91 + 1.07 ms | 9.93 + 1.67 ms | 9.24 + 1.85 ms | 5.77 + 1.00 ms |
+| Garbage collections, all 17 scenarios | 0 | 0 | 0 | 0 |
+
+- **No garbage collections ran in any of the 17 scenarios.** The median heap growth was 0 KB in every scenario. The only growth was in the first of the 5 runs: the capturing-callback scenario, where the test's own lambda creates a closure (up to 84 KB), and 4 KB once in a game-like burst on the A02s.
+- **The update loop excludes Unity's own UI work.** Redrawing the moving UI costs the same with any tween library, and it's most of the main-thread time while tweens run.
+- **These numbers are from commit `fe3c748`, between 0.3.0 and 0.4.0.** Version 0.4.0 added `IgnoreTimeScale`, Yoyo loops and `WhenDisabled` to the update and hasn't been measured yet. The allocation tests in `Tests/AllocationTests.cs` check that the current code doesn't allocate.
+
+The raw results for every run are in [`Documentation~/benchmarks/results/raw/`](Documentation~/benchmarks/results/raw/), and the medians in [`results/summary/summary.json`](Documentation~/benchmarks/results/summary/summary.json). [`Documentation~/benchmarks/README.md`](Documentation~/benchmarks/README.md) explains the format. Numbers from your own project will differ, so measure it.
 
 UI Tweens pools tween entities to reduce allocations. Your own code can still allocate: a callback that captures variables creates a closure. To avoid that, pass the value as state and use a `static` lambda:
 
@@ -418,7 +435,7 @@ panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetA
 | | UI Tweens | [DOTween](https://dotween.demigiant.com/) | [PrimeTween](https://github.com/KyryloKuzyk/PrimeTween) | [LitMotion](https://github.com/annulusgames/LitMotion) |
 |---|---|---|---|---|
 | Focus | Unity UI | General purpose | General purpose | General purpose |
-| Allocations | Pools tweens to reduce allocations. Not benchmarked yet. | Recycles tweens to reduce allocations | Advertises no runtime allocations | Advertises zero allocations, including tween creation |
+| Allocations | Pools tweens. No garbage collections in 17 benchmark scenarios. See [Performance](#performance). | Recycles tweens to reduce allocations | Advertises no runtime allocations | Advertises zero allocations, including tween creation |
 | Sequences | `Then` and `Sequential` | Yes | Yes | Yes |
 | Unscaled time | Yes | Yes | Yes | Yes |
 | TextMeshPro | No | Yes, in the paid Pro version | Through examples | Yes |
@@ -446,7 +463,7 @@ Install UI Tweens and LeoECS, then call an extension method on the component: `p
 
 ### UI Tweens vs DOTween vs PrimeTween vs LitMotion: which should I use?
 
-UI Tweens focuses only on Unity UI and runs every tween in one always-running ECS world. DOTween, PrimeTween and LitMotion are mature, general-purpose and animate any property. LitMotion and PrimeTween are the stronger choices if allocations are your main concern, and UI Tweens isn't benchmarked yet. Choose UI Tweens if you want a small UI-only API with per-component control, or already use LeoECS. See [How it compares](#how-it-compares).
+UI Tweens focuses only on Unity UI and runs every tween in one always-running ECS world. DOTween, PrimeTween and LitMotion are mature, general-purpose and animate any property. LitMotion and PrimeTween are the most established choices if allocations are your main concern. UI Tweens ran 17 benchmark scenarios on four phones without a garbage collection. Choose UI Tweens if you want a small UI-only API with per-component control, or already use LeoECS. See [How it compares](#how-it-compares).
 
 ### Does it work with Unity 6?
 
@@ -478,7 +495,7 @@ Yes, several. PrimeTween and LitMotion are established general-purpose alternati
 
 ### Is it faster than DOTween?
 
-Unknown. Benchmarks aren't published yet, so measure your own project. See [Performance](#performance).
+This package doesn't publish comparisons with other libraries yet. Its own numbers on four phones are in [Performance](#performance). Measure your own project before choosing.
 
 ### How do I install it?
 
