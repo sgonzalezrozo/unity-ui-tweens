@@ -31,7 +31,7 @@ I built and refined it on my own time in personal projects. It isn't used in pro
 
 **Consider something else if you:**
 
-- Need a mature, general-purpose animation ecosystem. DOTween, PrimeTween and LitMotion are established alternatives.
+- Need to animate more than Unity UI, such as 3D transforms, materials or TextMeshPro. DOTween, PrimeTween and LitMotion are general-purpose alternatives.
 - Don't want LeoECS in your project.
 
 ## Features
@@ -53,8 +53,8 @@ I built and refined it on my own time in personal projects. It isn't used in pro
 | Requirement | Supported |
 |---|---|
 | Unity | Tested on Unity 6 (`6000.3.16f1`). The package declares `2022.3` as its minimum, but older versions aren't tested yet. |
-| Scripting backend | Not verified yet |
-| Platforms | Not verified yet |
+| Scripting backend | IL2CPP (Release) measured on Android and iOS with Unity `6000.3.6f1`. Mono player builds aren't tested yet. |
+| Platforms | Android (Pixel 5, Galaxy A02s) and iOS (iPhone 13 mini, iPhone Air), each running the full benchmark. See [Performance](#performance). WebGL and desktop aren't verified yet. |
 | UI targets | `RectTransform`, `Image`, `CanvasGroup` |
 | Enter Play Mode with domain reload disabled | Not verified yet. The package has no static reset for this mode, so keep domain reload on until you've tested it. |
 | Dependencies | [LeoECS Core](https://github.com/LeoECSCommunity/ecs) `2022.2.22`, uGUI |
@@ -442,7 +442,7 @@ panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetA
 | Dependencies | LeoECS | None | None | Burst, Collections, Mathematics |
 | Track record | Pre-release, single author | Long-established, large community | Established | Established |
 
-**Where the others win:** richer sequencing, wider target support and years of production use. DOTween has the largest ecosystem, and LitMotion and PrimeTween are the stronger choices if allocation is your main concern.
+**Where the others win:** richer sequencing, wider target support and years of production use. DOTween has the largest ecosystem.
 
 **Where UI Tweens fits:** you want UI animation in an always-running ECS world, with tracking and control per component. If you already use LeoECS, it doesn't add a second runtime model.
 
@@ -463,7 +463,7 @@ Install UI Tweens and LeoECS, then call an extension method on the component: `p
 
 ### UI Tweens vs DOTween vs PrimeTween vs LitMotion: which should I use?
 
-UI Tweens focuses only on Unity UI and runs every tween in one always-running ECS world. DOTween, PrimeTween and LitMotion are mature, general-purpose and animate any property. LitMotion and PrimeTween are the most established choices if allocations are your main concern. UI Tweens ran 17 benchmark scenarios on four phones without a garbage collection. Choose UI Tweens if you want a small UI-only API with per-component control, or already use LeoECS. See [How it compares](#how-it-compares).
+UI Tweens focuses only on Unity UI and runs every tween in one always-running ECS world. DOTween, PrimeTween and LitMotion are mature, general-purpose and animate any property. UI Tweens ran 17 benchmark scenarios on four phones without a garbage collection. Choose UI Tweens if you want a small UI-only API with per-component control, or already use LeoECS. See [How it compares](#how-it-compares).
 
 ### Does it work with Unity 6?
 
@@ -471,7 +471,7 @@ Yes. It's tested on Unity `6000.3`. The package declares `2022.3` as its minimum
 
 ### Does it work with IL2CPP, mobile and WebGL?
 
-Not verified yet. See [Compatibility](#compatibility).
+IL2CPP and mobile, yes: it's measured in IL2CPP Release builds on two Android phones (Pixel 5, Galaxy A02s) and two iPhones (iPhone 13 mini, iPhone Air), with no garbage collections in any of the 17 scenarios. WebGL isn't verified yet. See [Compatibility](#compatibility) and [Performance](#performance).
 
 ### Does it work with UI Toolkit?
 
@@ -491,7 +491,7 @@ It ships a rules file you copy into your project, so agents use its real API ins
 
 ### Is there a DOTween alternative for Unity UI?
 
-Yes, several. PrimeTween and LitMotion are established general-purpose alternatives. UI Tweens is a newer, UI-only option with a DOTween-style API, so `panel.DOFade(0f, 0.2f)` reads the same. See [How it compares](#how-it-compares).
+Yes, several. PrimeTween and LitMotion are general-purpose alternatives. UI Tweens is a newer, UI-only option with a DOTween-style API, so `panel.DOFade(0f, 0.2f)` reads the same. See [How it compares](#how-it-compares).
 
 ### Is it faster than DOTween?
 
