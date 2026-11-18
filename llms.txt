@@ -4,10 +4,18 @@
 
 ## Docs
 
-- [README](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/README.md): installation, quick start, API, troubleshooting, FAQ
+- [README](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/README.md): overview, installation, quickstart, links to every guide
+- [Getting Started](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/getting-started.md): requirements, LeoECS and package installation, setup, quick start
+- [API Reference](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/api-reference.md): tween methods, options, controls, easing, runtime behavior
+- [Code Examples](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/code-examples.md): sequences, loops, pause menus, progress bars, TextMeshPro, custom values
+- [Core Concepts](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/core-concepts.md): architecture, startup and tween pool, comparison with other libraries
+- [Performance](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/performance.md): device benchmarks
+- [AI Coding Agents](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/ai-agents.md)
+- [Troubleshooting & Limitations](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/troubleshooting.md)
+- [FAQ](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/faq.md)
+- [Project Status](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/project-status.md): status, versioning, contributing, related packages, license
 - [Rules for AI coding agents](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/Documentation~/agent-rules.md): copy into AGENTS.md, CLAUDE.md or Cursor rules
 - [Changelog](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/CHANGELOG.md)
-- [Benchmarks](https://github.com/sgonzalezrozo/unity-ui-tweens/blob/main/README.md#performance)
 
 ## Optional
 

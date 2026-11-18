@@ -37,6 +37,6 @@ Options: `Delay`, `Loop(repeatCount, LoopType)`, `LoopInfinite(LoopType)`, `From
 
 ## Don't
 
-- Don't invent methods. If a method isn't listed here or in the README, read the package source.
+- Don't invent methods. If a method isn't listed here or in the [API Reference](api-reference.md), read the package source.
 - Don't expect tweens to run while `Time.timeScale` is `0` unless they use `IgnoreTimeScale()` or `TweenManager.IgnoreTimeScaleByDefault` is true.
 - Don't use it for UI Toolkit elements or non-UI transforms.
