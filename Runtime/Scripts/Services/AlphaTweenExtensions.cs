@@ -6,7 +6,7 @@ namespace UITweens.Services
 {
     /// <summary>
     /// Alpha animation extensions for TweenSpawner.
-    /// Single Responsibility: Alpha tweens for CanvasGroup and Image only.
+    /// Single Responsibility: Alpha tweens for CanvasGroup and Graphic components.
     /// </summary>
     public static class AlphaTweenExtensions
     {
@@ -63,11 +63,11 @@ namespace UITweens.Services
         }
 
         /// <summary>
-        /// Tween Image alpha/opacity only (keep RGB unchanged).
+        /// Tween a Graphic's alpha/opacity only (keep RGB unchanged).
         /// </summary>
         public static TweenBuilder Alpha(
             this TweenSpawner spawner,
-            UnityEngine.UI.Image target,
+            UnityEngine.UI.Graphic target,
             float targetAlpha,
             float duration,
             EaseType ease = EaseType.Linear,
@@ -75,7 +75,7 @@ namespace UITweens.Services
         {
             if (target == null)
             {
-                Debug.LogError("[UITweens] Image target is null");
+                Debug.LogError("[UITweens] Graphic target is null");
                 return new TweenBuilder(spawner);
             }
 

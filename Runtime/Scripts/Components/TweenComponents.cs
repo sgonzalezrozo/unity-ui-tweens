@@ -169,6 +169,22 @@ namespace UITweens.Components
     }
 
     /// <summary>
+    /// Tween animation for an Image's fill amount (0 to 1).
+    /// Only stores start/end values; timing is in TweenClockComponent.
+    /// </summary>
+    public struct TweenFillAmountComponent
+    {
+        public float StartValue;
+        public float EndValue;
+
+        public TweenFillAmountComponent(float startValue, float endValue)
+        {
+            StartValue = startValue;
+            EndValue = endValue;
+        }
+    }
+
+    /// <summary>
     /// Tween animation for color (any UI element).
     /// Color animations
     /// </summary>
@@ -229,6 +245,7 @@ namespace UITweens.Components
         public Color ColorResult;
         public Vector2 SizeDeltaResult;
         public Vector2 PivotResult;
+        public float FillAmountResult;
     }
 
     /// <summary>
@@ -316,7 +333,7 @@ namespace UITweens.Components
     {
         public RectTransform RectTransform;
         public CanvasGroup CanvasGroup;
-        public UnityEngine.UI.Image Image; // For color tweens
+        public UnityEngine.UI.Graphic Graphic; // Color and alpha of any Graphic (Image, RawImage, Text, TextMeshPro); fill of an Image
     }
 
     /// <summary>
@@ -332,6 +349,7 @@ namespace UITweens.Components
         public bool ApplyColor;
         public bool ApplySizeDelta;
         public bool ApplyPivot;
+        public bool ApplyFillAmount;
     }
 
     /// <summary>

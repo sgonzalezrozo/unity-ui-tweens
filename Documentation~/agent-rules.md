@@ -5,7 +5,7 @@ Copy this file into your project's agent rules (for example `AGENTS.md`, `CLAUDE
 ## How UI animation works here
 
 - This project animates uGUI with **UI Tweens** (`com.sgonzalezrozo.ui-tweens`). Don't add DOTween, PrimeTween, LitMotion, coroutines or `Update()` loops for UI animation.
-- Tweens are extension methods on `RectTransform`, `Image` and `CanvasGroup`. Add `using UITweens.Extensions;` and `using UITweens.Math;` (for `EaseType`).
+- Tweens are extension methods on `RectTransform`, any `Graphic` (`Image`, `RawImage`, `Text`, TextMeshPro) and `CanvasGroup`. Add `using UITweens.Extensions;` and `using UITweens.Math;` (for `EaseType`).
 - Don't add `TweenManager` to a scene. The first tween creates it. To move setup off the first animation, call `TweenManager.Initialize()` or `TweenManager.Prewarm(count)` during a loading screen.
 
 ## Start a tween
@@ -21,7 +21,8 @@ panel.DOAnchorPos(Vector2.zero, 0.35f, EaseType.BackOut)
 | Target | Methods |
 |---|---|
 | `RectTransform` | `DOAnchorPos`, `DOAnchorPosX`, `DOAnchorPosY`, `DOScale`, `DOScaleX`, `DOScaleY`, `DOScaleZ`, `DORotate`, `DOSizeDelta`, `DOPivot` |
-| `Image` | `DOFade`, `DOColor`, `DOColorFromTo` |
+| `Graphic` (`Image`, `RawImage`, `Text`, TextMeshPro) | `DOFade`, `DOColor`, `DOColorFromTo` |
+| `Image` | `DOFillAmount` (0 to 1) |
 | `CanvasGroup` | `DOFade`, `DOFadeFromTo` |
 
 Options: `Delay`, `Loop(repeatCount, LoopType)`, `LoopInfinite(LoopType)`, `From`, `Relative`, `IgnoreTimeScale`, `WhenDisabled`, `Then(handle)`, `OnStart`, `OnUpdate`, `OnComplete`, `GetHandle`, `DeclareOnly`. `Loop(2)` plays three times. `LoopType.Yoyo` (namespace `UITweens`) plays back and forth; the default `LoopType.Restart` starts each loop over. `From()` plays from the given value to the current one and sets the given value at once. `Relative()` treats the value as an offset from where the tween starts.

@@ -17,7 +17,8 @@ namespace UITweens.Services
         SizeDelta,
         Pivot,
         CustomFloat,
-        CustomVector
+        CustomVector,
+        FillAmount
     }
 
     public class TweenPoolManager
@@ -27,7 +28,7 @@ namespace UITweens.Services
         private const int BASE_COMPONENT_COUNT = 2;
 
         private readonly Stack<EcsEntity> availableEntities;
-        private readonly Stack<EcsEntity>[] entitiesByKind = new Stack<EcsEntity>[10];
+        private readonly Stack<EcsEntity>[] entitiesByKind = new Stack<EcsEntity>[(int)TweenPoolKind.FillAmount + 1]; // one per kind; keep the last kind here
         private readonly List<EcsEntity> activeEntities;
         private int[] activeSlotByEntityId;
 
@@ -281,6 +282,7 @@ namespace UITweens.Services
             RemoveOptional<TweenColorComponent>(entity);
             RemoveOptional<TweenSizeDeltaComponent>(entity);
             RemoveOptional<TweenPivotComponent>(entity);
+            RemoveOptional<TweenFillAmountComponent>(entity);
             RemoveOptional<TweenCustomFloatComponent>(entity);
             RemoveOptional<TweenCustomVectorComponent>(entity);
         }

@@ -98,9 +98,9 @@ namespace UITweens.Systems
                 ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.AlphaResult = currentAlpha;
             }
-            else if (entity.Has<TweenColorComponent>() && target.Image != null)
+            else if (entity.Has<TweenColorComponent>() && target.Graphic != null)
             {
-                Color currentColor = target.Image.color;
+                Color currentColor = target.Graphic.color;
                 ref TweenColorComponent colorComp = ref entity.Get<TweenColorComponent>();
                 colorComp.StartValue = currentColor;
 
@@ -151,6 +151,15 @@ namespace UITweens.Systems
 
                 ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
                 result.PivotResult = currentPivot;
+            }
+            else if (entity.Has<TweenFillAmountComponent>() && target.Graphic is UnityEngine.UI.Image fillImage)
+            {
+                float currentFill = fillImage.fillAmount;
+                ref TweenFillAmountComponent fillComp = ref entity.Get<TweenFillAmountComponent>();
+                fillComp.StartValue = currentFill;
+
+                ref TweenResultComponent result = ref entity.Get<TweenCoreComponent>().Result;
+                result.FillAmountResult = currentFill;
             }
         }
     }

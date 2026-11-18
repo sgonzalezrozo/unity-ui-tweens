@@ -97,14 +97,17 @@ namespace UITweens.Systems
             if (flags.ApplyAlpha && target.CanvasGroup != null)
                 target.CanvasGroup.alpha = result.AlphaResult;
 
-            if (flags.ApplyColor && target.Image != null)
-                target.Image.color = result.ColorResult;
+            if (flags.ApplyColor && target.Graphic != null)
+                target.Graphic.color = result.ColorResult;
 
             if (flags.ApplySizeDelta)
                 target.RectTransform.sizeDelta = result.SizeDeltaResult;
 
             if (flags.ApplyPivot)
                 target.RectTransform.pivot = result.PivotResult;
+
+            if (flags.ApplyFillAmount && target.Graphic is UnityEngine.UI.Image fillImage)
+                fillImage.fillAmount = result.FillAmountResult;
         }
 
         // Callbacks can resize component storage, so values are copied before each one runs.

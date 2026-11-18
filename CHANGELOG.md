@@ -4,6 +4,20 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-18
+
+### Added
+
+- `Image.DOFillAmount(targetFill, duration)`, for progress bars, cooldowns and radial timers, with `FillAmount` and `FillAmountFromTo` on the spawner. It works with `Delay`, loops, `From()`, `Relative()`, sequences and the per-component controls, and runs alongside a color or alpha tween on the same `Image`.
+
+### Changed
+
+- `DOFade`, `DOColor` and `DOColorFromTo` work on any `Graphic`: `Image`, `RawImage`, `Text` and TextMeshPro text. So do `DoPause`, `DoPlay`, `DoCancel`, `DoTogglePause`, `DoComplete`, `DoRestart` and `DoRewind`. Code that calls them on an `Image` compiles as before.
+
+### Documentation
+
+- README: the tween methods table lists `Graphic` and `DOFillAmount`, with recipes for a progress bar and a TextMeshPro label. Limitations now say what TextMeshPro supports.
+
 ## [0.4.1] - 2026-11-17
 
 ### Added

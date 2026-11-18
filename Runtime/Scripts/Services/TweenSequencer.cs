@@ -126,10 +126,10 @@ namespace UITweens.Services
             {
                 entity.Get<TweenAlphaComponent>().StartValue = target.CanvasGroup.alpha;
             }
-            else if (entity.Has<TweenColorComponent>() && target.Image != null)
+            else if (entity.Has<TweenColorComponent>() && target.Graphic != null)
             {
                 ref TweenColorComponent color = ref entity.Get<TweenColorComponent>();
-                Color current = target.Image.color;
+                Color current = target.Graphic.color;
 
                 if (mask == TweenClockComponent.ALPHA_ONLY)
                     color.EndValue = new Color(current.r, current.g, current.b, color.EndValue.a);
@@ -168,6 +168,10 @@ namespace UITweens.Services
             else if (entity.Has<TweenPivotComponent>())
             {
                 entity.Get<TweenPivotComponent>().StartValue = target.RectTransform.pivot;
+            }
+            else if (entity.Has<TweenFillAmountComponent>() && target.Graphic is UnityEngine.UI.Image fillImage)
+            {
+                entity.Get<TweenFillAmountComponent>().StartValue = fillImage.fillAmount;
             }
         }
 

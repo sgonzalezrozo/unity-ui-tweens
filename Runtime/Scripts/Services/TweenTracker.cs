@@ -16,6 +16,7 @@ namespace UITweens.Services
             TweenPropertyType.Color,
             TweenPropertyType.SizeDelta,
             TweenPropertyType.Pivot,
+            TweenPropertyType.FillAmount,
             TweenPropertyType.Unknown
         };
 
@@ -217,7 +218,7 @@ namespace UITweens.Services
                 if (handle.IsAlive)
                 {
                     ref TweenTargetComponent target = ref handle.Entity.Get<TweenCoreComponent>().Target;
-                    if (!IsDestroyed(target.RectTransform) && !IsDestroyed(target.CanvasGroup) && !IsDestroyed(target.Image))
+                    if (!IsDestroyed(target.RectTransform) && !IsDestroyed(target.CanvasGroup) && !IsDestroyed(target.Graphic))
                         continue;
 
                     TweenControlOperations.Cancel(handle);
@@ -374,6 +375,8 @@ namespace UITweens.Services
                 return TweenPropertyType.SizeDelta;
             if (entity.Has<TweenPivotComponent>())
                 return TweenPropertyType.Pivot;
+            if (entity.Has<TweenFillAmountComponent>())
+                return TweenPropertyType.FillAmount;
 
             return TweenPropertyType.Unknown;
         }

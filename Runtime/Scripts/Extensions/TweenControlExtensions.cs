@@ -36,39 +36,39 @@ namespace UITweens.Extensions
 
     public static class TweenControlExtensions
     {
-        public static void DoPause(this Image image)
+        public static void DoPause(this Graphic image)
         {
             if (image == null)
             {
-                Debug.LogWarning("[UITweens] Cannot pause: Image is null");
+                Debug.LogWarning("[UITweens] Cannot pause: Graphic is null");
                 return;
             }
 
             if (TweenManager.TryGetComponentTween(image, out TweenHandle handle))
                 TweenManager.PauseComponentTweens(image);
             else
-                Debug.LogWarning("[UITweens] No active tween to pause on Image: " + image.name);
+                Debug.LogWarning("[UITweens] No active tween to pause on Graphic: " + image.name);
         }
 
-        public static void DoPlay(this Image image)
+        public static void DoPlay(this Graphic image)
         {
             if (image == null)
             {
-                Debug.LogWarning("[UITweens] Cannot play: Image is null");
+                Debug.LogWarning("[UITweens] Cannot play: Graphic is null");
                 return;
             }
 
             if (TweenManager.TryGetComponentTween(image, out TweenHandle handle))
                 TweenManager.ResumeComponentTweens(image);
             else
-                Debug.LogWarning("[UITweens] No paused tween to resume on Image: " + image.name);
+                Debug.LogWarning("[UITweens] No paused tween to resume on Graphic: " + image.name);
         }
 
-        public static CancelTweenBuilder DoCancel(this Image image)
+        public static CancelTweenBuilder DoCancel(this Graphic image)
         {
             if (image == null)
             {
-                Debug.LogWarning("[UITweens] Cannot cancel: Image is null");
+                Debug.LogWarning("[UITweens] Cannot cancel: Graphic is null");
                 return new CancelTweenBuilder(new TweenHandle());
             }
 
@@ -79,23 +79,23 @@ namespace UITweens.Extensions
             }
             else
             {
-                Debug.LogWarning("[UITweens] No active tween to cancel on Image: " + image.name);
+                Debug.LogWarning("[UITweens] No active tween to cancel on Graphic: " + image.name);
                 return new CancelTweenBuilder(new TweenHandle());
             }
         }
 
-        public static void DoTogglePause(this Image image)
+        public static void DoTogglePause(this Graphic image)
         {
             if (image == null)
             {
-                Debug.LogWarning("[UITweens] Cannot toggle pause: Image is null");
+                Debug.LogWarning("[UITweens] Cannot toggle pause: Graphic is null");
                 return;
             }
 
             if (TweenManager.TryGetComponentTween(image, out TweenHandle handle))
                 TweenManager.TogglePauseComponentTweens(image);
             else
-                Debug.LogWarning("[UITweens] No active tween to toggle on Image: " + image.name);
+                Debug.LogWarning("[UITweens] No active tween to toggle on Graphic: " + image.name);
         }
 
         public static void DoPause(this RectTransform rect)
@@ -221,15 +221,15 @@ namespace UITweens.Extensions
         }
 
         /// <summary>Jumps every tween on this component to its end. OnComplete runs on the next update.</summary>
-        public static void DoComplete(this Image target)
+        public static void DoComplete(this Graphic target)
             => TweenManager.CompleteComponentTweens(target);
 
         /// <summary>Plays every tween on this component again from the start, while they still exist.</summary>
-        public static void DoRestart(this Image target)
+        public static void DoRestart(this Graphic target)
             => TweenManager.RestartComponentTweens(target);
 
         /// <summary>Sends every tween on this component back to its start and pauses it. DoPlay() resumes them.</summary>
-        public static void DoRewind(this Image target)
+        public static void DoRewind(this Graphic target)
             => TweenManager.RewindComponentTweens(target);
 
         /// <summary>Jumps every tween on this component to its end. OnComplete runs on the next update.</summary>

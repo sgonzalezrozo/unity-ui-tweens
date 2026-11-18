@@ -85,6 +85,11 @@ namespace UITweens.Services
                 ref TweenPivotComponent c = ref entity.Get<TweenPivotComponent>();
                 if (from) c.StartValue += c.EndValue; else c.EndValue += c.StartValue;
             }
+            else if (entity.Has<TweenFillAmountComponent>())
+            {
+                ref TweenFillAmountComponent c = ref entity.Get<TweenFillAmountComponent>();
+                if (from) c.StartValue += c.EndValue; else c.EndValue += c.StartValue;
+            }
             else if (entity.Has<TweenCustomFloatComponent>())
             {
                 ref TweenCustomFloatComponent c = ref entity.Get<TweenCustomFloatComponent>();
@@ -119,8 +124,8 @@ namespace UITweens.Services
             {
                 Color start = end ? entity.Get<TweenColorComponent>().EndValue : entity.Get<TweenColorComponent>().StartValue;
                 result.ColorResult = start;
-                if (target.Image != null)
-                    target.Image.color = start;
+                if (target.Graphic != null)
+                    target.Graphic.color = start;
             }
             else if (entity.Has<TweenCustomFloatComponent>())
             {
@@ -168,6 +173,13 @@ namespace UITweens.Services
                 result.PivotResult = start;
                 target.RectTransform.pivot = start;
             }
+            else if (entity.Has<TweenFillAmountComponent>())
+            {
+                float start = end ? entity.Get<TweenFillAmountComponent>().EndValue : entity.Get<TweenFillAmountComponent>().StartValue;
+                result.FillAmountResult = start;
+                if (target.Graphic is UnityEngine.UI.Image fillImage)
+                    fillImage.fillAmount = start;
+            }
         }
 
         internal static void Swap(EcsEntity entity)
@@ -205,6 +217,11 @@ namespace UITweens.Services
             else if (entity.Has<TweenPivotComponent>())
             {
                 ref TweenPivotComponent c = ref entity.Get<TweenPivotComponent>();
+                (c.StartValue, c.EndValue) = (c.EndValue, c.StartValue);
+            }
+            else if (entity.Has<TweenFillAmountComponent>())
+            {
+                ref TweenFillAmountComponent c = ref entity.Get<TweenFillAmountComponent>();
                 (c.StartValue, c.EndValue) = (c.EndValue, c.StartValue);
             }
             else if (entity.Has<TweenCustomFloatComponent>())

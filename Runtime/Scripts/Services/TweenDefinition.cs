@@ -16,7 +16,7 @@ namespace UITweens.Services
 
         public RectTransform RectTransform;
         public CanvasGroup CanvasGroup;
-        public UnityEngine.UI.Image Image;
+        public UnityEngine.UI.Graphic Graphic;
 
         public bool HasAlpha;
         public float StartAlpha;
@@ -64,6 +64,7 @@ namespace UITweens.Services
         Color,
         SizeDelta,
         Pivot,
+        FillAmount,
         Unknown
     }
 }

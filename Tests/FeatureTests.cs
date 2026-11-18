@@ -390,5 +390,49 @@ namespace UITweens.Tests
             StepPast(0.5f);
             AssertNear(10f, rect.anchoredPosition.x);
         }
+
+        [Test]
+        public void DOFillAmount_From_StartsAtTheGivenValue()
+        {
+            Image image = CreateImage();
+            image.type = Image.Type.Filled;
+            image.fillAmount = 1f;
+
+            image.DOFillAmount(0f, 1f).From();
+
+            AssertNear(0f, image.fillAmount, 0.01f, "From() jumps to the given value at once.");
+            Step(0.5f);
+            AssertNear(0.5f, image.fillAmount);
+            StepPast(0.5f);
+            AssertNear(1f, image.fillAmount);
+        }
+
+        [Test]
+        public void DOFillAmount_Relative_AddsToTheStart()
+        {
+            Image image = CreateImage();
+            image.type = Image.Type.Filled;
+            image.fillAmount = 0.25f;
+
+            image.DOFillAmount(0.5f, 1f).Relative();
+
+            StepPast(1f);
+            AssertNear(0.75f, image.fillAmount);
+        }
+
+        [Test]
+        public void DOFillAmount_YoyoLoop_ComesBack()
+        {
+            Image image = CreateImage();
+            image.type = Image.Type.Filled;
+            image.fillAmount = 0f;
+
+            image.DOFillAmount(1f, 0.2f).Loop(1, LoopType.Yoyo);
+
+            Step(0.2f);
+            AssertNear(1f, image.fillAmount, 0.1f);
+            StepPast(0.2f);
+            AssertNear(0f, image.fillAmount);
+        }
     }
 }

@@ -84,6 +84,10 @@ namespace UITweens.Systems
                         ProcessPivot(entity, ref core, dt);
                         break;
 
+                    case TweenPoolKind.FillAmount:
+                        ProcessFillAmount(entity, ref core, dt);
+                        break;
+
                     case TweenPoolKind.CustomFloat:
                         ProcessCustomFloat(entity, ref core, dt);
                         break;
@@ -122,6 +126,9 @@ namespace UITweens.Systems
 
             if (entity.Has<TweenPivotComponent>())
                 ProcessPivot(entity, ref core, deltaTime);
+
+            if (entity.Has<TweenFillAmountComponent>())
+                ProcessFillAmount(entity, ref core, deltaTime);
 
             if (entity.Has<TweenCustomFloatComponent>())
                 ProcessCustomFloat(entity, ref core, deltaTime);
@@ -479,6 +486,93 @@ namespace UITweens.Systems
             }
         }
 
+        private void ProcessFillAmount(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
+        {
+            ref TweenClockComponent clock = ref core.Clock;
+            ref TweenFillAmountComponent fill = ref entity.Get<TweenFillAmountComponent>();
+            ref TweenResultComponent result = ref core.Result;
+            ref TweenControlComponent control = ref core.Control;
+
+            if (control.State == TweenControlComponent.ControlState.Cancelled)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.Paused)
+                return;
+
+            if (control.State == TweenControlComponent.ControlState.NotStarted)
+            {
+                control.State = clock.HasDelay
+                    ? TweenControlComponent.ControlState.Delayed
+                    : TweenControlComponent.ControlState.Playing;
+            }
+
+            if (control.State == TweenControlComponent.ControlState.Delayed)
+            {
+                clock.ElapsedDelay += deltaTime;
+                if (clock.IsDelayFinished)
+                {
+                    if (control.PredecessorHandle.IsValid && !control.HasKilledCompetitors)
+                    {
+                        TweenManager.Cancel(control.PredecessorHandle);
+                        control.HasKilledCompetitors = true;
+
+                        // Update start value from current UI state
+                        if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
+                        {
+                            ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
+                            if (target.Graphic is UnityEngine.UI.Image fillImage)
+                            {
+                                float currentFill = fillImage.fillAmount;
+                                fill.StartValue = currentFill;
+                                result.FillAmountResult = currentFill;
+                            }
+                        }
+                    }
+
+                    if (!clock.HasCapturedStartValues)
+                    {
+                        clock.HasCapturedStartValues = true;
+                    }
+
+                    float spillover = clock.ElapsedDelay - clock.DelayDuration;
+                    control.State = TweenControlComponent.ControlState.Playing;
+                    clock.ElapsedTime = spillover > 0 ? spillover : 0f;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if (control.State != TweenControlComponent.ControlState.Playing)
+                return;
+
+            if (clock.IsRelative && !clock.ValuesResolved)
+                TweenValueModifiers.ResolveRelative(entity);
+
+            clock.ElapsedTime += deltaTime;
+            float easedT = EaseProgress(ref clock);
+
+            result.FillAmountResult = TweenMath.Lerp(fill.StartValue, fill.EndValue, easedT);
+
+            // NEW: Handle looping
+            if (clock.IsFinished)
+            {
+
+                if (TryProcessLoop(ref entity, ref clock))
+                {
+                    if (entity.Has<TweenLoopComponent>())
+                    {
+                        ref var loop = ref entity.Get<TweenLoopComponent>();
+                        if (loop.Yoyo)
+                        {
+                            SwapValuesForReverse(ref fill.StartValue, ref fill.EndValue);
+                        }
+                    }
+                }
+            }
+        }
+
         private void ProcessColor(EcsEntity entity, ref TweenCoreComponent core, float deltaTime)
         {
             ref TweenClockComponent clock = ref core.Clock;
@@ -514,9 +608,9 @@ namespace UITweens.Systems
                         if (clock.StartFromCurrent && entity.Has<TweenCoreComponent>())
                         {
                             ref TweenTargetComponent target = ref entity.Get<TweenCoreComponent>().Target;
-                            if (target.Image != null)
+                            if (target.Graphic != null)
                             {
-                                Color currentColor = target.Image.color;
+                                Color currentColor = target.Graphic.color;
                                 color.StartValue = currentColor;
                                 result.ColorResult = currentColor;
                             }

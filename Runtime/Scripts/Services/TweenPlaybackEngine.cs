@@ -54,8 +54,11 @@ namespace UITweens.Services
             if (flags.ApplyAlpha && target.CanvasGroup != null)
                 target.CanvasGroup.alpha = result.AlphaResult;
 
-            if (flags.ApplyColor && target.Image != null)
-                target.Image.color = result.ColorResult;
+            if (flags.ApplyColor && target.Graphic != null)
+                target.Graphic.color = result.ColorResult;
+
+            if (flags.ApplyFillAmount && target.Graphic is UnityEngine.UI.Image fillImage)
+                fillImage.fillAmount = result.FillAmountResult;
         }
 
         /// <summary>

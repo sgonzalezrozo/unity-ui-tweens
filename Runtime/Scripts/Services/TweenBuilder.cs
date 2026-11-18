@@ -109,6 +109,8 @@ namespace UITweens.Services
                 return TweenPropertyType.SizeDelta;
             if (entity.Has<TweenPivotComponent>())
                 return TweenPropertyType.Pivot;
+            if (entity.Has<TweenFillAmountComponent>())
+                return TweenPropertyType.FillAmount;
 
             return TweenPropertyType.Unknown;
         }

@@ -33,11 +33,11 @@ namespace UITweens.Services
             EaseType ease,
             float easeParameter,
             CanvasGroup canvasGroup = null,
-            UnityEngine.UI.Image image = null,
+            UnityEngine.UI.Graphic graphic = null,
             TweenPoolKind kind = TweenPoolKind.None)
         {
             EcsEntity entity = poolManager.AcquireEntity(kind);
-            initializer.InitializeBaseTween(entity, element, duration, ease, easeParameter, canvasGroup, image);
+            initializer.InitializeBaseTween(entity, element, duration, ease, easeParameter, canvasGroup, graphic);
             return new TweenHandle(entity);
         }
 
@@ -87,6 +87,14 @@ namespace UITweens.Services
         internal void InitializeSizeDeltaInternal(TweenHandle handle, Vector2 startSize, Vector2 endSize)
         {
             initializer.SetupSizeDelta(handle.Entity, startSize, endSize);
+        }
+
+        /// <summary>
+        /// Initialize fill amount animation. Internal API for extensions.
+        /// </summary>
+        internal void InitializeFillAmountInternal(TweenHandle handle, float startFill, float endFill)
+        {
+            initializer.SetupFillAmount(handle.Entity, startFill, endFill);
         }
 
         /// <summary>

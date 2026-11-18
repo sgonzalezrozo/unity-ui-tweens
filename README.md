@@ -4,9 +4,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
-[![Version 0.4.1](https://img.shields.io/badge/version-0.4.1-blue.svg)](CHANGELOG.md)
+[![Version 0.4.2](https://img.shields.io/badge/version-0.4.2-blue.svg)](CHANGELOG.md)
 
-UI Tweens is a free, open-source tween library for Unity UI (uGUI) on Unity 6. It animates `RectTransform`, `Image` and `CanvasGroup` with a fluent, DOTween-style API (`DOAnchorPos`, `DOScale`, `DOFade`), with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel. Tweens run as pooled entities in an always-running LeoECS world, so hundreds of UI tweens stay allocation-conscious. It's a UI-only alternative to DOTween, PrimeTween and LitMotion, and much younger than all three.
+UI Tweens is a free, open-source tween library for Unity UI (uGUI) on Unity 6. It animates `RectTransform`, any `Graphic` (`Image`, `RawImage`, `Text`, TextMeshPro) and `CanvasGroup` with a fluent, DOTween-style API (`DOAnchorPos`, `DOScale`, `DOFade`), with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel. Tweens run as pooled entities in an always-running LeoECS world, so hundreds of UI tweens stay allocation-conscious. It's a UI-only alternative to DOTween, PrimeTween and LitMotion, and much younger than all three.
 
 <!-- Demo GIF: Documentation~/images/demo.gif -->
 
@@ -31,13 +31,14 @@ I built and refined it on my own time in personal projects. It isn't used in pro
 
 **Consider something else if you:**
 
-- Need to animate more than Unity UI, such as 3D transforms, materials or TextMeshPro. DOTween, PrimeTween and LitMotion are general-purpose alternatives.
+- Need to animate more than Unity UI, such as 3D transforms or materials, or TextMeshPro beyond color and alpha. DOTween, PrimeTween and LitMotion are general-purpose alternatives.
 - Don't want LeoECS in your project.
 
 ## Features
 
 - Runs on LeoECS
-- Fluent API for `RectTransform`, `Image` and `CanvasGroup`
+- Fluent API for `RectTransform`, any `Graphic` (`Image`, `RawImage`, `Text`, TextMeshPro) and `CanvasGroup`
+- `Image` fill amount, for progress bars, cooldowns and radial timers
 - Delays, finite and infinite loops (restart or yoyo), chaining and callbacks
 - `From()` and `Relative()` values
 - Unscaled time for pause menus, per tween or by default
@@ -55,7 +56,7 @@ I built and refined it on my own time in personal projects. It isn't used in pro
 | Unity | Tested on Unity 6 (`6000.3.16f1`). The package declares `2022.3` as its minimum, but older versions aren't tested yet. |
 | Scripting backend | IL2CPP (Release) measured on Android and iOS with Unity `6000.3.6f1`. Mono player builds aren't tested yet. |
 | Platforms | Android (Pixel 5, Galaxy A02s) and iOS (iPhone 13 mini, iPhone Air), each running the full benchmark. See [Performance](#performance). WebGL and desktop aren't verified yet. |
-| UI targets | `RectTransform`, `Image`, `CanvasGroup` |
+| UI targets | `RectTransform`, any `Graphic` (`Image`, `RawImage`, `Text`, TextMeshPro), `CanvasGroup` |
 | Enter Play Mode with domain reload disabled | Not verified yet. The package has no static reset for this mode, so keep domain reload on until you've tested it. |
 | Dependencies | [LeoECS Core](https://github.com/LeoECSCommunity/ecs) `2022.2.22`, uGUI |
 
@@ -92,7 +93,7 @@ https://github.com/sgonzalezrozo/unity-ui-tweens.git
 To pin a release, add its tag:
 
 ```text
-https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.4.1
+https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.4.2
 ```
 
 ## Setup
@@ -165,9 +166,10 @@ Every method ends with the same three parameters: `float duration`, `EaseType ea
 | | `DORotate` | `float targetRotation` |
 | | `DOSizeDelta` | `Vector2 targetSize` |
 | | `DOPivot` | `Vector2 targetPivot` |
-| `Image` | `DOFade` | `float targetAlpha` |
+| `Graphic` (`Image`, `RawImage`, `Text`, TextMeshPro) | `DOFade` | `float targetAlpha` |
 | | `DOColor` | `Color targetColor` |
 | | `DOColorFromTo` | `Color startColor`, `Color endColor` |
+| `Image` | `DOFillAmount` | `float targetFill` (0 to 1) |
 | `CanvasGroup` | `DOFade` | `float targetAlpha` |
 | | `DOFadeFromTo` | `float startAlpha`, `float endAlpha` |
 
@@ -196,7 +198,7 @@ Every method ends with the same three parameters: `float duration`, `EaseType ea
 
 ## Controlling tweens
 
-These work on `RectTransform`, `Image` and `CanvasGroup`, and apply to the tweens tracked for that component:
+These work on `RectTransform`, any `Graphic` and `CanvasGroup`, and apply to the tweens tracked for that component:
 
 ```csharp
 panel.DoPause();
@@ -310,6 +312,27 @@ pauseMenu.DOFade(1f, 0.2f).IgnoreTimeScale();
 ```
 
 To make every tween ignore the time scale, set `TweenManager.IgnoreTimeScaleByDefault = true`. A single tween can still opt out with `IgnoreTimeScale(false)`.
+
+### Fill a progress bar
+
+Set the `Image`'s **Image Type** to **Filled**, then animate its fill amount:
+
+```csharp
+progressBar.DOFillAmount(0.75f, 0.4f, EaseType.QuadOut);
+
+// A cooldown that empties in 5 seconds:
+cooldown.fillAmount = 1f;
+cooldown.DOFillAmount(0f, 5f);
+```
+
+### Fade a TextMeshPro label
+
+TextMeshPro text is a `Graphic`, so `DOFade` and `DOColor` work on it like on an `Image`:
+
+```csharp
+label.DOFade(0f, 0.3f);              // label is a TMP_Text
+label.DOColor(Color.red, 0.2f);
+```
 
 ### Animate a custom value
 
@@ -438,7 +461,7 @@ panel.DOFade(0f, 0.2f).OnComplete(panel, static target => target.gameObject.SetA
 | Allocations | Pools tweens. No garbage collections in 17 benchmark scenarios. See [Performance](#performance). | Recycles tweens to reduce allocations | Advertises no runtime allocations | Advertises zero allocations, including tween creation |
 | Sequences | `Then` and `Sequential` | Yes | Yes | Yes |
 | Unscaled time | Yes | Yes | Yes | Yes |
-| TextMeshPro | No | Yes, in the paid Pro version | Through examples | Yes |
+| TextMeshPro | Color and alpha | Yes, in the paid Pro version | Through examples | Yes |
 | Dependencies | LeoECS | None | None | Burst, Collections, Mathematics |
 | Track record | Pre-release, single author | Long-established, large community | Established | Established |
 
@@ -475,7 +498,7 @@ IL2CPP and mobile, yes: it's measured in IL2CPP Release builds on two Android ph
 
 ### Does it work with UI Toolkit?
 
-No. It animates uGUI components: `RectTransform`, `Image` and `CanvasGroup`.
+No. It animates uGUI components: `RectTransform`, any `Graphic` (including TextMeshPro) and `CanvasGroup`.
 
 ### Do tweens run while the game is paused?
 
@@ -519,11 +542,12 @@ Yes. It's MIT licensed.
 
 ## Limitations
 
-- TextMeshPro and UI Toolkit aren't supported directly.
+- UI Toolkit isn't supported.
+- TextMeshPro text animates color and alpha, like any `Graphic`, but there's no typewriter effect or per-character animation.
 
 ## Project status
 
-This is a pre-release package at version `0.4.1`. Its API and behavior may change before `1.0.0`. Not yet used in a shipped game.
+This is a pre-release package at version `0.4.2`. Its API and behavior may change before `1.0.0`. Not yet used in a shipped game.
 
 Until `1.0.0`, minor versions (`0.x.0`) can include breaking changes, and patch versions (`0.x.y`) don't. Breaking changes are marked **Breaking** in the [changelog](CHANGELOG.md).
 

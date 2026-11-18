@@ -62,7 +62,7 @@ namespace UITweens.Services
                 def.Ease,
                 def.EaseParameter,
                 def.CanvasGroup,
-                def.Image
+                def.Graphic
             );
 
             if (!handle.IsValid)

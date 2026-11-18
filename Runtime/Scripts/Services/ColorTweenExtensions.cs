@@ -5,7 +5,7 @@ namespace UITweens.Services
 {
     /// <summary>
     /// Color animation extensions for TweenSpawner.
-    /// Single Responsibility: Color tweens for Image components only.
+    /// Single Responsibility: Color tweens for Graphic components (Image, RawImage, Text, TextMeshPro).
     /// </summary>
     public static class ColorTweenExtensions
     {
@@ -14,7 +14,7 @@ namespace UITweens.Services
         /// </summary>
         public static TweenBuilder Color(
             this TweenSpawner spawner,
-            UnityEngine.UI.Image target,
+            UnityEngine.UI.Graphic target,
             UnityEngine.Color targetColor,
             float duration,
             EaseType ease = EaseType.Linear,
@@ -22,7 +22,7 @@ namespace UITweens.Services
         {
             if (target == null)
             {
-                Debug.LogError("[UITweens] Image target is null");
+                Debug.LogError("[UITweens] Graphic target is null");
                 return new TweenBuilder(spawner);
             }
 
@@ -36,7 +36,7 @@ namespace UITweens.Services
         /// </summary>
         public static TweenBuilder ColorFromTo(
             this TweenSpawner spawner,
-            UnityEngine.UI.Image target,
+            UnityEngine.UI.Graphic target,
             UnityEngine.Color startColor,
             UnityEngine.Color endColor,
             float duration,
@@ -45,18 +45,18 @@ namespace UITweens.Services
         {
             if (target == null)
             {
-                Debug.LogError("[UITweens] Image target is null");
+                Debug.LogError("[UITweens] Graphic target is null");
                 return new TweenBuilder(spawner);
             }
 
             RectTransform rect = target.GetComponent<RectTransform>();
             if (rect == null)
             {
-                Debug.LogError("[UITweens] Image has no RectTransform");
+                Debug.LogError("[UITweens] Graphic has no RectTransform");
                 return new TweenBuilder(spawner);
             }
 
-            TweenHandle handle = spawner.SpawnTweenInternal(rect, duration, ease, easeParameter, image: target, kind: TweenPoolKind.Color);
+            TweenHandle handle = spawner.SpawnTweenInternal(rect, duration, ease, easeParameter, graphic: target, kind: TweenPoolKind.Color);
             spawner.InitializeColorInternal(handle, startColor, endColor);
             return new TweenBuilder(spawner).SetHandle(handle);
         }

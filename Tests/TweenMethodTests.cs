@@ -167,6 +167,68 @@ namespace UITweens.Tests
         }
 
         [Test]
+        public void Graphic_DOFade_WorksOnARawImage()
+        {
+            RawImage raw = CreateRect("Raw").gameObject.AddComponent<RawImage>();
+            raw.color = new Color(0.2f, 0.4f, 0.6f, 1f);
+
+            raw.DOFade(0f, 1f);
+
+            Step(0.5f);
+            AssertNear(new Color(0.2f, 0.4f, 0.6f, 0.5f), raw.color);
+            StepPast(0.5f);
+            AssertNear(new Color(0.2f, 0.4f, 0.6f, 0f), raw.color);
+        }
+
+        [Test]
+        public void Graphic_DOColor_WorksOnARawImage()
+        {
+            RawImage raw = CreateRect("Raw").gameObject.AddComponent<RawImage>();
+            raw.color = Color.white;
+
+            raw.DOColor(Color.blue, 1f);
+
+            Step(0.5f);
+            AssertNear(new Color(0.5f, 0.5f, 1f, 1f), raw.color);
+            StepPast(0.5f);
+            AssertNear(Color.blue, raw.color);
+        }
+
+        [Test]
+        public void Image_DOFillAmount()
+        {
+            Image image = CreateImage();
+            image.type = Image.Type.Filled;
+            image.fillAmount = 0f;
+
+            image.DOFillAmount(1f, 1f);
+
+            Step(0.5f);
+            AssertNear(0.5f, image.fillAmount);
+            StepPast(0.5f);
+            AssertNear(1f, image.fillAmount);
+        }
+
+        [Test]
+        public void Image_DOFillAmount_AndDOFade_RunTogether()
+        {
+            Image image = CreateImage();
+            image.type = Image.Type.Filled;
+            image.fillAmount = 1f;
+            image.color = Color.white;
+
+            image.DOFillAmount(0f, 1f);
+            image.DOFade(0f, 1f);
+
+            Step(0.5f);
+            AssertNear(0.5f, image.fillAmount);
+            AssertNear(0.5f, image.color.a);
+            StepPast(0.5f);
+            AssertNear(0f, image.fillAmount);
+            AssertNear(0f, image.color.a);
+        }
+
+        [Test]
         public void CanvasGroup_DOFade()
         {
             CanvasGroup group = CreateGroup();

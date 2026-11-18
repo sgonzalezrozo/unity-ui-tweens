@@ -30,7 +30,7 @@ namespace UITweens.Services
             EaseType ease,
             float easeParameter,
             CanvasGroup canvasGroup = null,
-            Image image = null)
+            Graphic graphic = null)
         {
             ref var clock = ref entity.Get<TweenCoreComponent>().Clock;
             clock.ElapsedTime = 0f;
@@ -53,7 +53,7 @@ namespace UITweens.Services
             ref var target = ref entity.Get<TweenCoreComponent>().Target;
             target.RectTransform = element;
             target.CanvasGroup = canvasGroup;
-            target.Image = image;
+            target.Graphic = graphic;
 
             ref var result = ref entity.Get<TweenCoreComponent>().Result;
             result.AlphaResult = 0f;
@@ -63,6 +63,7 @@ namespace UITweens.Services
             result.ColorResult = Color.white;
             result.SizeDeltaResult = Vector2.zero;
             result.PivotResult = Vector2.zero;
+            result.FillAmountResult = 0f;
 
             ref var control = ref entity.Get<TweenCoreComponent>().Control;
             control.State = TweenControlComponent.ControlState.NotStarted;
@@ -79,6 +80,7 @@ namespace UITweens.Services
             flags.ApplyColor = false;
             flags.ApplySizeDelta = false;
             flags.ApplyPivot = false;
+            flags.ApplyFillAmount = false;
 
             InitializeOptionalComponents(entity);
         }
@@ -183,6 +185,23 @@ namespace UITweens.Services
 
             ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
             flags.ApplySizeDelta = true;
+        }
+
+        /// <summary>
+        /// Setup fill amount animation component.
+        /// </summary>
+        public void SetupFillAmount(EcsEntity entity, float startFill, float endFill)
+        {
+            ref var fillComp = ref entity.Get<TweenFillAmountComponent>();
+            fillComp.StartValue = startFill;
+            fillComp.EndValue = endFill;
+
+            // Initialize result with start value to avoid unwanted initial value during delay
+            ref var result = ref entity.Get<TweenCoreComponent>().Result;
+            result.FillAmountResult = startFill;
+
+            ref var flags = ref entity.Get<TweenCoreComponent>().Flags;
+            flags.ApplyFillAmount = true;
         }
 
         /// <summary>
