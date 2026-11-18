@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tested on Unity 6000.3](https://img.shields.io/badge/Unity-6000.3%20tested-black?logo=unity)](#compatibility)
-[![Version 0.4.0](https://img.shields.io/badge/version-0.4.0-blue.svg)](CHANGELOG.md)
+[![Version 0.4.1](https://img.shields.io/badge/version-0.4.1-blue.svg)](CHANGELOG.md)
 
 UI Tweens is a free, open-source tween library for Unity UI (uGUI) on Unity 6. It animates `RectTransform`, `Image` and `CanvasGroup` with a fluent, DOTween-style API (`DOAnchorPos`, `DOScale`, `DOFade`), with chaining, loops, callbacks, 33 easing types and per-component pause, resume and cancel. Tweens run as pooled entities in an always-running LeoECS world, so hundreds of UI tweens stay allocation-conscious. It's a UI-only alternative to DOTween, PrimeTween and LitMotion, and much younger than all three.
 
@@ -92,7 +92,7 @@ https://github.com/sgonzalezrozo/unity-ui-tweens.git
 To pin a release, add its tag:
 
 ```text
-https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.4.0
+https://github.com/sgonzalezrozo/unity-ui-tweens.git#v0.4.1
 ```
 
 ## Setup
@@ -523,7 +523,7 @@ Yes. It's MIT licensed.
 
 ## Project status
 
-This is a pre-release package at version `0.4.0`. Its API and behavior may change before `1.0.0`. Not yet used in a shipped game.
+This is a pre-release package at version `0.4.1`. Its API and behavior may change before `1.0.0`. Not yet used in a shipped game.
 
 Until `1.0.0`, minor versions (`0.x.0`) can include breaking changes, and patch versions (`0.x.y`) don't. Breaking changes are marked **Breaking** in the [changelog](CHANGELOG.md).
 

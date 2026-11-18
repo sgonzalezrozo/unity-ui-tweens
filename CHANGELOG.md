@@ -4,6 +4,17 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-17
+
+### Added
+
+- After the package is imported, a dialog links to the documentation, once per project.
+- `documentationUrl` in `package.json`, so the Package Manager links to the documentation.
+
+### Removed
+
+- The **Tools > UI Tweens > Setup** menu item. It only said that setup isn't needed.
+
 ### Documentation
 
 - Published benchmark results from four phones (IL2CPP Release, commit `fe3c748`), with the raw JSON for every run under `Documentation~/benchmarks/results/`.
