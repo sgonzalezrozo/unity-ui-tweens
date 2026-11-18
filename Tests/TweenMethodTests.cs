@@ -319,8 +319,9 @@ namespace UITweens.Tests
         {
             RectTransform missing = null;
 
-            UnityEngine.TestTools.LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("null"));
+            using LogCapture log = new();
             Assert.DoesNotThrow(() => missing.DOAnchorPosX(10f, 1f));
+            log.AssertLogged(LogType.Warning, "null");
             StepPast(1f);
         }
     }

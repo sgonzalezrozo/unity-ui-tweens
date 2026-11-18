@@ -90,8 +90,9 @@ namespace UITweens.Tests
             faulty.DOAnchorPosX(100f, 0.2f).OnComplete(() => throw new InvalidOperationException("Expected test exception from a callback"));
             healthy.DOAnchorPosX(100f, 0.5f);
 
-            LogAssert.Expect(LogType.Exception, new Regex("Expected test exception"));
+            using LogCapture log = new();
             StepPast(0.5f);
+            log.AssertLogged(LogType.Exception, "Expected test exception");
 
             AssertNear(100f, healthy.anchoredPosition.x);
         }

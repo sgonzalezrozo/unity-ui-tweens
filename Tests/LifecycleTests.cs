@@ -94,8 +94,9 @@ namespace UITweens.Tests
 
             Assert.That(old.IsPlaying, Is.False);
             TweenManager.Cancel(old);
-            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("stale TweenHandle"));
+            using LogCapture log = new();
             TweenManager.Pause(old);
+            log.AssertLogged(LogType.Warning, "stale TweenHandle");
 
             StepPast(0.5f);
             AssertNear(100f, second.anchoredPosition.x);
