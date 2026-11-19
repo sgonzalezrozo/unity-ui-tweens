@@ -4,6 +4,12 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-11-19
+
+### Added
+
+- **Tools > UI Tweens > Documentation** opens the README on GitHub. It brings back a small `UITweens.Editor` assembly, now with a script, so Unity doesn't warn about an empty one.
+
 ## [0.4.5] - 2026-11-19
 
 ### Fixed
