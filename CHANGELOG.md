@@ -4,6 +4,8 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-11-19
+
 ### Fixed
 
 - Unity no longer warns that `UITweens.Editor.asmdef` has no scripts. The empty `Editor` folder is removed: its last script went in 0.4.3.
