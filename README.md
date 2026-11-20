@@ -39,6 +39,8 @@ https://github.com/sgonzalezrozo/unity-ui-tweens.git
 
 Use the LeoECS URL exactly as written: it points to the last release under the standard MIT license. There's nothing to set up after installing. Requirements and tested platforms: [Getting Started](Documentation~/getting-started.md#requirements).
 
+**Assembly references.** If your code is in an assembly definition (`.asmdef`), add `UITweens` to its **Assembly Definition References**. Unity doesn't add them for you, and without them the build fails with `CS0246`.
+
 ---
 
 ## Key Features

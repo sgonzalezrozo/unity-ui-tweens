@@ -4,6 +4,11 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+### Documentation
+
+- The README and `agent-rules.md` list the assembly an assembly definition needs to use UI Tweens: `UITweens` (and `Leopotam.Ecs` only for code that uses LeoECS types).
+- The README and troubleshooting say to wait for each package to compile when installing: adding one while Unity is still importing another can log `ScriptableSingleton already exists` and "assets located in immutable packages were unexpectedly altered", which block nothing.
+
 ## [0.4.7] - 2026-11-19
 
 ### Changed

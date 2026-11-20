@@ -8,6 +8,15 @@ Copy this file into your project's agent rules (for example `AGENTS.md`, `CLAUDE
 - Tweens are extension methods on `RectTransform`, any `Graphic` (`Image`, `RawImage`, `Text`, TextMeshPro) and `CanvasGroup`. Add `using UITweens.Extensions;` and `using UITweens.Math;` (for `EaseType`).
 - Don't add `TweenManager` to a scene. The first tween creates it. To move setup off the first animation, call `TweenManager.Initialize()` or `TweenManager.Prewarm(count)` during a loading screen.
 
+## Assembly references
+
+Unity doesn't add a package's assemblies to your assembly definitions. Every `.asmdef` whose code uses this package MUST list these in its **Assembly Definition References** (`references` in the JSON), in the same change that adds the first `using`. Without them the build fails with `CS0246: The type or namespace name 'UITweens' could not be found`. Code in `Assembly-CSharp` (no `.asmdef`) needs nothing.
+
+| Assembly | Needed for |
+|---|---|
+| `UITweens` | `DOAnchorPos`, `DOFade`, `EaseType` and the rest (namespaces `UITweens.Extensions`, `UITweens.Math`) |
+| `Leopotam.Ecs` | Only if your code uses LeoECS types directly |
+
 ## Start a tween
 
 Every method ends with `float duration, EaseType ease = EaseType.Linear, float easeParameter = -1f`:
