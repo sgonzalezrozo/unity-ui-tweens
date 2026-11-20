@@ -35,6 +35,8 @@ https://github.com/LeoECSCommunity/ecs.git#91cc7e390fa0eb4fc88a5cf111df88b1f45af
 https://github.com/sgonzalezrozo/unity-ui-tweens.git
 ```
 
+> **Wait for each package to compile.** Add the first URL, wait until Unity finishes importing and compiling, then add the next. Adding a package while Unity is still importing the previous one can log `ScriptableSingleton already exists` and `assets located in immutable packages were unexpectedly altered`. They don't block anything: clear the Console and continue. If they come back when you open the project without adding a package, report it.
+
 Use the LeoECS URL exactly as written: it points to the last release under the standard MIT license. There's nothing to set up after installing. Requirements and tested platforms: [Getting Started](Documentation~/getting-started.md#requirements).
 
 ---
