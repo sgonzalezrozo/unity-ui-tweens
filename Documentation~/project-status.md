@@ -12,7 +12,7 @@
 
 ## Status
 
-Pre-release (`0.4.7`), by a single author, not yet used in a shipped game. Its API and behavior may change before `1.0.0`. Known gaps are listed under [Limitations](troubleshooting.md#limitations).
+Pre-release (`0.4.8`), by a single author, not yet used in a shipped game. Its API and behavior may change before `1.0.0`. Known gaps are listed under [Limitations](troubleshooting.md#limitations).
 
 ## Versioning
 

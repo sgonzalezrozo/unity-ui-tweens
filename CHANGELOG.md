@@ -4,6 +4,8 @@ All notable changes to this package are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.8] - 2026-11-19
+
 ### Documentation
 
 - The README and `agent-rules.md` list the assembly an assembly definition needs to use UI Tweens: `UITweens` (and `Leopotam.Ecs` only for code that uses LeoECS types).
